@@ -41,10 +41,9 @@ def summarize(result: IngestResult) -> str:
     for name in doc.file_names:
         lines.append(f"  {name}")
 
-    macros = result.macro_objects
-    lines.append(f"Macros ({len(doc.macros)})")
-    for name in sorted(macros):
-        macro = macros[name]
+    lines.append(f"Macros ({len(doc.macro_defs)})")
+    for name in sorted(doc.macro_defs):
+        macro = doc.macro_defs[name]
         args = f"[{macro.n_args}]" if macro.n_args else ""
         body = macro.body.replace("\n", " ")
         if len(body) > 58:

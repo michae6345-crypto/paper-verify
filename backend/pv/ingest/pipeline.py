@@ -11,7 +11,7 @@ import hashlib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from pv.models import ReasonCode, SourceDocument
+from pv.models import FileSpan, MacroDef, ReasonCode, SourceDocument
 
 from .assemble import AssembledSource, assemble
 from .fetch import DEFAULT_CACHE_DIR, FetchResult, fetch_source, load_directory
@@ -39,6 +39,38 @@ class IngestResult:
 
 def source_hash(assembled_latex: str) -> str:
     return hashlib.sha256(assembled_latex.encode("utf-8")).hexdigest()
+
+
+def macro_defs(macros: dict[str, Macro]) -> dict[str, MacroDef]:
+    """The contract's authoritative macro table.
+
+    Keyed by name **without** the leading backslash, matching `MacroDef.name`.
+    The flat `SourceDocument.macros` keeps its own convention — keys there carry
+    the backslash — so the two relate as
+    `macro_defs[k].body == macros["\\" + k]` for every k.
+    """
+    return {
+        m.name: MacroDef(name=m.name, body=m.body, n_args=m.n_args) for m in macros.values()
+    }
+
+
+def file_spans(assembled: AssembledSource) -> list[FileSpan]:
+    """The offset map, outermost first: the main file's span, then each
+    `\\input`ed file's span nested inside it, in source order."""
+    ordered = sorted(assembled.segments, key=lambda s: (s.start, -s.end))
+    return [FileSpan(file_name=s.file_name, start=s.start, end=s.end) for s in ordered]
+
+
+def _declined(
+    document: SourceDocument, fetched: FetchResult, reason: ReasonCode, detail: str
+) -> IngestResult:
+    """A paper we could not read is still a `SourceDocument` — it carries the
+    reason instead of the LaTeX, and the runner puts it in "not checked"."""
+    document.ingest_reason = reason
+    document.ingest_detail = detail
+    return IngestResult(
+        document=document, reason=reason, detail=detail, from_cache=fetched.from_cache
+    )
 
 
 def ingest(
@@ -70,26 +102,23 @@ def build(fetched: FetchResult) -> IngestResult:
         fetched_at=fetched.fetched_at,
     )
     if fetched.reason is not None or not fetched.files:
-        return IngestResult(
-            document=document,
-            reason=fetched.reason or ReasonCode.NO_LATEX_SOURCE,
-            detail=fetched.detail or "no source files",
-            from_cache=fetched.from_cache,
+        return _declined(
+            document,
+            fetched,
+            fetched.reason or ReasonCode.NO_LATEX_SOURCE,
+            fetched.detail or "no source files",
         )
 
     try:
         assembled = assemble(fetched.files)
     except ValueError as exc:
-        return IngestResult(
-            document=document,
-            reason=ReasonCode.NO_LATEX_SOURCE,
-            detail=str(exc),
-            from_cache=fetched.from_cache,
-        )
+        return _declined(document, fetched, ReasonCode.NO_LATEX_SOURCE, str(exc))
 
     macros = extract_macros(assembled.text)
     document.assembled_latex = assembled.text
     document.macros = macro_table(macros)
+    document.macro_defs = macro_defs(macros)
+    document.segments = file_spans(assembled)
     document.file_names = list(assembled.file_names)
     document.source_hash = source_hash(assembled.text)
     document.title = extract_title(assembled.text, macros)

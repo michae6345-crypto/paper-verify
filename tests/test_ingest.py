@@ -22,7 +22,6 @@ _BACKEND = Path(__file__).resolve().parents[1] / "backend"
 if str(_BACKEND) not in sys.path:
     sys.path.insert(0, str(_BACKEND))
 
-from pv.ingest import assemble as assemble_mod
 from pv.ingest import (
     assemble,
     expand,
@@ -33,12 +32,13 @@ from pv.ingest import (
     find_main_file,
     ingest_directory,
     load_directory,
+    macro_defs,
     macro_table,
     normalize_arxiv_id,
     source_hash,
 )
 from pv.ingest.fetch import is_safe_member_name, unpack
-from pv.models import ReasonCode, SourceDocument
+from pv.models import MacroDef, ReasonCode, SourceDocument
 
 PAPERS = Path(__file__).resolve().parents[1] / "fixtures" / "papers"
 FIXTURE = PAPERS / "1706.03762"
@@ -286,6 +286,14 @@ def test_expansion_does_not_loop_forever():
 def test_macro_table_keys_carry_the_backslash():
     table = macro_table(extract_macros("\\newcommand{\\x}{1}"))
     assert table == {"\\x": "1"}
+
+
+def test_macro_defs_keys_do_not_carry_the_backslash():
+    """`MacroDef.name` is defined as the name without the backslash, so the two
+    tables key differently on purpose: `macro_defs[k].body == macros["\\" + k]`."""
+    defs = macro_defs(extract_macros("\\newcommand{\\mbf}[1]{\\mathbf{#1}}"))
+    assert set(defs) == {"mbf"}
+    assert defs["mbf"] == MacroDef(name="mbf", body="\\mathbf{#1}", n_args=1)
 
 
 def test_expansion_reaches_a_macro_used_in_another_file(document: SourceDocument):
@@ -621,6 +629,91 @@ def test_multi_file_papers_actually_inline_their_sections(corpus):
     for arxiv_id in ("1810.04805", "1907.11692", "2010.11929", "1608.06993"):
         text = corpus[arxiv_id].document.assembled_latex
         assert "\\input{" not in text, f"{arxiv_id} left an unresolved \\input"
+
+
+@pytest.mark.parametrize("arxiv_id,main,n_files,title,number", CORPUS, ids=CORPUS_IDS)
+def test_corpus_macro_defs_stay_in_step_with_the_flat_table(
+    corpus, arxiv_id, main, n_files, title, number
+):
+    """Both tables are populated, describe the same macros, and agree on bodies.
+
+    They key differently — `macros` carries the leading backslash, `macro_defs`
+    does not, per `MacroDef.name`. `macro_defs` is the authoritative one because
+    it carries `n_args`; the flat table cannot express arity.
+    """
+    doc = corpus[arxiv_id].document
+    assert doc.macro_defs, "macro_defs is empty"
+    assert set(doc.macro_defs) == {name.lstrip("\\") for name in doc.macros}
+    for name, definition in doc.macro_defs.items():
+        assert definition.name == name
+        assert definition.body == doc.macros["\\" + name]
+
+
+@pytest.mark.parametrize("arxiv_id,main,n_files,title,number", CORPUS, ids=CORPUS_IDS)
+def test_corpus_macro_defs_match_the_internal_macro_objects(
+    corpus, arxiv_id, main, n_files, title, number
+):
+    out = corpus[arxiv_id]
+    assert set(out.document.macro_defs) == set(out.macro_objects)
+    for name, macro in out.macro_objects.items():
+        assert out.document.macro_defs[name].n_args == macro.n_args
+
+
+def test_known_macro_arities(corpus):
+    """The cases bold detection depends on. `\\mbf` takes an argument; expanding
+    it without consuming that argument corrupts the cell."""
+    transformer = corpus["1706.03762"].document.macro_defs
+    assert transformer["mbf"].n_args == 1
+    assert transformer["mbf"].body == "\\mathbf{#1}"
+    assert transformer["dmodel"].n_args == 0
+    assert transformer["dff"].n_args == 0
+    assert transformer["concat"].n_args == 3
+
+    densenet = corpus["1608.06993"].document.macro_defs
+    assert densenet["methodnamecap"].n_args == 0
+    assert densenet["methodnamecap"].body == "Dense Convolutional Network"
+    assert densenet["conv"].n_args == 1
+
+
+@pytest.mark.parametrize("arxiv_id,main,n_files,title,number", CORPUS, ids=CORPUS_IDS)
+def test_corpus_segments_map_the_assembled_string(
+    corpus, arxiv_id, main, n_files, title, number
+):
+    doc = corpus[arxiv_id].document
+    # One span per inclusion; a file \input twice legitimately gets two.
+    assert len(doc.segments) >= len(doc.file_names)
+    assert {s.file_name for s in doc.segments} == set(doc.file_names)
+    root = doc.segments[0]
+    assert (root.file_name, root.start, root.end) == (main, 0, len(doc.assembled_latex))
+    for span in doc.segments:
+        assert 0 <= span.start < span.end <= len(doc.assembled_latex)
+
+
+def test_segments_are_outermost_first(corpus):
+    doc = corpus["1706.03762"].document
+    assert [s.file_name for s in doc.segments][:2] == ["ms.tex", "introduction.tex"]
+    text = doc.assembled_latex
+    intro = doc.segments[1]
+    assert "Recurrent models typically factor computation" in text[intro.start : intro.end]
+
+
+def test_document_carries_the_ingest_reason(tmp_path, monkeypatch):
+    """A PDF-only paper is a valid `SourceDocument` carrying NO_LATEX_SOURCE —
+    the runner copies it into the run's "not checked" list."""
+    from pv.ingest import fetch as fetch_mod
+    from pv.ingest import ingest as ingest_paper
+
+    monkeypatch.setattr(fetch_mod, "_download", lambda *a, **k: (b"%PDF-1.5 junk", ""))
+    out = ingest_paper("1706.03762", cache_dir=tmp_path)
+    assert out.document.ingest_reason is ReasonCode.NO_LATEX_SOURCE
+    assert out.document.ingest_reason is out.reason
+    assert out.document.ingest_detail == out.detail
+    assert out.document.ingest_detail
+
+
+def test_a_readable_document_carries_no_ingest_reason(document: SourceDocument):
+    assert document.ingest_reason is None
+    assert document.ingest_detail == ""
 
 
 def test_tex_root_magic_comment_breaks_a_tie():

@@ -12,7 +12,15 @@ from .assemble import AssembledSource, Segment, assemble, find_main_file
 from .fetch import FetchResult, fetch_source, load_directory, normalize_arxiv_id
 from .macros import Macro, expand, extract_macros, macro_table
 from .metadata import extract_abstract, extract_title
-from .pipeline import IngestResult, build, ingest, ingest_directory, source_hash
+from .pipeline import (
+    IngestResult,
+    build,
+    file_spans,
+    ingest,
+    ingest_directory,
+    macro_defs,
+    source_hash,
+)
 
 __all__ = [
     "AssembledSource",
@@ -27,10 +35,12 @@ __all__ = [
     "extract_macros",
     "extract_title",
     "fetch_source",
+    "file_spans",
     "find_main_file",
     "ingest",
     "ingest_directory",
     "load_directory",
+    "macro_defs",
     "macro_table",
     "normalize_arxiv_id",
     "source_hash",
