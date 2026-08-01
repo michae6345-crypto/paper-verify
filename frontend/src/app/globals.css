@@ -43,6 +43,20 @@
   /* The single interactive colour */
   --focus: #6a7bff;
 
+  /* Anchor and ledger — UI_PLAN.md. None of these is a verdict colour: verdict
+     colour is reserved and already carries meaning, and the anchor has to be
+     able to sit under any of the five verdicts without arguing with it. */
+  /* A span in the paper a claim points at, unselected. A 2px left rule, not a fill. */
+  --anchor-rest: #3a4450;
+  /* The selected span. Same value as --paper-highlight (§5.4), promoted to a token. */
+  --anchor-live: #fff3c4;
+  /* The connecting tint on the ledger row paired with the live span. 12% of --focus. */
+  --anchor-trace: #6a7bff1f;
+  /* Hairline hatching the INFERRED tag. Reads as texture, not status. */
+  --provenance-line: #4a5563;
+  /* Group header band in the ledger, between --chrome-base and --chrome-panel. */
+  --ledger-band: #191e25;
+
   /* Shape — §3. 6px on panels and inputs, 4px on chips. Never fully rounded. */
   --radius-panel: 6px;
   --radius-chip: 4px;

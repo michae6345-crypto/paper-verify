@@ -85,6 +85,19 @@ function numericColumns(rows: Row[]): Set<number> {
   return out;
 }
 
+/**
+ * An anchored span — a cell some claim in the ledger points at — carries a 2px
+ * left rule in `--anchor-rest` at all times, so a reader can see which numbers
+ * on the page have a claim attached before touching anything. Selection swaps it
+ * for the live highlight. A rule rather than a fill: the paper is an artifact and
+ * shading a fifth of its cells would restyle the document rather than annotate
+ * it (UI_PLAN.md).
+ */
+function anchorRule(anchored: boolean, selected: boolean) {
+  if (!anchored || selected) return undefined;
+  return "inset 2px 0 0 0 var(--anchor-rest)";
+}
+
 function highlightStyle(selected: boolean, verdict: Verdict | null, reduced: boolean) {
   if (!selected) {
     return {
@@ -93,7 +106,7 @@ function highlightStyle(selected: boolean, verdict: Verdict | null, reduced: boo
     } as const;
   }
   return {
-    backgroundColor: "var(--paper-highlight)",
+    backgroundColor: "var(--anchor-live)",
     // §5.4: a 1px --v-diverges outline, but only when the finding is divergent.
     // A `matches` mark gets the highlight alone — the outline is an accusation.
     outline: verdict === "diverges" ? "1px solid var(--v-diverges)" : undefined,
@@ -171,14 +184,36 @@ export function PaperTable({
       style: {
         fontSize: isNum ? "14px" : "15px",
         color: "var(--paper-ink)",
+        boxShadow: anchorRule(mark != null, selected),
         ...highlightStyle(selected, selected ? selectedVerdict : null, reduced),
       },
     };
 
+    // The paper drives the ledger. Clicking an anchored span selects its claim —
+    // the same call the gutter mark makes, so both directions of the link are
+    // one code path. The button is what makes the span reachable by keyboard on
+    // the wide layout, where the inline mark is hidden; the cell keeps its table
+    // semantics, and an unanchored cell stays plain text.
     const content = (
       <>
-        {/* Verbatim. `86.7/85.9` stays `86.7/85.9`. */}
-        {cell.text}
+        {mark ? (
+          <button
+            type="button"
+            onClick={() => onSelect(mark.key)}
+            aria-pressed={selected}
+            className="rounded-[2px] text-inherit"
+            style={{ font: "inherit", letterSpacing: "inherit" }}
+          >
+            {/* Verbatim. `86.7/85.9` stays `86.7/85.9`. */}
+            {cell.text}
+            <span className="sr-only">
+              {" "}
+              — {mark.locator}. Select this claim.
+            </span>
+          </button>
+        ) : (
+          cell.text
+        )}
         {mark && (
           <InlineMark
             mark={mark}
@@ -213,12 +248,34 @@ export function PaperTable({
         >
           Table {index + 1}
         </span>
-        <span
-          className="min-w-0 flex-1"
-          style={{ fontSize: "14px", lineHeight: 1.5, opacity: 0.72 }}
-        >
-          {table.caption || table.label || "No caption"}
-        </span>
+        {/* Same link, at table scale: a claim anchored to the whole table is
+            selected by its caption, since the inline mark is hidden above
+            760px. */}
+        {tableMark ? (
+          <button
+            type="button"
+            onClick={() => onSelect(tableMark.key)}
+            aria-pressed={tableSelected}
+            className="min-w-0 flex-1 rounded-[2px] text-start"
+            style={{
+              fontSize: "14px",
+              lineHeight: 1.5,
+              opacity: 0.72,
+              boxShadow: tableSelected ? undefined : "inset 2px 0 0 0 var(--anchor-rest)",
+              paddingInlineStart: tableSelected ? undefined : "8px",
+            }}
+          >
+            {table.caption || table.label || "No caption"}
+            <span className="sr-only"> — {tableMark.locator}. Select this claim.</span>
+          </button>
+        ) : (
+          <span
+            className="min-w-0 flex-1"
+            style={{ fontSize: "14px", lineHeight: 1.5, opacity: 0.72 }}
+          >
+            {table.caption || table.label || "No caption"}
+          </span>
+        )}
         {tableMark && (
           <InlineMark mark={tableMark} active={tableSelected} onSelect={onSelect} />
         )}
@@ -235,7 +292,7 @@ export function PaperTable({
             // Both rules are the paper's, not the chrome's.
             borderTop: `${HEADER_RULE} solid var(--paper-rule)`,
             borderBottom: `${HEADER_RULE} solid var(--paper-rule)`,
-            background: tableSelected ? "var(--paper-highlight)" : "transparent",
+            background: tableSelected ? "var(--anchor-live)" : "transparent",
             transition: reduced
               ? "none"
               : `background-color ${HIGHLIGHT_MS}ms var(--ease-out) ${SCROLL_MS}ms`,
