@@ -1,5 +1,6 @@
 import { Hero } from "@/components/site/hero";
 import { Intro } from "@/components/site/intro";
+import { Process } from "@/components/site/process";
 
 /**
  * The landing page.
@@ -16,6 +17,7 @@ export default function SitePage() {
     <>
       <Hero />
       <Intro />
+      <Process />
     </>
   );
 }
