@@ -1,0 +1,54 @@
+{
+  "arxiv_id": "2103.00020",
+  "title": "Learning Transferable Visual Models From Natural Language Supervision",
+  "schema_version": 1,
+  "checks": [
+    {
+      "checker": "bold_extreme",
+      "checker_version": "1.0.0",
+      "verdict": "matches",
+      "reason": null,
+      "findings": [],
+      "display_name": "Bolded value is the best in its block",
+      "description": "Checks that each bolded number is the best value in its column, comparing only within the same rule-delimited block of the table.",
+      "duration_ms": 1,
+      "created_at": "2026-08-01T07:18:37.640195Z"
+    },
+    {
+      "checker": "row_arithmetic",
+      "checker_version": "1.0.0",
+      "verdict": "unverifiable",
+      "reason": "table_structure_not_parsed",
+      "findings": [],
+      "display_name": "Average columns match their row",
+      "description": "Checks that a column labelled average, mean or overall equals the mean of the other numbers in the same row, to the precision they were printed at.",
+      "duration_ms": 4,
+      "created_at": "2026-08-01T07:18:37.644471Z"
+    }
+  ],
+  "not_checked": [
+    {
+      "what": "Table fairface_table_white",
+      "reason": "table_structure_not_parsed",
+      "detail": "tab:fairface_table_white: a second tabular resolves to the same \\label; anchored as tab:fairface_table_white-2 instead"
+    },
+    {
+      "what": "Table gender_classification_fairface",
+      "reason": "table_structure_not_parsed",
+      "detail": "tab:gender_classification_fairface/r7: row covers 9 columns, column spec declares 10; tab:gender_classification_fairface/r10: row covers 9 columns, column spec declares 10"
+    },
+    {
+      "what": "Table age_bias_table",
+      "reason": "table_structure_not_parsed",
+      "detail": "tab:age_bias_table/r0: row covers 8 columns, column spec declares 10"
+    },
+    {
+      "what": "Average columns match their row",
+      "reason": "table_structure_not_parsed",
+      "detail": "Checks that a column labelled average, mean or overall equals the mean of the other numbers in the same row, to the precision they were printed at."
+    }
+  ],
+  "tables_parsed": 20,
+  "started_at": "2026-08-01T07:18:31.316270Z",
+  "finished_at": "2026-08-01T07:18:37.644504Z"
+}

@@ -1,0 +1,64 @@
+{
+  "arxiv_id": "1512.03385",
+  "title": "Deep Residual Learning for Image Recognition",
+  "schema_version": 1,
+  "checks": [
+    {
+      "checker": "bold_extreme",
+      "checker_version": "1.0.0",
+      "verdict": "matches",
+      "reason": null,
+      "findings": [],
+      "display_name": "Bolded value is the best in its block",
+      "description": "Checks that each bolded number is the best value in its column, comparing only within the same rule-delimited block of the table.",
+      "duration_ms": 0,
+      "created_at": "2026-08-01T07:18:31.314736Z"
+    },
+    {
+      "checker": "row_arithmetic",
+      "checker_version": "1.0.0",
+      "verdict": "unverifiable",
+      "reason": "table_structure_not_parsed",
+      "findings": [],
+      "display_name": "Average columns match their row",
+      "description": "Checks that a column labelled average, mean or overall equals the mean of the other numbers in the same row, to the precision they were printed at.",
+      "duration_ms": 0,
+      "created_at": "2026-08-01T07:18:31.315105Z"
+    }
+  ],
+  "not_checked": [
+    {
+      "what": "Table tab:arch",
+      "reason": "table_structure_not_parsed",
+      "detail": "tab:arch/r10: row covers 6 columns, column spec declares 7; tab:arch/r11: row covers 6 columns, column spec declares 7"
+    },
+    {
+      "what": "Table tab:single",
+      "reason": "table_structure_not_parsed",
+      "detail": "tab:single: a second tabular resolves to the same \\label; anchored as tab:single-2 instead"
+    },
+    {
+      "what": "Table tab:detection_voc",
+      "reason": "table_structure_not_parsed",
+      "detail": "tab:detection_voc: a second tabular resolves to the same \\label; anchored as tab:detection_voc-2 instead"
+    },
+    {
+      "what": "Table tab:detection_coco_improve",
+      "reason": "table_structure_not_parsed",
+      "detail": "tab:detection_coco_improve/r3: row covers 4 columns, column spec declares 5; tab:detection_coco_improve/r4: row covers 4 columns, column spec declares 5; tab:detection_coco_improve/r5: row covers 4 columns, column spec declares 5"
+    },
+    {
+      "what": "Table tab:voc07_all",
+      "reason": "table_structure_not_parsed",
+      "detail": "tab:voc07_all: a second tabular resolves to the same \\label; anchored as tab:voc07_all-2 instead"
+    },
+    {
+      "what": "Average columns match their row",
+      "reason": "table_structure_not_parsed",
+      "detail": "Checks that a column labelled average, mean or overall equals the mean of the other numbers in the same row, to the precision they were printed at."
+    }
+  ],
+  "tables_parsed": 15,
+  "started_at": "2026-08-01T07:18:29.898969Z",
+  "finished_at": "2026-08-01T07:18:31.315131Z"
+}

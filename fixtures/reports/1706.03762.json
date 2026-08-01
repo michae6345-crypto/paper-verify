@@ -1,0 +1,39 @@
+{
+  "arxiv_id": "1706.03762",
+  "title": "Attention Is All You Need",
+  "schema_version": 1,
+  "checks": [
+    {
+      "checker": "bold_extreme",
+      "checker_version": "1.0.0",
+      "verdict": "matches",
+      "reason": null,
+      "findings": [],
+      "display_name": "Bolded value is the best in its block",
+      "description": "Checks that each bolded number is the best value in its column, comparing only within the same rule-delimited block of the table.",
+      "duration_ms": 0,
+      "created_at": "2026-08-01T07:18:28.859264Z"
+    },
+    {
+      "checker": "row_arithmetic",
+      "checker_version": "1.0.0",
+      "verdict": "not_attempted",
+      "reason": null,
+      "findings": [],
+      "display_name": "Average columns match their row",
+      "description": "Checks that a column labelled average, mean or overall equals the mean of the other numbers in the same row, to the precision they were printed at.",
+      "duration_ms": 0,
+      "created_at": "2026-08-01T07:18:28.859655Z"
+    }
+  ],
+  "not_checked": [
+    {
+      "what": "Average columns match their row",
+      "reason": "no_applicable_claims",
+      "detail": "Checks that a column labelled average, mean or overall equals the mean of the other numbers in the same row, to the precision they were printed at."
+    }
+  ],
+  "tables_parsed": 4,
+  "started_at": "2026-08-01T07:18:27.803685Z",
+  "finished_at": "2026-08-01T07:18:28.859670Z"
+}

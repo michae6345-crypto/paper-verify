@@ -1,0 +1,123 @@
+{
+  "arxiv_id": "0000.00000",
+  "title": "A synthetic paper for interface development",
+  "schema_version": 1,
+  "checks": [
+    {
+      "checker": "bold_extreme",
+      "checker_version": "1",
+      "verdict": "diverges",
+      "reason": null,
+      "findings": [
+        {
+          "severity": "high",
+          "claimed": "87.4",
+          "computed": "84.1",
+          "delta": "-3.3",
+          "anchor": {
+            "kind": "table_cell",
+            "dom_id": "tab:main/r2/c3",
+            "table_label": "tab:main",
+            "row": 2,
+            "col": 3,
+            "char_start": null,
+            "char_end": null,
+            "human_locator": "Table 3, row 2, column \"Ours\""
+          },
+          "explanation": "87.4 is bolded, but 84.1 is the highest value in this block of the column."
+        }
+      ],
+      "display_name": "Bolded value is the best in its block",
+      "description": "Compares each bolded cell with the other values in its column, within the block the table's rules define.",
+      "duration_ms": 310,
+      "created_at": null
+    },
+    {
+      "checker": "row_arithmetic",
+      "checker_version": "1",
+      "verdict": "within_tolerance",
+      "reason": null,
+      "findings": [
+        {
+          "severity": "low",
+          "claimed": "71.0",
+          "computed": "70.944",
+          "delta": "+0.056",
+          "anchor": {
+            "kind": "table_cell",
+            "dom_id": "tab:glue/r3/c9",
+            "table_label": "tab:glue",
+            "row": 3,
+            "col": 9,
+            "char_start": null,
+            "char_end": null,
+            "human_locator": "Table 1, row 3, column \"Average\""
+          },
+          "explanation": "Within the rounding implied by one decimal place."
+        }
+      ],
+      "display_name": "Average columns match their row",
+      "description": "Recomputes each average column from the values in its row and compares, allowing for the precision shown.",
+      "duration_ms": 95,
+      "created_at": null
+    },
+    {
+      "checker": "dead_links",
+      "checker_version": "1",
+      "verdict": "matches",
+      "reason": null,
+      "findings": [],
+      "display_name": "Links resolve",
+      "description": "Requests every URL in the paper and reports those that return not-found.",
+      "duration_ms": 2140,
+      "created_at": null
+    },
+    {
+      "checker": "citation_existence",
+      "checker_version": "1",
+      "verdict": "unverifiable",
+      "reason": "reference_not_indexed",
+      "findings": [],
+      "display_name": "Citations exist",
+      "description": "Looks up each reference in Crossref and OpenAlex, and reports confirmed retractions.",
+      "duration_ms": 41800,
+      "created_at": null
+    },
+    {
+      "checker": "abstract_vs_table",
+      "checker_version": "1",
+      "verdict": "not_attempted",
+      "reason": "llm_disabled",
+      "findings": [],
+      "display_name": "Abstract agrees with the tables",
+      "description": "Matches numbers stated in the abstract to the cells they refer to.",
+      "duration_ms": null,
+      "created_at": null
+    }
+  ],
+  "not_checked": [
+    {
+      "what": "Table tab:ablation",
+      "reason": "table_structure_not_parsed",
+      "detail": "No full-width rule separates a header from the body."
+    },
+    {
+      "what": "Column “Score” in tab:main",
+      "reason": "metric_direction_unknown",
+      "detail": "No arrow in the header and the metric is not in the lookup."
+    },
+    {
+      "what": "Abstract agrees with the tables",
+      "reason": "llm_disabled",
+      "detail": "Set LLM_ENABLED=true to run this check."
+    },
+    {
+      "what": "Reference 14",
+      "reason": "reference_not_indexed",
+      "detail": "Present in neither Crossref nor OpenAlex."
+    }
+  ],
+  "tables_parsed": 3,
+  "started_at": "2026-08-01T12:00:00Z",
+  "finished_at": "2026-08-01T12:00:09Z"
+}
