@@ -365,3 +365,174 @@
     background: var(--chrome-line);
   }
 }
+
+/* ---------------------------------------------------------------------------
+   The marketing surface — `app/(site)`, and nothing else.
+
+   Everything above this line is the application: the two materials of §2, dark
+   chrome against a light document, and the landing page is neither. It is one
+   light page with white cards on it, and the tokens it needs would be wrong
+   anywhere inside a run.
+
+   So they are scoped to `[data-site]`, which `SiteLayout` puts on its own root
+   element. `/reports` and `/runs` never carry that attribute and so never see
+   any of this — the chrome stays exactly as dark as it was.
+
+   The five values are the published page's own: #d9d9d9 for the page, white for
+   the cards it carries, black ink, #262626 for the inverted cards, and #ff3700
+   as the single accent. The rest are derived, and derived once here rather than
+   guessed at in fifteen components.
+   --------------------------------------------------------------------------- */
+
+[data-site] {
+  --site-base: #d9d9d9;
+  --site-card: #ffffff;
+  --site-ink: #000000;
+  /* Secondary ink, and the surface of an inverted card. One value, two jobs,
+     the way the reference uses it. */
+  --site-deep: #262626;
+  --site-accent: #ff3700;
+
+  /* Muted ink.
+
+     The reference sets this to #00000099 everywhere, which composites to
+     #575757 on the page and #666666 on a card. On the page that is 5.1:1 and
+     fine; the trouble is the reference also puts it on the pale gradient panels,
+     where it lands at 3.72:1 and stops being body text you can read.
+
+     Fixed rather than reproduced: one opaque value, dark enough that it clears
+     4.5:1 on every light surface here — 5.20:1 on --site-base, 7.34:1 on
+     --site-card, and it cannot drift because it is not an alpha over anything. */
+  --site-muted: #565656;
+
+  /* The same idea inverted, for text on --site-deep and on the black CTA card.
+     9.1:1 on black, 5.9:1 on #262626. */
+  --site-muted-invert: #a1a1a1;
+
+  /* Hairlines. Alpha on purpose — a rule has to sit on the page and on a card
+     and read as the same weight on both, which an opaque grey cannot do. */
+  --site-line: rgba(0, 0, 0, 0.1);
+  --site-line-strong: rgba(0, 0, 0, 0.25);
+  --site-line-invert: rgba(255, 255, 255, 0.14);
+
+  /* Shape. The reference's cards are 24px and its pills are fully round; the
+     pill is the one place §2's "nothing fully rounded" gives way, because a
+     154px radius on a 48px control is what the button is. */
+  --site-radius-card: 24px;
+  --site-radius-inner: 16px;
+  --site-radius-pill: 999px;
+
+  /* The rhythm every section is built on. */
+  --site-gutter: 24px;
+  --site-max: 1200px;
+}
+
+/* The page itself. `body` is still --chrome-base for the app; the site paints
+   over it on its own root rather than reaching up and changing the body. */
+[data-site] {
+  background: var(--site-base);
+  color: var(--site-ink);
+  font-family: var(--font-site-body), ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+@media (min-width: 810px) {
+  [data-site] {
+    --site-gutter: 48px;
+  }
+}
+
+@media (min-width: 1440px) {
+  [data-site] {
+    --site-gutter: 120px;
+  }
+}
+
+/* The app strips every shadow at the root (§3). The landing page is allowed
+   exactly one, on the primary control, and it is the reference's own stack. */
+[data-site] .site-lift {
+  box-shadow:
+    0.57px 0.57px 1.76px -0.42px rgb(0 0 0 / 18%),
+    1.45px 1.45px 4.5px -0.83px rgb(0 0 0 / 18%),
+    2.9px 2.9px 9.01px -1.25px rgb(0 0 0 / 18%),
+    5.49px 5.49px 17.09px -1.67px rgb(0 0 0 / 18%),
+    10.92px 10.92px 33.97px -2.08px rgb(0 0 0 / 18%),
+    24px 24px 74.67px -2.5px rgb(0 0 0 / 18%),
+    inset 0 -16px 48px 0 rgb(0 0 0);
+}
+
+[data-site] ::selection {
+  background: var(--site-accent);
+  color: var(--site-ink);
+}
+
+/* ---------------------------------------------------------------------------
+   Site type. Three faces, one job each, and the sizes are the reference's.
+
+   Display is Instrument Serif, set in italic wherever the reference sets a
+   section tag. Body is Inter — the reference uses Inter Display for headings,
+   which is not a public release; Inter at the same tracking is the closest
+   thing that exists, and at -0.06em the difference is a few terminals.
+
+   Mono is Fragment Mono, and it is only ever numbers, reason codes and paths.
+   --------------------------------------------------------------------------- */
+
+@utility site-display {
+  font-family: var(--font-site-display), ui-serif, Georgia, serif;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+@utility site-mono {
+  font-family: var(--font-site-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+/* The one heading size on the page, clamped rather than stepped through the
+   reference's three breakpoints: 44 / 80 / 108 with the same tracking at each,
+   which is a curve, not a set of decisions. */
+@utility site-h1 {
+  font-family: var(--font-site-body), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(44px, 7.5vw, 108px);
+  line-height: 1.15;
+  letter-spacing: -0.06em;
+  color: var(--site-ink);
+}
+
+/* Section headings. The reference's 48px/700/-0.04em. */
+@utility site-h2 {
+  font-family: var(--font-site-body), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: clamp(32px, 4vw, 48px);
+  line-height: 1.25;
+  letter-spacing: -0.04em;
+}
+
+/* Card and entry titles. */
+@utility site-h3 {
+  font-family: var(--font-site-body), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+}
+
+/* Body copy, and the lede under a heading at the larger step. */
+@utility site-body {
+  font-size: 16px;
+  line-height: 1.7;
+  letter-spacing: 0;
+  color: var(--site-muted);
+}
+
+@utility site-lede {
+  font-size: 20px;
+  line-height: 1.5;
+  letter-spacing: -0.02em;
+  color: var(--site-muted);
+}
