@@ -1,0 +1,35 @@
+# How close is close enough (§14.4).
+#
+# This file is the whole of the tolerance policy. The +-0.05 band used to be a
+# literal inside checks/row_arithmetic.py, where revising it meant re-running every
+# check on every paper and where nothing recorded which band produced which verdict.
+# Here it is versioned, so a stored CheckResult says which policy judged it and a
+# revision replays over stored observations instead of reprocessing the corpus.
+#
+# Bump `version` for any change to the numbers or the rules. It is part of the
+# identity of every judgement (`CheckResult.policy_version`, `pv.fingerprint`), so a
+# revision appends new rows and never edits old ones.
+#
+# `reported_precision` is the rule that resolves most rounding disputes and is the
+# one defensible in public: a value written 87.4 carries an implicit +-0.05, because
+# that is what printing one decimal place asserts. It is derived from the page, not
+# chosen by us, which is why it is the default.
+
+version: 1
+
+default:
+  rule: reported_precision          # tolerance = half the last reported decimal place
+
+metrics:
+  # `min_abs` is a floor, not a replacement: a metric printed to three decimals
+  # still carries at least this much slack, because these scores are not stable to
+  # the digit they are quoted at.
+  accuracy: {rule: reported_precision, min_abs: 0.05}
+  bleu:     {rule: reported_precision, min_abs: 0.05}
+  loss:     {rule: relative, pct: 1.0}
+
+comparative:
+  # Check 5, not yet built. A comparative claim with no reported variance, or
+  # fewer than this many seeds, is unverifiable rather than judged.
+  require_variance: true
+  min_seeds: 3

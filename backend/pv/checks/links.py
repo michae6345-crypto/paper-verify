@@ -11,6 +11,10 @@ Two sources of false positives are handled here explicitly:
     not a dead URL with a backslash in it.
   - Servers that refuse HEAD. A great many answer 403/405/501 to HEAD and 200 to
     GET, so HEAD is only ever used as a cheap first attempt.
+
+The claim is the URL: writing it in a paper asserts that the resource is there.
+`observe` records what the server said; `pv.adjudicate` turns "confirmed absent"
+into `diverges` and everything short of that into `unverifiable`.
 """
 
 from __future__ import annotations
@@ -21,12 +25,27 @@ from datetime import datetime, timezone
 from typing import Iterable, Sequence
 
 from ..adapters.http import ErrorKind, HttpClient, HttpResponse, get_http_client, run_sync
-from ..models import Anchor, CheckContext, CheckResult, Finding, ReasonCode, Severity, Verdict
+from ..adjudicate import Judgement, default_policy, judge_all, result_fingerprint
+from ..fingerprint import claim_content_hash
+from ..models import (
+    Anchor,
+    CheckContext,
+    CheckResult,
+    Claim,
+    Finding,
+    Observation,
+    ReasonCode,
+    Severity,
+    Verdict,
+)
 
 CHECKER_NAME = "dead_links"
 CHECKER_VERSION = "1.0.0"
 DISPLAY_NAME = "Dead links"
 DESCRIPTION = "Requests every URL in the paper and reports the ones the server says are gone."
+# A server either answered or it did not. Nothing here is a matter of degree, so
+# there is no tolerance entry to read.
+POLICY_KEYS: tuple[str, ...] = ()
 
 # Statuses where HEAD tells us about the server's HEAD support, not the resource.
 HEAD_UNSUPPORTED = frozenset({400, 401, 403, 405, 406, 409, 429, 501, 502})
@@ -312,57 +331,202 @@ async def check_urls(client: HttpClient, urls: Sequence[ExtractedUrl]) -> list[U
 
 
 # --------------------------------------------------------------------------
+# Claims
+# --------------------------------------------------------------------------
+
+
+def link_claims(latex: str) -> list[Claim]:
+    """One claim per URL occurrence, in document order.
+
+    Each *occurrence* is its own claim, and the anchor index is the position in
+    the document rather than within the URL's own occurrences, so two mentions of
+    one URL are two rows with two identities. `check_urls` still makes one request
+    per distinct URL; identity and traffic are different questions.
+    """
+    return [_claim(index, item) for index, item in enumerate(extract_urls(latex))]
+
+
+def _claim(index: int, item: ExtractedUrl) -> Claim:
+    anchor = item.anchor(index)
+    return Claim(
+        kind="link",
+        locator=item.locator or "in the body",
+        verbatim=item.url,
+        anchor=anchor,
+        normalized={"url": item.url, "raw": item.raw, "source": item.source},
+        content_hash=claim_content_hash("link", anchor.dom_id, item.url, None),
+    )
+
+
+def applies(claim: Claim, ctx: CheckContext) -> bool:  # noqa: ARG001
+    """A URL in the paper claims that a resource is there."""
+    return claim.kind == "link" and bool(claim.normalized.get("url") or claim.verbatim)
+
+
+def claims_for(ctx: CheckContext) -> list[Claim]:
+    """The link claims to evaluate: the caller's, or freshly mined.
+
+    Falls back to the same producer the orchestrator would use, so a checker run
+    with an unpopulated `ctx.claims` examines exactly the same URLs.
+    """
+    supplied = [c for c in ctx.claims if applies(c, ctx)]
+    return supplied or link_claims(ctx.document.assembled_latex)
+
+
+def _url_of(claim: Claim) -> str:
+    return str(claim.normalized.get("url") or claim.verbatim)
+
+
+def _observation(
+    claim: Claim, result: UrlCheck
+) -> Observation:
+    """What the server said about this URL. No verdict — see `pv.adjudicate`."""
+    if result.verdict is Verdict.UNVERIFIABLE:
+        return Observation(
+            claim_id=claim.content_hash,
+            checker=CHECKER_NAME,
+            checker_version=CHECKER_VERSION,
+            status="insufficient_data",
+            measured={"url": result.url, "http_status": result.status},
+            provenance=[claim.anchor],
+            reason=result.reason,
+            detail=result.detail,
+        )
+    return Observation(
+        claim_id=claim.content_hash,
+        checker=CHECKER_NAME,
+        checker_version=CHECKER_VERSION,
+        status="ok",
+        measured={
+            "outcome": "confirmed_absent" if result.verdict is Verdict.DIVERGES else "present",
+            "url": result.url,
+            "http_status": result.status,
+            "final_url": result.final_url,
+            "detail": result.detail,
+        },
+        provenance=[claim.anchor],
+        detail=result.detail,
+    )
+
+
+# --------------------------------------------------------------------------
 # Check entry point
 # --------------------------------------------------------------------------
 
 
+async def observe_claims(
+    claims: Sequence[Claim], client: HttpClient
+) -> list[tuple[Observation, UrlCheck]]:
+    """Request each distinct URL once and attach the answer to every claim of it."""
+    urls = [
+        ExtractedUrl(
+            url=_url_of(claim),
+            raw=str(claim.normalized.get("raw") or _url_of(claim)),
+            source=str(claim.normalized.get("source") or "bare"),
+            char_start=claim.anchor.char_start or 0,
+            char_end=claim.anchor.char_end or 0,
+            locator=claim.locator,
+        )
+        for claim in claims
+    ]
+    results = await check_urls(client, urls)
+    by_url = {result.url: result for result in results}
+
+    # Grouped by URL, as the requests were, so a paper with several dead links
+    # reports them one URL at a time rather than interleaved.
+    out: list[tuple[Observation, UrlCheck]] = []
+    for result in results:
+        for claim in claims:
+            if by_url.get(_url_of(claim)) is result:
+                out.append((_observation(claim, result), result))
+    return out
+
+
 async def run_async(ctx: CheckContext, client: HttpClient) -> CheckResult:
     started = datetime.now(timezone.utc)
-    urls = extract_urls(ctx.document.assembled_latex)
-    if not urls:
-        return _result(Verdict.NOT_ATTEMPTED, started, findings=[],
-                       reason=None)
+    claims = claims_for(ctx)
+    if not claims:
+        return _result(Verdict.NOT_ATTEMPTED, started, findings=[], reason=None)
 
-    results = await check_urls(client, urls)
-    findings = list(_findings(results))
+    pairs = await observe_claims(claims, client)
+    observations = [observation for observation, _ in pairs]
+    judgements = judge_all(observations)
+    findings = list(_findings(pairs, judgements))
 
-    if any(r.verdict is Verdict.DIVERGES for r in results):
+    if any(j.verdict is Verdict.DIVERGES for j in judgements):
         verdict, reason = Verdict.DIVERGES, None
-    elif any(r.verdict is Verdict.UNVERIFIABLE for r in results):
+    elif any(j.verdict is Verdict.UNVERIFIABLE for j in judgements):
         verdict = Verdict.UNVERIFIABLE
         reason = (ReasonCode.RATE_LIMITED
-                  if all(r.reason is ReasonCode.RATE_LIMITED
-                         for r in results if r.verdict is Verdict.UNVERIFIABLE)
+                  if all(j.reason is ReasonCode.RATE_LIMITED
+                         for j in judgements if j.verdict is Verdict.UNVERIFIABLE)
                   else ReasonCode.NETWORK_ERROR)
     else:
         verdict, reason = Verdict.MATCHES, None
 
-    return _result(verdict, started, findings=findings, reason=reason)
+    return _result(
+        verdict,
+        started,
+        findings=findings,
+        reason=reason,
+        claim_ids=[observation.claim_id for observation in observations],
+    )
 
 
-def _findings(results: Iterable[UrlCheck]) -> Iterable[Finding]:
-    for result in results:
-        if result.verdict is not Verdict.DIVERGES:
+def observe(claim: Claim, ctx: CheckContext) -> Observation:
+    """The single-claim entry point of the checker protocol (§14.3)."""
+
+    async def _go() -> Observation:
+        client = get_http_client()
+        try:
+            return (await observe_claims([claim], client))[0][0]
+        finally:
+            await client.aclose()
+
+    if not applies(claim, ctx):
+        return Observation(
+            claim_id=claim.content_hash,
+            checker=CHECKER_NAME,
+            checker_version=CHECKER_VERSION,
+            status="not_applicable",
+            provenance=[claim.anchor],
+        )
+    return run_sync(_go())
+
+
+def _findings(
+    pairs: Iterable[tuple[Observation, UrlCheck]], judgements: Sequence[Judgement]
+) -> Iterable[Finding]:
+    for (observation, result), judgement in zip(pairs, judgements):
+        if judgement.verdict is not Verdict.DIVERGES:
             continue
-        for index, occurrence in enumerate(result.occurrences):
-            yield Finding(
-                severity=Severity.LOW,
-                claimed=result.url,
-                computed=result.detail,
-                anchor=occurrence.anchor(index),
-                explanation=(
-                    f"The server returned {result.detail} for this link"
-                    + (f" ({occurrence.locator})." if occurrence.locator else ".")
-                ),
-            )
+        locator = observation.provenance[0].human_locator
+        yield Finding(
+            severity=Severity.LOW,
+            claimed=result.url,
+            computed=result.detail,
+            anchor=observation.provenance[0],
+            explanation=(
+                f"The server returned {result.detail} for this link"
+                + (f" ({locator})." if locator and locator != "in the body" else ".")
+            ),
+        )
 
 
 def _result(verdict: Verdict, started: datetime, *, findings: list[Finding],
-            reason: ReasonCode | None) -> CheckResult:
+            reason: ReasonCode | None, claim_ids: Sequence[str] = ()) -> CheckResult:
     now = datetime.now(timezone.utc)
+    # This check reads no tolerance entry, but the policy version still identifies
+    # the judgement: `POLICY_KEYS` is empty today and a later revision could add
+    # one, and a stored result has to say which policy it was decided under.
+    policy_version = default_policy().version
     return CheckResult(
         checker=CHECKER_NAME,
         checker_version=CHECKER_VERSION,
+        policy_version=policy_version,
+        fingerprint=result_fingerprint(
+            claim_ids, CHECKER_NAME, CHECKER_VERSION, policy_version
+        ),
         verdict=verdict,
         reason=reason,
         findings=findings,

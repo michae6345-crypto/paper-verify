@@ -12,13 +12,19 @@ Three things make this harder than it looks, and all three push towards
   - **Tolerance is not a constant.** A row printed to one decimal place carries
     +-0.05 of rounding error per value; propagated through the mean that stays
     +-0.05, and the printed average hides half a unit of its own on top. The band
-    is derived from displayed precision, never hard-coded.
+    is derived from displayed precision, never hard-coded — and since §14.4 it is
+    not written here at all: `policies/tolerance.yaml` holds it, versioned, so a
+    revision replays over stored observations instead of re-running the corpus.
   - **Weighted averages exist and are undetectable from the table.** If some
     weighting of the row's values reproduces the stated number, an arithmetic mean
     and a weighted mean cannot be told apart here.
 
 `diverges` is therefore a high bar: no plausible reading reproduces the value, and
-the gap clears rounding by a clear margin.
+the gap clears rounding by a clear margin. This module measures; `pv.adjudicate`
+decides which of those four words applies.
+
+The claim is the stated average cell: writing 71.0 under a column headed "Average"
+asserts that 71.0 is the mean of that row.
 
 Zero model calls.
 """
@@ -27,17 +33,28 @@ from __future__ import annotations
 
 import re
 
+from ..adjudicate import Judgement, Policy, default_policy, judge, result_fingerprint
 from ..models import (
     Cell,
     CheckContext,
     CheckResult,
+    Claim,
     Finding,
+    Observation,
     ReasonCode,
     Severity,
     Table,
     Verdict,
 )
-from .bold_extreme import cell_anchor, decimals, fmt
+from ._cells import (
+    cell_anchor,
+    cell_values,
+    decimals,
+    fmt,
+    index_cells,
+    resolve,
+    table_claims,
+)
 
 CHECKER_NAME = "row_arithmetic"
 CHECKER_VERSION = "1.0.0"
@@ -46,6 +63,10 @@ DESCRIPTION = (
     "Checks that a column labelled average, mean or overall equals the mean of the "
     "other numbers in the same row, to the precision they were printed at."
 )
+# The band that used to be a literal here. `metrics` is read because an average
+# column can name its metric, and some metrics are not stable to the digit they
+# are quoted at.
+POLICY_KEYS: tuple[str, ...] = ("default", "metrics")
 
 # Header words that mark a column as the average of the others in its row.
 # `all` is deliberately absent: it labels a grouping — "all layers", "all tasks",
@@ -58,10 +79,6 @@ _STRONG_AVERAGE_WORDS = {"avg", "average", "mean"}
 _WEAK_AVERAGE_WORDS = {"overall"}
 
 _AMBIGUOUS_REASON = ReasonCode.AVERAGE_DENOMINATOR_AMBIGUOUS
-
-# A cell holding several values, e.g. BERT's `86.7/85.9`. Deliberately strict: only
-# slash-separated bare numbers count, so `86.7 +- 0.2` stays a single value.
-_MULTI_VALUE = re.compile(r"^[-+]?\d+(?:\.\d+)?(?:\s*/\s*[-+]?\d+(?:\.\d+)?)+$")
 
 
 def _words(text: str) -> set[str]:
@@ -132,29 +149,6 @@ def average_columns(table: Table) -> set[int]:
     return found
 
 
-def cell_values(cell: Cell) -> list[float]:
-    """Every value a cell contributes to an average.
-
-    Usually one. `86.7/85.9` is two — MNLI matched and mismatched, counted
-    separately in BERT's average.
-
-    `Cell.values` is authoritative when the parser populated it. The slash-parsing
-    fallback covers cells that predate the field; it is deliberately strict, so
-    `86.7 +- 0.2` stays a single value.
-    """
-    if cell.values:
-        return list(cell.values)
-    text = (cell.text or "").strip()
-    if _MULTI_VALUE.match(text):
-        return [float(part) for part in text.split("/")]
-    return [cell.value] if cell.value is not None else []
-
-
-def _half_unit(cell: Cell) -> float:
-    """Half a unit in the last place the cell was printed to — its rounding error."""
-    return 0.5 * 10 ** -decimals(cell.text, cell.value)
-
-
 def _data_columns(table: Table, average_cols: set[int]) -> list[int]:
     """Columns holding the numbers an average would be taken over.
 
@@ -180,14 +174,17 @@ def _data_columns(table: Table, average_cols: set[int]) -> list[int]:
     return data
 
 
-def _mean_and_band(values: list[tuple[float, float]]) -> tuple[float, float]:
-    """Mean of (value, half_unit) pairs, and the rounding band it inherits."""
-    mean = sum(value for value, _ in values) / len(values)
-    band = sum(half for _, half in values) / len(values)
-    return mean, band
+# A reading is a list of (value, decimals it was printed to). The decimals travel
+# with the value because the tolerance is derived from them, and the derivation
+# belongs to the policy rather than to this file.
+Reading = list[tuple[float, int]]
 
 
-def _readings(cells: list[Cell]) -> list[list[tuple[float, float]]]:
+def _mean(reading: Reading) -> float:
+    return sum(value for value, _ in reading) / len(reading)
+
+
+def _readings(cells: list[Cell]) -> list[Reading]:
     """The plausible ways to read a row, most defensible first.
 
     1. Every value in the row, multi-value cells counted once per value. This is
@@ -196,7 +193,9 @@ def _readings(cells: list[Cell]) -> list[list[tuple[float, float]]]:
 
     Both are principled readings of the whole row, so either may produce `matches`.
     """
-    per_cell = [[(v, _half_unit(cell)) for v in cell_values(cell)] for cell in cells]
+    per_cell = [
+        [(v, decimals(cell.text, cell.value)) for v in cell_values(cell)] for cell in cells
+    ]
     all_values = [pair for group in per_cell for pair in group]
     first_only = [group[0] for group in per_cell]
     readings = [all_values]
@@ -205,14 +204,14 @@ def _readings(cells: list[Cell]) -> list[list[tuple[float, float]]]:
     return readings
 
 
-def _subset_readings(cells: list[Cell]) -> list[list[tuple[float, float]]]:
+def _subset_readings(cells: list[Cell]) -> list[Reading]:
     """Readings over part of the row — one cell, or one value, left out.
 
     These can only downgrade a divergence to `unverifiable`: if dropping a column
     reproduces the stated number, we cannot know which columns were averaged, and
     that ambiguity is not the paper's mistake.
     """
-    out: list[list[tuple[float, float]]] = []
+    out: list[Reading] = []
     for reading in _readings(cells):
         if len(reading) < 3:
             continue
@@ -221,144 +220,323 @@ def _subset_readings(cells: list[Cell]) -> list[list[tuple[float, float]]]:
     return out
 
 
-def check_table(table: Table) -> tuple[list[Finding], list[ReasonCode], dict[Verdict, int]]:
-    """Examine one table. Returns (findings, reasons, count of rows per verdict)."""
-    tally: dict[Verdict, int] = {}
+# --------------------------------------------------------------------------
+# Which claims this check evaluates
+# --------------------------------------------------------------------------
+
+
+def applies(claim: Claim, ctx: CheckContext) -> bool:
+    """A single-valued cell in an average column claims to be its row's mean.
+
+    A cell spanning columns states an average of nothing in particular, and a cell
+    holding several numbers states no single average, so neither is a claim this
+    check can evaluate.
+    """
+    if claim.kind != "body_number":
+        return False
+    located = resolve(claim, index_cells(ctx.tables))
+    if located is None:
+        return False
+    table, cell = located
+    return _is_subject(table, cell, average_columns(table))
+
+
+def _is_subject(table: Table, cell: Cell, average_cols: set[int]) -> bool:
+    return (
+        not cell.is_header
+        and cell.col in average_cols
+        and cell.value is not None
+        and cell.colspan == 1
+    )
+
+
+# --------------------------------------------------------------------------
+# Observation
+# --------------------------------------------------------------------------
+
+
+def _observation(
+    claim: Claim,
+    *,
+    status: str,
+    measured: dict | None = None,
+    reason: ReasonCode | None = None,
+    detail: str = "",
+) -> Observation:
+    return Observation(
+        claim_id=claim.content_hash,
+        checker=CHECKER_NAME,
+        checker_version=CHECKER_VERSION,
+        status=status,  # type: ignore[arg-type]
+        measured=measured or {},
+        provenance=[claim.anchor],
+        reason=reason,
+        detail=detail,
+    )
+
+
+def observe_table(
+    table: Table, claims: list[Claim] | None = None, *, policy: Policy | None = None
+) -> tuple[list[Observation], list[ReasonCode]]:
+    """Recompute every stated average in one table.
+
+    Returns (observations, table-level reasons). The reasons list carries only what
+    belongs to the table rather than to a claim — an unparsed table is a fact about
+    the table.
+
+    The policy is read here as well as in the adjudicator, and only for
+    *measurement*: whether some subset of the row reproduces the stated number, and
+    whether the number lies inside the row's own range, are questions about
+    arithmetic that need a tolerance to ask. Confirming a divergence by
+    recomputation is §14.1's invariant 3. The verdict still comes from `judge`.
+    """
     if table.parse_warnings:
         # Includes the case where the parser could not represent a multi-value
         # cell. A hole in the row is not a licence to average what remains.
-        return [], [ReasonCode.TABLE_STRUCTURE_NOT_PARSED], tally
+        return [], [ReasonCode.TABLE_STRUCTURE_NOT_PARSED]
 
-    columns = {column.index: column for column in table.columns}
     average_cols = average_columns(table)
     if not average_cols:
-        return [], [], tally
+        return [], []
 
+    if claims is None:
+        claims = table_claims(table)
+    subjects: list[tuple[Claim, Cell]] = []
+    index = index_cells([table])
+    for claim in claims:
+        located = resolve(claim, index)
+        if located is None or claim.kind != "body_number":
+            continue
+        if _is_subject(table, located[1], average_cols):
+            subjects.append((claim, located[1]))
+    # Row order, then column order: the order the table is read in.
+    subjects.sort(key=lambda pair: (pair[1].row, pair[1].col))
+    if not subjects:
+        return [], []
+
+    policy = policy or default_policy()
+    columns = {column.index: column for column in table.columns}
     data_cols = _data_columns(table, average_cols)
-    findings: list[Finding] = []
-    reasons: list[ReasonCode] = []
 
     by_row: dict[int, dict[int, Cell]] = {}
     for cell in table.cells:
         if not cell.is_header:
             by_row.setdefault(cell.row, {})[cell.col] = cell
 
-    def note(verdict: Verdict) -> None:
-        tally[verdict] = tally.get(verdict, 0) + 1
-
-    for row in sorted(by_row):
-        cells = by_row[row]
-        for avg_col in sorted(average_cols):
-            stated = cells.get(avg_col)
-            if stated is None or stated.value is None or stated.colspan > 1:
-                continue  # No average stated on this row; nothing is claimed.
-
-            peers = [cells.get(col) for col in data_cols]
-            usable = [c for c in peers if c is not None and c.colspan == 1 and cell_values(c)]
-            if len(usable) != len(peers) or len(usable) < 2:
-                # An empty cell means "not reported". With a hole in the row we
-                # cannot know what the average was taken over.
-                reasons.append(ReasonCode.NO_NUMERIC_VALUES)
-                note(Verdict.UNVERIFIABLE)
-                continue
-
-            avg_places = decimals(stated.text, stated.value)
-            places = max(avg_places, *(decimals(c.text, c.value) for c in usable))
-            header = columns[avg_col].header if avg_col in columns else ""
-            anchor = cell_anchor(table, row, avg_col, header)
-
-            # Best of the principled whole-row readings.
-            scored = [_mean_and_band(r) for r in _readings(usable)]
-            computed, band = min(scored, key=lambda mb: abs(stated.value - mb[0]))
-            delta = stated.value - computed
-            # The printed average hides half a unit of its own; allowing it is what
-            # separates "within tolerance" from "matches".
-            slack = 0.5 * 10**-avg_places
-
-            claimed_text = fmt(stated.value, avg_places)
-            detail = places + 2
-
-            if abs(delta) <= band:
-                note(Verdict.MATCHES)
-                continue
-
-            if abs(delta) <= band + slack:
-                note(Verdict.WITHIN_TOLERANCE)
-                findings.append(
-                    Finding(
-                        severity=Severity.LOW,
-                        claimed=claimed_text,
-                        computed=fmt(computed, detail),
-                        delta=f"{delta:+.{detail}f}",
-                        anchor=anchor,
-                        explanation=(
-                            f"The stated average {claimed_text} is {abs(delta):.{detail}f} "
-                            f"from the mean of its row, {fmt(computed, detail)} — just "
-                            "outside the rounding implied by the printed precision."
-                        ),
-                    )
+    observations: list[Observation] = []
+    for claim, stated in subjects:
+        cells = by_row.get(stated.row, {})
+        peers = [cells.get(col) for col in data_cols]
+        usable = [c for c in peers if c is not None and c.colspan == 1 and cell_values(c)]
+        if len(usable) != len(peers) or len(usable) < 2:
+            # An empty cell means "not reported". With a hole in the row we cannot
+            # know what the average was taken over.
+            observations.append(
+                _observation(
+                    claim,
+                    status="insufficient_data",
+                    reason=ReasonCode.NO_NUMERIC_VALUES,
+                    detail="A value this average would be taken over is not reported.",
                 )
-                continue
-
-            all_values = [value for value, _ in _readings(usable)[0]]
-            subset_match = any(
-                abs(stated.value - mean) <= subset_band
-                for mean, subset_band in map(_mean_and_band, _subset_readings(usable))
             )
-            in_range = min(all_values) - band <= stated.value <= max(all_values) + band
+            continue
 
-            if subset_match or in_range:
-                # Either some subset of the row reproduces the number, or some
-                # weighting of it does. Both leave a reading under which the paper
-                # is right, so there is nothing here we can assert. The comparison
-                # is still attached: the reader sees the numbers and decides.
-                other_reading = (
-                    "averaging a subset of the columns" if subset_match else "a weighted average"
-                )
-                reasons.append(_AMBIGUOUS_REASON)
-                note(Verdict.UNVERIFIABLE)
-                findings.append(
-                    Finding(
-                        severity=Severity.LOW,
-                        claimed=claimed_text,
-                        computed=fmt(computed, detail),
-                        delta=f"{delta:+.{detail}f}",
-                        anchor=anchor,
-                        explanation=(
-                            f"Stated {claimed_text}; the unweighted mean of the row is "
-                            f"{fmt(computed, detail)}. Nothing states how the average was "
-                            f"taken, and {other_reading} would give the stated value, so "
-                            "this cannot be called a divergence."
-                        ),
-                    )
-                )
-                continue
+        column = columns.get(stated.col)
+        metric = column.metric if column is not None else None
+        rule = policy.rule_for(metric)
 
-            note(Verdict.DIVERGES)
-            findings.append(
-                Finding(
-                    severity=Severity.HIGH,
-                    claimed=claimed_text,
-                    computed=fmt(computed, detail),
-                    delta=f"{delta:+.{detail}f}",
-                    anchor=anchor,
-                    explanation=(
-                        f"The stated average {claimed_text} lies outside the range of the "
-                        f"values in its row, which mean {fmt(computed, detail)}."
+        avg_places = decimals(stated.text, stated.value)
+        places = max(avg_places, *(decimals(c.text, c.value) for c in usable))
+
+        # Best of the principled whole-row readings.
+        readings = _readings(usable)
+        best = min(readings, key=lambda r: abs(stated.value - _mean(r)))
+        computed = _mean(best)
+        band = rule.band(decimals=[d for _, d in best], reference=computed)
+
+        # Is there a reading under which the paper is right? Either some subset of
+        # the row reproduces the number, or some weighting of it does — a weighted
+        # mean lies inside the convex hull of the row, so anything in that range is
+        # reachable and nothing there is ours to assert.
+        subset_match = any(
+            abs(stated.value - _mean(subset))
+            <= rule.band(decimals=[d for _, d in subset], reference=_mean(subset))
+            for subset in _subset_readings(usable)
+        )
+        all_values = [value for value, _ in readings[0]]
+        in_range = min(all_values) - band <= stated.value <= max(all_values) + band
+
+        observations.append(
+            _observation(
+                claim,
+                status="ok",
+                measured={
+                    "claimed": stated.value,
+                    "computed": computed,
+                    "unit": "abs",
+                    "value_decimals": [d for _, d in best],
+                    "claimed_decimals": avg_places,
+                    "metric": metric,
+                    "places": places,
+                    "n_values": len(best),
+                    "reproducible_by_subset": subset_match,
+                    "within_row_range": in_range,
+                    **(
+                        {
+                            "ambiguous_reason": _AMBIGUOUS_REASON.value,
+                            "other_reading": (
+                                "averaging a subset of the columns"
+                                if subset_match
+                                else "a weighted average"
+                            ),
+                        }
+                        if subset_match or in_range
+                        else {}
                     ),
-                )
+                },
             )
+        )
 
+    return observations, []
+
+
+def observe(claim: Claim, ctx: CheckContext) -> Observation:
+    """The single-claim entry point of the checker protocol (§14.3).
+
+    An average can only be recomputed from the rest of its row, so this resolves
+    the claim's table and runs the batched form over it.
+    """
+    located = resolve(claim, index_cells(ctx.tables))
+    if located is None:
+        return _observation(claim, status="not_applicable")
+    table, cell = located
+    if not _is_subject(table, cell, average_columns(table)):
+        return _observation(claim, status="not_applicable")
+    for observation in observe_table(table, table_claims(table))[0]:
+        if observation.claim_id == claim.content_hash:
+            return observation
+    return _observation(
+        claim,
+        status="insufficient_data",
+        reason=ReasonCode.TABLE_STRUCTURE_NOT_PARSED,
+        detail="This average could not be placed in a row of its table.",
+    )
+
+
+# --------------------------------------------------------------------------
+# Findings — the prose a reader sees. Rendering, not judging.
+# --------------------------------------------------------------------------
+
+
+def _finding(observation: Observation, judgement: Judgement) -> Finding | None:
+    """The comparison, in the paper's own numbers.
+
+    Note the `unverifiable` branch: declining to assert is not declining to
+    inform. When some other reading of the row would give the stated value we say
+    so and still show both numbers, because the reader can weigh what we cannot.
+    """
+    if judgement.verdict is Verdict.MATCHES or observation.status != "ok":
+        return None
+
+    m = observation.measured
+    claimed, computed = float(m["claimed"]), float(m["computed"])
+    delta = claimed - computed
+    detail = int(m["places"]) + 2
+    claimed_text = fmt(claimed, int(m["claimed_decimals"]))
+    anchor = observation.provenance[0]
+
+    if judgement.verdict is Verdict.WITHIN_TOLERANCE:
+        return Finding(
+            severity=Severity.LOW,
+            claimed=claimed_text,
+            computed=fmt(computed, detail),
+            delta=f"{delta:+.{detail}f}",
+            anchor=anchor,
+            explanation=(
+                f"The stated average {claimed_text} is {abs(delta):.{detail}f} "
+                f"from the mean of its row, {fmt(computed, detail)} — just "
+                "outside the rounding implied by the printed precision."
+            ),
+        )
+
+    if judgement.verdict is Verdict.UNVERIFIABLE:
+        return Finding(
+            severity=Severity.LOW,
+            claimed=claimed_text,
+            computed=fmt(computed, detail),
+            delta=f"{delta:+.{detail}f}",
+            anchor=anchor,
+            explanation=(
+                f"Stated {claimed_text}; the unweighted mean of the row is "
+                f"{fmt(computed, detail)}. Nothing states how the average was "
+                f"taken, and {m['other_reading']} would give the stated value, so "
+                "this cannot be called a divergence."
+            ),
+        )
+
+    return Finding(
+        severity=Severity.HIGH,
+        claimed=claimed_text,
+        computed=fmt(computed, detail),
+        delta=f"{delta:+.{detail}f}",
+        anchor=anchor,
+        explanation=(
+            f"The stated average {claimed_text} lies outside the range of the "
+            f"values in its row, which mean {fmt(computed, detail)}."
+        ),
+    )
+
+
+def _judge_table(
+    table: Table, claims: list[Claim] | None = None, claim_ids: list[str] | None = None
+) -> tuple[list[Finding], list[ReasonCode], dict[Verdict, int]]:
+    policy = default_policy()
+    observations, reasons = observe_table(table, claims, policy=policy)
+    findings: list[Finding] = []
+    tally: dict[Verdict, int] = {}
+    if claim_ids is not None:
+        claim_ids += [observation.claim_id for observation in observations]
+    for observation in observations:
+        judgement = judge(observation, policy)
+        tally[judgement.verdict] = tally.get(judgement.verdict, 0) + 1
+        if judgement.reason is not None:
+            reasons.append(judgement.reason)
+        finding = _finding(observation, judgement)
+        if finding is not None:
+            findings.append(finding)
     return findings, reasons, tally
 
 
+def check_table(table: Table) -> tuple[list[Finding], list[ReasonCode], dict[Verdict, int]]:
+    """Examine one table. Returns (findings, reasons, count of rows per verdict)."""
+    return _judge_table(table)
+
+
 def run(ctx: CheckContext) -> CheckResult:
+    """Evaluate the average-column claims this check applies to.
+
+    Claims come from `ctx.claims` when the caller mined them and from `ctx.tables`
+    when it did not; both paths run the same producer, so the run is identical
+    either way.
+    """
+    index = index_cells(ctx.tables)
+    supplied: dict[str, list[Claim]] = {}
+    for claim in ctx.claims:
+        if claim.kind != "body_number":
+            continue
+        located = resolve(claim, index)
+        if located is None:
+            continue  # §14.3: cannot be located, so cannot be checked.
+        supplied.setdefault(located[0].anchor.dom_id, []).append(claim)
+
     findings: list[Finding] = []
     reasons: list[ReasonCode] = []
+    claim_ids: list[str] = []
     tally: dict[Verdict, int] = {}
 
     for table in ctx.tables:
-        table_findings, table_reasons, table_tally = check_table(table)
+        claims = supplied.get(table.anchor.dom_id, []) if ctx.claims else None
+        table_findings, table_reasons, table_tally = _judge_table(table, claims, claim_ids)
         findings.extend(table_findings)
         reasons.extend(table_reasons)
         for verdict, count in table_tally.items():
@@ -382,12 +560,36 @@ def run(ctx: CheckContext) -> CheckResult:
         # No average column anywhere — there was nothing for this check to do.
         verdict = Verdict.NOT_ATTEMPTED
 
+    policy = default_policy()
     return CheckResult(
         checker=CHECKER_NAME,
         checker_version=CHECKER_VERSION,
+        policy_version=policy.version,
+        fingerprint=result_fingerprint(
+            claim_ids, CHECKER_NAME, CHECKER_VERSION, policy.version
+        ),
         verdict=verdict,
         reason=reason,
         findings=findings,
         display_name=DISPLAY_NAME,
         description=DESCRIPTION,
     )
+
+
+__all__ = [
+    "CHECKER_NAME",
+    "CHECKER_VERSION",
+    "DESCRIPTION",
+    "DISPLAY_NAME",
+    "POLICY_KEYS",
+    "applies",
+    "average_columns",
+    "average_keyword",
+    "cell_anchor",
+    "cell_values",
+    "check_table",
+    "is_average_column",
+    "observe",
+    "observe_table",
+    "run",
+]

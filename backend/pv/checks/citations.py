@@ -11,6 +11,9 @@ tech reports and arXiv-only preprints are routinely absent from both. So:
 
 No model is involved. Titles are matched by token containment, and a match below
 the threshold is treated as no match.
+
+The claim is the reference: citing a work asserts that it exists and stands.
+`observe` records what the indexes returned; `pv.adjudicate` decides.
 """
 
 from __future__ import annotations
@@ -21,12 +24,28 @@ from datetime import datetime, timezone
 from typing import Any, Iterable, Sequence
 
 from ..adapters.http import HttpClient, contact_email, get_http_client, run_sync
-from ..models import Anchor, CheckContext, CheckResult, Finding, ReasonCode, Severity, Verdict
+from ..adjudicate import Judgement, default_policy, judge_all, result_fingerprint
+from ..fingerprint import claim_content_hash
+from ..models import (
+    Anchor,
+    CheckContext,
+    CheckResult,
+    Claim,
+    Finding,
+    Observation,
+    ReasonCode,
+    Severity,
+    Verdict,
+)
 
 CHECKER_NAME = "citation_existence"
 CHECKER_VERSION = "1.0.0"
 DISPLAY_NAME = "Citation existence"
 DESCRIPTION = "Looks up each reference in Crossref and OpenAlex and reports confirmed retractions."
+# An index either records a retraction or it does not. The thresholds that matter
+# here are title-match scores, which are properties of this checker's method rather
+# than of a tolerance anyone would revise separately.
+POLICY_KEYS: tuple[str, ...] = ()
 
 CROSSREF_BASE = "https://api.crossref.org"
 OPENALEX_BASE = "https://api.openalex.org"
@@ -375,52 +394,196 @@ async def lookup_references(client: HttpClient, refs: Sequence[Reference]) -> li
 
 
 # --------------------------------------------------------------------------
+# Claims
+# --------------------------------------------------------------------------
+
+
+def citation_claims(latex: str) -> list[Claim]:
+    """One claim per bibliography entry, in bibliography order."""
+    return [_claim(ref) for ref in parse_bibliography(latex)]
+
+
+def _claim(ref: Reference) -> Claim:
+    anchor = ref.anchor()
+    return Claim(
+        kind="citation",
+        locator=anchor.human_locator,
+        verbatim=ref.title or ref.raw,
+        anchor=anchor,
+        normalized={
+            "key": ref.key,
+            "title": ref.title,
+            "doi": ref.doi,
+            "arxiv_id": ref.arxiv_id,
+            "year": ref.year,
+        },
+        content_hash=claim_content_hash("citation", anchor.dom_id, ref.title or ref.raw, None),
+    )
+
+
+def _reference_of(claim: Claim) -> Reference:
+    """The claim, back in the shape the lookups take."""
+    n = claim.normalized
+    return Reference(
+        key=str(n.get("key", "")),
+        raw=claim.verbatim,
+        title=str(n.get("title", "")),
+        doi=str(n.get("doi", "")),
+        arxiv_id=str(n.get("arxiv_id", "")),
+        year=str(n.get("year", "")),
+        char_start=claim.anchor.char_start or 0,
+    )
+
+
+def applies(claim: Claim, ctx: CheckContext) -> bool:  # noqa: ARG001
+    """A bibliography entry claims that a work exists and stands."""
+    return claim.kind == "citation"
+
+
+def claims_for(ctx: CheckContext) -> list[Claim]:
+    """The citation claims to evaluate: the caller's, or freshly mined."""
+    supplied = [c for c in ctx.claims if applies(c, ctx)]
+    return supplied or citation_claims(ctx.document.assembled_latex)
+
+
+def _observation(claim: Claim, lookup: ReferenceLookup) -> Observation:
+    """What the indexes returned. Never a verdict — see `pv.adjudicate`.
+
+    Three outcomes that are not the same thing and must not collapse into one:
+    a retraction we can attribute, a retraction we cannot, and a reference neither
+    index has heard of. Only the first is ours to report.
+    """
+    measured = {
+        "found_in": list(lookup.found_in),
+        "match_basis": lookup.match_basis,
+        "title_score": lookup.title_score,
+        "matched_title": lookup.matched_title,
+        "matched_doi": lookup.matched_doi,
+        "retracted": lookup.retracted,
+    }
+    base = {
+        "claim_id": claim.content_hash,
+        "checker": CHECKER_NAME,
+        "checker_version": CHECKER_VERSION,
+        "provenance": [claim.anchor],
+    }
+    if lookup.retraction_is_reportable:
+        return Observation(
+            **base,
+            status="ok",
+            measured={**measured, "outcome": "confirmed_retracted"},
+            detail=lookup.retraction_detail,
+        )
+    if lookup.retracted:
+        # A retraction attributed to the wrong work is the worst output this
+        # product can produce. Found is not the same as identified.
+        return Observation(
+            **base,
+            status="insufficient_data",
+            measured=measured,
+            reason=REASON_NOT_INDEXED,
+            detail=(
+                "An index records a retraction, but the record could not be tied to "
+                "this reference with confidence."
+            ),
+        )
+    if not lookup.found:
+        return Observation(
+            **base,
+            status="insufficient_data",
+            measured=measured,
+            reason=REASON_NOT_INDEXED,
+            detail=lookup.network_error or "Present in neither Crossref nor OpenAlex.",
+        )
+    return Observation(**base, status="ok", measured={**measured, "outcome": "in_good_standing"})
+
+
+# --------------------------------------------------------------------------
 # Check entry point
 # --------------------------------------------------------------------------
 
 
+async def observe_claims(
+    claims: Sequence[Claim], client: HttpClient
+) -> list[tuple[Observation, ReferenceLookup]]:
+    lookups = await lookup_references(client, [_reference_of(c) for c in claims])
+    return [(_observation(claim, lookup), lookup) for claim, lookup in zip(claims, lookups)]
+
+
 async def run_async(ctx: CheckContext, client: HttpClient) -> CheckResult:
     started = datetime.now(timezone.utc)
-    refs = parse_bibliography(ctx.document.assembled_latex)
-    if not refs:
+    claims = claims_for(ctx)
+    if not claims:
         return _result(Verdict.NOT_ATTEMPTED, started, [], None)
 
-    lookups = await lookup_references(client, refs)
-    findings = [
-        Finding(
-            severity=Severity.HIGH,
-            claimed=f"[{item.reference.key}] {item.reference.title}".strip(),
-            computed=item.retraction_detail,
-            anchor=item.reference.anchor(),
-            explanation=(
-                f"This reference is cited as current, but {item.retraction_detail.lower()}."
-            ),
-        )
-        for item in lookups
-        if item.retraction_is_reportable
-    ]
+    pairs = await observe_claims(claims, client)
+    ids = [observation.claim_id for observation, _ in pairs]
+    judgements = judge_all([observation for observation, _ in pairs])
+    findings = list(_findings(pairs, judgements))
 
     if findings:
-        return _result(Verdict.DIVERGES, started, findings, None)
+        return _result(Verdict.DIVERGES, started, findings, None, ids)
 
-    # A retraction we could not tie to the cited work with confidence is a reason to
-    # say nothing, not a reason to name someone.
-    unattributed = [item for item in lookups if item.retracted]
-    unresolved = [item for item in lookups if not item.found]
-    if not unresolved and not unattributed:
-        return _result(Verdict.MATCHES, started, [], None)
+    if all(j.verdict is Verdict.MATCHES for j in judgements):
+        return _result(Verdict.MATCHES, started, [], None, ids)
 
-    network = any(item.network_error for item in lookups)
+    network = any(lookup.network_error for _, lookup in pairs)
     reason = ReasonCode.NETWORK_ERROR if network else REASON_NOT_INDEXED
-    return _result(Verdict.UNVERIFIABLE, started, [], reason)
+    return _result(Verdict.UNVERIFIABLE, started, [], reason, ids)
+
+
+def _findings(
+    pairs: Iterable[tuple[Observation, ReferenceLookup]], judgements: Sequence[Judgement]
+) -> Iterable[Finding]:
+    for (observation, lookup), judgement in zip(pairs, judgements):
+        if judgement.verdict is not Verdict.DIVERGES:
+            continue
+        ref = lookup.reference
+        yield Finding(
+            severity=Severity.HIGH,
+            claimed=f"[{ref.key}] {ref.title}".strip(),
+            computed=lookup.retraction_detail,
+            anchor=observation.provenance[0],
+            explanation=(
+                f"This reference is cited as current, but {lookup.retraction_detail.lower()}."
+            ),
+        )
+
+
+def observe(claim: Claim, ctx: CheckContext) -> Observation:
+    """The single-claim entry point of the checker protocol (§14.3)."""
+    if not applies(claim, ctx):
+        return Observation(
+            claim_id=claim.content_hash,
+            checker=CHECKER_NAME,
+            checker_version=CHECKER_VERSION,
+            status="not_applicable",
+            provenance=[claim.anchor],
+        )
+
+    async def _go() -> Observation:
+        client = get_http_client()
+        try:
+            return (await observe_claims([claim], client))[0][0]
+        finally:
+            await client.aclose()
+
+    return run_sync(_go())
 
 
 def _result(verdict: Verdict, started: datetime, findings: list[Finding],
-            reason: ReasonCode | None) -> CheckResult:
+            reason: ReasonCode | None, claim_ids: Sequence[str] = ()) -> CheckResult:
     now = datetime.now(timezone.utc)
+    # No tolerance entry is read, but the policy version still identifies the
+    # judgement: a stored result has to say which policy decided it.
+    policy_version = default_policy().version
     return CheckResult(
         checker=CHECKER_NAME,
         checker_version=CHECKER_VERSION,
+        policy_version=policy_version,
+        fingerprint=result_fingerprint(
+            claim_ids, CHECKER_NAME, CHECKER_VERSION, policy_version
+        ),
         verdict=verdict,
         reason=reason,
         findings=findings,
