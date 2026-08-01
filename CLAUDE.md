@@ -87,6 +87,29 @@ managed 11/50.
 
 ---
 
+## The recurring bug in this codebase
+
+Every serious defect found so far is the same shape: **a lossy reading of the source
+that silently produces a confident accusation.**
+
+- Reading `86.7/85.9` as one number → five false `diverges` on BERT's GLUE table.
+- Matching a citation by title containment → "Attention is all you need" matched
+  "Is Attention All You Need?", which would attribute another paper's retraction.
+- Comparing a bolded value against the whole column instead of its block → a false
+  `diverges` on the Transformer paper.
+
+Whenever a step narrows or normalises data, ask what it discards and whether a verdict
+could rest on the discarded part. If it could, the answer is `unverifiable` with a
+reason code — plus the comparison attached as evidence, so the user still sees the
+numbers even when we decline to call the paper wrong.
+
+## Verdict labels in the UI
+
+§7 fixes the vocabulary at `matches`, `within tolerance`, `diverges`, `unverifiable`.
+`not_attempted` has no §7 label; it renders as **not checked**, matching the §5.5
+section name. It is a normal outcome — a paper with no URLs, or no bibliography — and
+must not read as a failure.
+
 ## Environment
 
 - Python 3.14.3, Node 24.14.1, git. **Docker is NOT installed** — no Postgres yet.

@@ -55,6 +55,10 @@ class ReasonCode(str, Enum):
     AVERAGE_DENOMINATOR_AMBIGUOUS = "average_denominator_ambiguous"
     # The checker itself raised. Never fails the run.
     CHECKER_ERROR = "checker_error"
+    # Check 6: present in neither Crossref nor OpenAlex. The most common citation
+    # outcome and NOT evidence of a bad reference — workshop papers, theses, and
+    # arXiv-only preprints are routinely absent from both.
+    REFERENCE_NOT_INDEXED = "reference_not_indexed"
 
 
 class Direction(str, Enum):
@@ -162,6 +166,27 @@ class Table(BaseModel):
 
     def column_cells(self, col: int) -> list[Cell]:
         return [c for c in self.cells if c.col == col and not c.is_header]
+
+
+class Artifact(BaseModel):
+    """A code repository found in the paper. Feeds the §5.2 confirmation screen,
+    which shows repo path, stars, last commit, and where the link appeared."""
+
+    kind: Literal["github", "gitlab", "other"] = "github"
+    url: str
+    # "tensorflow/tensor2tensor" — shown in mono as the primary label.
+    path: str = ""
+    stars: int | None = None
+    last_commit: datetime | None = None
+    commit_sha: str | None = None
+    # Where in the paper the link appeared, e.g. "§4.1, footnote 3".
+    found_at: str = ""
+    anchor: Anchor | None = None
+    # 0..1. The highest-confidence candidate is preselected when confidence is high.
+    confidence: float = 0.0
+    # Set when metadata lookup failed (e.g. GitHub 403 without a token). The
+    # candidate stays in the list; the UI just shows no stars.
+    lookup_error: str | None = None
 
 
 class Claim(BaseModel):
