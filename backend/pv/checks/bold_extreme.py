@@ -48,6 +48,7 @@ DESCRIPTION = (
 _REASON_PRIORITY = (
     ReasonCode.TABLE_STRUCTURE_NOT_PARSED,
     ReasonCode.CELL_SPANS_COLUMNS,
+    ReasonCode.CELL_HAS_MULTIPLE_VALUES,
     ReasonCode.MULTIPLE_BOLD_IN_COLUMN,
     ReasonCode.METRIC_DIRECTION_UNKNOWN,
 )
@@ -186,6 +187,16 @@ def check_table(
             # column to be the best of.
             reasons.append(ReasonCode.CELL_SPANS_COLUMNS)
             bolds = [c for c in bolds if c.colspan == 1]
+            if not bolds:
+                continue
+
+        multi_valued = [c for c in bolds if len(c.values) > 1]
+        if multi_valued:
+            # BERT bolds `{\bf 86.7/85.9}`. A pair has no single value to be the
+            # best, and we say so: declining to judge is expected, declining
+            # silently would make the report look complete when it is not.
+            reasons.append(ReasonCode.CELL_HAS_MULTIPLE_VALUES)
+            bolds = [c for c in bolds if len(c.values) <= 1]
             if not bolds:
                 continue
 

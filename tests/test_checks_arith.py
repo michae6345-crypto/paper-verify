@@ -295,17 +295,25 @@ def test_bolded_row_label_makes_no_numeric_claim():
     assert (findings, reasons, comparisons) == ([], [], 0)
 
 
-def test_bolded_multi_value_cell_is_not_judged():
+def test_bolded_multi_value_cell_is_unverifiable():
     """BERT bolds `{\\bf 86.7/85.9}`. A pair has no single value to be the best,
-    so check 1 passes over it silently rather than picking one of the two.
-    Documented gap: element-wise comparison is a decision for the orchestrator."""
+    so check 1 reports that it declined rather than passing over it silently."""
     cells = [
         cell(0, 1, "86.7/85.9", is_bold=True, bold_source="bf"),
         cell(1, 1, "84.6/83.4"),
     ]
-    t = table([column(0, "System"), column(1, "MNLI-(m/mm)", direction=Direction.HIGHER_IS_BETTER)], cells)
+    t = table(
+        [column(0, "System"), column(1, "MNLI-(m/mm)", direction=Direction.HIGHER_IS_BETTER)],
+        cells,
+    )
     findings, reasons, comparisons = bold_extreme.check_table(t)
-    assert (findings, reasons, comparisons) == ([], [], 0)
+    assert findings == []
+    assert reasons == [ReasonCode.CELL_HAS_MULTIPLE_VALUES]
+    assert comparisons == 0
+
+    result = bold_extreme.run(context(t))
+    assert result.verdict is Verdict.UNVERIFIABLE
+    assert result.reason is ReasonCode.CELL_HAS_MULTIPLE_VALUES
 
 
 def test_no_bolds_anywhere_is_not_attempted():
@@ -515,6 +523,72 @@ def test_cell_values_falls_back_to_strict_slash_parsing():
     variance = Cell(row=0, col=0, raw_latex="", text="86.7 +- 0.2", value=86.7)
     assert row_arithmetic.cell_values(variance) == [86.7]
     assert row_arithmetic.cell_values(Cell(row=0, col=0, raw_latex="", text="")) == []
+
+
+# --------------------------------------------------------------------------
+# Check 3 — end to end, against the real parser
+#
+# Everything above builds its tables by hand. This closes the loop: the BERT
+# fixture goes through agent B's parser and into the check, which is the gap
+# neither side can see alone.
+# --------------------------------------------------------------------------
+
+BERT_FIXTURE = (
+    Path(__file__).resolve().parents[1]
+    / "fixtures"
+    / "papers"
+    / "1810.04805"
+    / "glue_official_tab.tex"
+)
+
+
+def parsed_bert_glue() -> Table:
+    parse = pytest.importorskip("pv.parse")
+    tables = [
+        t
+        for t in parse.parse_tables(BERT_FIXTURE.read_text(encoding="utf-8"), {})
+        if t.label == "tab:glue_official"
+    ]
+    assert len(tables) == 1, "the fixture holds exactly one tabular"
+    return tables[0]
+
+
+def test_bert_glue_fixture_through_the_parser():
+    """Ground truth case 2, from the fixture rather than from a hand-built table.
+
+    The average is over nine values because the parser reports `86.7/85.9` as
+    two. Read as eight columns this is five false divergences against a landmark
+    paper.
+    """
+    parsed = parsed_bert_glue()
+    assert parsed.parse_warnings == []
+
+    _, reasons, tally = row_arithmetic.check_table(parsed)
+    assert reasons == []
+    assert verdicts(tally) == {"matches": 4, "within_tolerance": 1}
+
+    result = row_arithmetic.run(context(parsed))
+    assert result.verdict is Verdict.WITHIN_TOLERANCE
+    assert [f.claimed for f in result.findings] == ["71.0"]
+    assert [f.computed for f in result.findings] == ["70.944"]
+
+
+def test_bert_glue_fixture_bolds_are_declined_out_loud():
+    """Check 1 on the same parsed table: BERT-large's bolded `86.7/85.9` has no
+    single value to be the best, and the columns carry no metric direction.
+    Both are reported, neither is guessed at."""
+    findings, reasons, comparisons = bold_extreme.check_table(parsed_bert_glue())
+    assert findings == []
+    assert comparisons == 0
+    assert ReasonCode.CELL_HAS_MULTIPLE_VALUES in reasons
+    assert set(reasons) == {
+        ReasonCode.CELL_HAS_MULTIPLE_VALUES,
+        ReasonCode.METRIC_DIRECTION_UNKNOWN,
+    }
+
+    result = bold_extreme.run(context(parsed_bert_glue()))
+    assert result.verdict is Verdict.UNVERIFIABLE
+    assert result.reason is ReasonCode.CELL_HAS_MULTIPLE_VALUES
 
 
 # --------------------------------------------------------------------------
