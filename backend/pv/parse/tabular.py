@@ -22,6 +22,7 @@ from .latexutil import (
     blank_comments,
     clean_latex,
     expand_macros,
+    macro_body_spans,
     read_bracket,
     read_cs_name,
     read_group,
@@ -74,38 +75,63 @@ MAX_HEADER_ROWS = 3
 # --------------------------------------------------------------------------
 
 
-def _discover_positions(src: str) -> tuple[list[int], list[str]]:
-    """Offsets of every `\\begin{tabular...}` in `src`.
-
-    TexSoup is the primary parser — it handled all three Transformer tabulars,
-    BERT's `tabular*` and all fifteen in ResNet, and tolerates malformed input
-    that plasTeX rejects. If it fails outright we fall back to a direct scan and
-    say so, rather than silently reporting zero tables.
-    """
-    warnings: list[str] = []
-    try:
-        from TexSoup import TexSoup
-
-        soup = TexSoup(src)
-        positions = sorted(
-            node.position for env in TABULAR_ENVS for node in soup.find_all(env)
-        )
-        if positions:
-            return positions, warnings
-    except Exception as exc:  # TexSoup raises a family of parse errors
-        warnings.append(f"TexSoup could not parse the source ({type(exc).__name__}); scanned directly")
-
+def _scan_positions(src: str) -> list[int]:
+    """Offsets of every `\\begin{tabular...}` by direct scan."""
     positions = []
     i = 0
     while True:
         i = src.find("\\begin{", i)
         if i < 0:
             break
-        name, j = read_group(src, i + len("\\begin"))
+        name, _ = read_group(src, i + len("\\begin"))
         if name in TABULAR_ENVS:
             positions.append(i)
         i += 1
-    return sorted(set(positions)), warnings
+    return sorted(set(positions))
+
+
+def _discover_positions(src: str) -> tuple[list[int], list[str]]:
+    """Offsets of every `\\begin{tabular...}` in `src`, plus any warning about
+    how confident we are in that list.
+
+    TexSoup is the primary parser — it handled all three Transformer tabulars,
+    BERT's `tabular*` and all fifteen in ResNet, and tolerates malformed input
+    that plasTeX rejects. A direct scan runs alongside it as a cross-check.
+
+    The warning fires on *disagreement*, not on TexSoup failing. DenseNet has one
+    unbalanced brace in prose that makes TexSoup reject the whole document, and
+    flagging all eleven of its tables over that would suppress checks that are
+    perfectly well founded. What actually matters is whether a table was missed,
+    and comparing the two discovery paths tests that directly.
+    """
+    # A tabular inside a \newcommand body is a template with `#1` for cells.
+    templates = macro_body_spans(src)
+
+    def is_real(pos: int) -> bool:
+        return not any(lo <= pos < hi for lo, hi in templates)
+
+    scanned = [p for p in _scan_positions(src) if is_real(p)]
+    try:
+        from TexSoup import TexSoup
+
+        soup = TexSoup(src)
+        found = sorted(
+            node.position
+            for env in TABULAR_ENVS
+            for node in soup.find_all(env)
+            if is_real(node.position)
+        )
+    except Exception:  # TexSoup raises a family of parse errors
+        return scanned, []
+
+    if set(found) == set(scanned):
+        return found, []
+    missed = sorted(set(scanned) - set(found))
+    return sorted(set(found) | set(scanned)), [
+        f"tabular discovery disagreed: TexSoup found {len(found)}, a direct scan "
+        f"found {len(scanned)}; taking the union of both"
+        + (f" (TexSoup missed offsets {missed[:5]})" if missed else "")
+    ]
 
 
 def _env_span(src: str, pos: int) -> tuple[str, str, int, int, int] | None:
@@ -398,13 +424,12 @@ def _build_table(
             expanded = expand_macros(inner, macros)
             text = clean_latex(expanded)
             math_text = clean_latex(expanded, math=True)
+            # `values` holds every number in the cell; `value` only the single
+            # one, when there is exactly one. A cell with two numbers is fully
+            # represented, not structurally uncertain, so it raises no warning:
+            # warnings become `unverifiable` downstream, and BERT's GLUE table
+            # must verify rather than be declined.
             value, values = numbers_mod.extract(math_text)
-            if len(values) > 1 and numbers_mod.looks_numeric(text):
-                warnings.append(
-                    f"{dom_id}/r{row_index}/c{col}: cell holds "
-                    f"{len(values)} numeric values ({text}); Cell.value cannot represent "
-                    "more than one, so it is left unset"
-                )
             cells.append(
                 Cell(
                     row=row_index,
@@ -412,6 +437,7 @@ def _build_table(
                     raw_latex=raw.strip(),
                     text=text,
                     value=value,
+                    values=values,
                     is_bold=is_bold,
                     bold_source=bold_source,
                     colspan=colspan,
@@ -493,19 +519,22 @@ def _build_table(
 # --------------------------------------------------------------------------
 
 
-def parse_tables(latex: str, macros: dict[str, str] | None = None) -> list[Table]:
+def parse_tables(latex: str, macros=None) -> list[Table]:
     """Parse every tabular in an assembled LaTeX document.
 
     `latex` is `SourceDocument.assembled_latex` (all `\\input`/`\\include` already
-    resolved by ingest) and `macros` is `SourceDocument.macros`. Any macro
-    definitions present in `latex` itself are merged in, with the supplied table
-    winning, so the parser also works on a single file in isolation.
+    resolved by ingest). `macros` may be `SourceDocument.macro_defs` — preferred,
+    since `MacroDef.n_args` records arguments a macro declares but never uses —
+    or the flat `SourceDocument.macros`. Definitions present in `latex` itself
+    are merged in, with the supplied table winning, so the parser also works on a
+    single file in isolation.
     """
-    from .latexutil import collect_macros
+    from .latexutil import collect_macro_defs
 
     src = blank_comments(latex)
-    merged = dict(collect_macros(src))
-    merged.update({k.lstrip("\\"): v for k, v in (macros or {}).items()})
+    merged: dict = dict(collect_macro_defs(src))
+    for key, entry in (macros or {}).items():
+        merged[key.lstrip("\\")] = entry
     column_types = collect_column_types(src)
 
     positions, discovery_warnings = _discover_positions(src)

@@ -15,21 +15,16 @@ The three acceptance fixtures, and what each one is here to prove:
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import pytest
+from pv.models import Direction
+from pv.parse import cell_anchor, collect_macros, parse_tables
+from pv.parse.colspec import collect_column_types, count_columns
+from pv.parse.latexutil import clean_latex, split_cells, split_rows
+from pv.parse.numbers import find_values
 
 ROOT = Path(__file__).resolve().parents[1]
-# The backend is not installed as a package in the dev environment yet.
-sys.path.insert(0, str(ROOT / "backend"))
-
-from pv.models import Direction  # noqa: E402
-from pv.parse import cell_anchor, collect_macros, parse_tables  # noqa: E402
-from pv.parse.colspec import collect_column_types, count_columns  # noqa: E402
-from pv.parse.latexutil import clean_latex, split_cells, split_rows  # noqa: E402
-from pv.parse.numbers import find_values  # noqa: E402
-
 PAPERS = ROOT / "fixtures" / "papers"
 TRANSFORMER = PAPERS / "1706.03762"
 BERT = PAPERS / "1810.04805"
@@ -298,15 +293,15 @@ def test_bert_group_scoped_bold(bert_table):
     assert next(c for c in bold if c.col == 9).value == 82.1
 
 
-def test_bert_paired_values_in_one_cell_yield_no_value(bert_table):
+def test_bert_paired_values_in_one_cell(bert_table):
     """Hazard 4, and the most dangerous false positive in the corpus.
 
-    `86.7/85.9` is two numbers. `Cell.value` is a single float and cannot hold
-    them, so it stays None and the table says so in `parse_warnings`. Taking the
-    first number instead makes the Average column average eight values rather
-    than nine, and reports `diverges` on all five rows of a landmark paper.
+    `86.7/85.9` is two numbers. Both land in `Cell.values`; the scalar
+    `Cell.value` stays None because there is no single value. Taking the first
+    number instead makes the Average column a mean of eight values rather than
+    nine, and reports `diverges` on all five rows of a landmark paper.
     """
-    mnli = [c for c in bert_table.column_cells(1)]
+    mnli = list(bert_table.column_cells(1))
     assert [c.text for c in mnli] == [
         "80.6/80.1",
         "76.4/76.1",
@@ -314,11 +309,34 @@ def test_bert_paired_values_in_one_cell_yield_no_value(bert_table):
         "84.6/83.4",
         "86.7/85.9",
     ]
+    assert [c.values for c in mnli] == [
+        [80.6, 80.1],
+        [76.4, 76.1],
+        [82.1, 81.4],
+        [84.6, 83.4],
+        [86.7, 85.9],
+    ]
     assert all(c.value is None for c in mnli)
 
-    warned = [w for w in bert_table.parse_warnings if "numeric values" in w]
-    assert len(warned) == 5
-    assert any("/r6/c1" in w and "86.7/85.9" in w for w in warned)
+
+def test_multi_value_cells_raise_no_parse_warning(bert_table):
+    """A cell holding two numbers is fully represented once `values` carries
+    them, so it is not structural uncertainty. Warning here would make check 3
+    return unverifiable on the whole GLUE table, which ground truth says should
+    verify — declining to look is not the same as being right."""
+    assert bert_table.parse_warnings == []
+
+
+def test_cell_values_invariant_holds_across_the_corpus(bert_table, transformer_tables, resnet_tables):
+    """Contract invariant: exactly one number -> `value` set and equal to
+    `values[0]`; otherwise `value` is None."""
+    tables = [bert_table, *transformer_tables, *resnet_tables]
+    for table in tables:
+        for cell in table.cells:
+            if len(cell.values) == 1:
+                assert cell.value == cell.values[0], cell
+            else:
+                assert cell.value is None, cell
 
 
 def test_bert_two_row_header(bert_table):

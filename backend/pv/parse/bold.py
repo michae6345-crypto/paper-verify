@@ -81,21 +81,24 @@ def _rest_of_group(s: str, i: int) -> str:
     return s[i:n]
 
 
-def detect(raw: str, macros: dict[str, str] | None) -> tuple[bool, str | None]:
+def detect(raw: str, macros) -> tuple[bool, str | None]:
     """Return (is_bold, bold_source).
 
     `bold_source` is one of `textbf`, `mathbf`, `boldmath`, `bf`, or
     `macro:<name>` when a user macro is what introduced the bold.
+
+    `macros` is passed through to `expand_macros` unflattened, so a
+    `dict[str, MacroDef]` keeps its `n_args`.
     """
-    table = normalize_macros(macros)
+    bodies = normalize_macros(macros)
 
     # A user macro that expands to bold is attributed to the macro, not to the
     # primitive it happens to expand into.
-    for name in macro_names_used(raw, table):
-        expanded_body, _ = _scan(expand_macros(table[name], table))
+    for name in macro_names_used(raw, macros):
+        expanded_body, _ = _scan(expand_macros(bodies[name], macros))
         if expanded_body:
-            expanded_cell, _ = _scan(expand_macros(raw, table))
+            expanded_cell, _ = _scan(expand_macros(raw, macros))
             if expanded_cell:
                 return True, f"macro:{name}"
 
-    return _scan(expand_macros(raw, table))
+    return _scan(expand_macros(raw, macros))

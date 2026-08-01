@@ -1,10 +1,10 @@
 """Numeric extraction from cleaned cell content.
 
-The governing rule: a cell yields a value only when it contains exactly one
-numeric expression. `86.7/85.9` (BERT's MNLI-(m/mm) column) contains two, so it
-yields `None` and the caller records a `parse_warning`. Silently taking the first
-number there produces five false `diverges` on BERT — see fixtures/GROUND_TRUTH.md
-case 2.
+Every number in a cell is reported, in source order, and the scalar `Cell.value`
+is set only when there is exactly one of them. `86.7/85.9` (BERT's MNLI-(m/mm)
+column) yields `values=[86.7, 85.9]` and `value=None`: silently taking the first
+number makes the Average column a mean of eight values instead of nine and
+produces five false `diverges` on BERT — see fixtures/GROUND_TRUTH.md case 2.
 """
 
 from __future__ import annotations
@@ -32,10 +32,6 @@ _SUFFIX = re.compile(rf"{_NOT_LETTER_BEFORE}({_NUM})\s*([KkMmGgBb])(?![A-Za-z0-9
 _PLAIN = re.compile(rf"{_NOT_LETTER_BEFORE}{_NUM}{_NOT_LETTER_AFTER}")
 
 _SUFFIX_EXP = {"k": 3, "m": 6, "g": 9, "b": 9}
-
-# A cell we are willing to call "numeric-looking" when reporting multi-value
-# warnings. Prose label cells that happen to contain a year are not this.
-_NUMERIC_LOOKING = re.compile(r"^[\s\d.,/±%()+\-×·^{}eE]*$")
 
 _PLACEHOLDER = "\x00"
 
@@ -94,9 +90,3 @@ def extract(math_text: str) -> tuple[float | None, list[float]]:
     """Return (value, all_values). `value` is set only when there is exactly one."""
     values = find_values(math_text)
     return (values[0] if len(values) == 1 else None, values)
-
-
-def looks_numeric(text: str) -> bool:
-    """True when the cell reads as data rather than a label. Used to decide
-    whether a multi-value cell is worth a `parse_warning`."""
-    return bool(text.strip()) and bool(_NUMERIC_LOOKING.match(text))

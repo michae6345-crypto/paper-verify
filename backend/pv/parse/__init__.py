@@ -20,7 +20,7 @@ from __future__ import annotations
 from pv.models import SourceDocument, Table
 
 from .colspec import collect_column_types, count_columns
-from .latexutil import clean_latex, collect_macros, expand_macros
+from .latexutil import clean_latex, collect_macro_defs, collect_macros, expand_macros
 from .tabular import cell_anchor, parse_tables
 
 __all__ = [
@@ -28,6 +28,7 @@ __all__ = [
     "parse_document",
     "cell_anchor",
     "collect_macros",
+    "collect_macro_defs",
     "collect_column_types",
     "count_columns",
     "clean_latex",
@@ -36,5 +37,12 @@ __all__ = [
 
 
 def parse_document(document: SourceDocument) -> list[Table]:
-    """Parse every tabular in an assembled `SourceDocument` from ingest."""
-    return parse_tables(document.assembled_latex, document.macros)
+    """Parse every tabular in an assembled `SourceDocument` from ingest.
+
+    Prefers `macro_defs` over the flat `macros` dict: the former records how many
+    arguments each macro takes, and expanding an argument-taking macro without
+    consuming its argument corrupts the cell.
+    """
+    return parse_tables(
+        document.assembled_latex, document.macro_defs or document.macros
+    )

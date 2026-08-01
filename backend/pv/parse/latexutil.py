@@ -10,6 +10,8 @@ from __future__ import annotations
 import re
 from collections.abc import Iterator
 
+from pv.models import MacroDef
+
 # --------------------------------------------------------------------------
 # Comments
 # --------------------------------------------------------------------------
@@ -224,25 +226,6 @@ _NEWCOMMAND = re.compile(
 _DEF = re.compile(r"\\def\s*\\([A-Za-z@]+)\s*\{")
 
 
-def collect_macros(latex: str) -> dict[str, str]:
-    """Harvest `\\newcommand` / `\\renewcommand` / `\\def` bodies from source.
-
-    Agent A's ingest stage supplies `SourceDocument.macros`; this exists so the
-    parser can stand alone (and so tests can read fixture files directly).
-    Later definitions win, matching LaTeX's own behaviour for `\\renewcommand`.
-    """
-    src = blank_comments(latex)
-    macros: dict[str, str] = {}
-    for m in _NEWCOMMAND.finditer(src):
-        name = m.group(1) or m.group(2)
-        body, _ = read_group(src, m.end() - 1)
-        macros[name] = body
-    for m in _DEF.finditer(src):
-        body, _ = read_group(src, m.end() - 1)
-        macros.setdefault(m.group(1), body)
-    return macros
-
-
 _PARAM = re.compile(r"(?<!#)#(\d)")
 
 
@@ -251,19 +234,90 @@ def _arity(body: str) -> int:
     return max(nums) if nums else 0
 
 
-def normalize_macros(macros: dict[str, str] | None) -> dict[str, str]:
+def collect_macros(latex: str) -> dict[str, str]:
+    """Harvest `\\newcommand` / `\\renewcommand` / `\\def` bodies from source.
+
+    Agent A's ingest stage supplies `SourceDocument.macros`; this exists so the
+    parser can stand alone (and so tests can read fixture files directly).
+    Later definitions win, matching LaTeX's own behaviour for `\\renewcommand`.
+    """
+    return {name: d.body for name, d in collect_macro_defs(latex).items()}
+
+
+def macro_body_spans(latex: str) -> list[tuple[int, int]]:
+    """Character spans of every macro definition body in `blank_comments(latex)`.
+
+    A `\\begin{tabular}` inside one of these is a template, not a table: ResNet
+    defines `\\newcommand{\\tabincell}[2]{\\begin{tabular}{@{}#1@{}}#2\\end{tabular}}`,
+    whose "cells" are `#1` and `#2`.
+    """
+    src = blank_comments(latex)
+    spans: list[tuple[int, int]] = []
+    for pattern in (_NEWCOMMAND, _DEF):
+        for m in pattern.finditer(src):
+            _, end = read_group(src, m.end() - 1)
+            spans.append((m.start(), end))
+    return spans
+
+
+def collect_macro_defs(latex: str) -> dict[str, MacroDef]:
+    """As `collect_macros`, but keeping the declared argument count.
+
+    `\\newcommand{\\x}[1]{...}` that never writes `#1` in its body still consumes
+    an argument, and inferring arity from the body would miss that.
+    """
+    src = blank_comments(latex)
+    defs: dict[str, MacroDef] = {}
+    for m in _NEWCOMMAND.finditer(src):
+        name = m.group(1) or m.group(2)
+        body, _ = read_group(src, m.end() - 1)
+        declared = int(m.group(3)) if m.group(3) else _arity(body)
+        defs[name] = MacroDef(name=name, body=body, n_args=declared)
+    for m in _DEF.finditer(src):
+        name = m.group(1)
+        if name in defs:
+            continue
+        body, _ = read_group(src, m.end() - 1)
+        defs[name] = MacroDef(name=name, body=body, n_args=_arity(body))
+    return defs
+
+
+def normalize_macros(macros) -> dict[str, str]:
+    """name -> body, accepting either a flat `dict[str, str]` or ingest's
+    authoritative `dict[str, MacroDef]` (which also carries `n_args`)."""
     if not macros:
         return {}
-    return {k.lstrip("\\"): v for k, v in macros.items() if k.lstrip("\\")}
+    out: dict[str, str] = {}
+    for key, entry in macros.items():
+        name = key.lstrip("\\")
+        if not name:
+            continue
+        out[name] = entry if isinstance(entry, str) else entry.body
+    return out
 
 
-def expand_macros(s: str, macros: dict[str, str] | None, max_depth: int = 8) -> str:
+def macro_arities(macros) -> dict[str, int]:
+    """Argument counts. Taken from `MacroDef.n_args` when ingest supplied it, and
+    otherwise inferred from the highest `#n` in the body — which undercounts a
+    macro that declares an argument it never uses."""
+    if not macros:
+        return {}
+    out: dict[str, int] = {}
+    for key, entry in macros.items():
+        name = key.lstrip("\\")
+        if not name:
+            continue
+        out[name] = _arity(entry) if isinstance(entry, str) else entry.n_args
+    return out
+
+
+def expand_macros(s: str, macros, max_depth: int = 8) -> str:
     """Expand user macros, arguments and all. Bounded, so a self-referential
     definition cannot hang the parser."""
     table = normalize_macros(macros)
     if not table:
         return s
-    arity = {k: _arity(v) for k, v in table.items()}
+    arity = macro_arities(macros)
     for _ in range(max_depth):
         out: list[str] = []
         i, n = 0, len(s)
