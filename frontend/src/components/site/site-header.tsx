@@ -1,16 +1,18 @@
 import Link from "next/link";
 
 const NAV = [
+  { href: "#checks", label: "What it checks" },
   { href: "#mechanism", label: "How it works" },
-  { href: "#honesty", label: "What it cannot check" },
-  { href: "#faq", label: "FAQ" },
+  { href: "#limits", label: "What it cannot check" },
 ];
 
 /**
  * The site's own header. The app's 56px `NavRail` does not appear on the
- * marketing route group. That is the whole reason §16 asks for a route group.
+ * marketing route group, which is the whole reason the route group exists.
  *
- * The wordmark never carries a verdict colour (§3).
+ * The wordmark is set in the same mono the numbers are, at the same weight as
+ * everything else, and carries no mark and no verdict colour (§3). `residual` is
+ * lowercase everywhere, including here and at the start of a sentence.
  */
 export function SiteHeader() {
   return (
@@ -18,22 +20,16 @@ export function SiteHeader() {
       className="border-b"
       style={{ borderColor: "var(--chrome-line)", background: "var(--chrome-base)" }}
     >
-      <div className="mx-auto flex w-full max-w-[1144px] items-center gap-6 px-5 py-3 two:px-8">
+      <div className="mx-auto flex w-full max-w-[1200px] items-center gap-6 px-4 py-3.5 two:px-10">
         <Link
           href="/"
-          className="flex items-baseline gap-2 t-num"
-          style={{ color: "var(--chrome-text)", fontSize: "13px", fontWeight: 500 }}
+          className="t-num"
+          style={{ color: "var(--chrome-text)", fontSize: "14px", letterSpacing: "0.01em" }}
         >
-          <span
-            className="flex h-6 w-6 items-center justify-center border"
-            style={{ borderColor: "var(--chrome-line)", borderRadius: "var(--radius-chip)" }}
-          >
-            pv
-          </span>
-          <span className="hidden two:inline">paper-verify</span>
+          residual
         </Link>
 
-        <nav className="ml-auto hidden items-center gap-5 two:flex" aria-label="Site">
+        <nav className="ml-auto hidden items-center gap-7 two:flex" aria-label="Site">
           {NAV.map((item) => (
             <a
               key={item.href}
@@ -52,9 +48,8 @@ export function SiteHeader() {
 
         <Link
           href="/check"
-          className="ml-auto inline-flex items-center px-3 py-1.5 font-medium transition-colors two:ml-0"
+          className="ml-auto inline-flex items-center px-3.5 py-1.5 transition-colors two:ml-0"
           style={{
-            background: "var(--chrome-raised)",
             color: "var(--chrome-text)",
             border: "1px solid var(--chrome-line)",
             borderRadius: "var(--radius-chip)",

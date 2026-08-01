@@ -42,20 +42,28 @@ const COLUMNS: { heading: string; links: { href: string; label: string; external
 export function SiteFooter() {
   return (
     <footer
-      className="px-5 py-12 two:px-8"
+      className="px-4 py-14 two:px-10"
       style={{ background: "var(--chrome-panel)" }}
     >
-      <div className="mx-auto grid w-full max-w-[1080px] gap-10 three:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div className="mx-auto grid w-full max-w-[1200px] gap-10 three:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
-          <p className="t-num" style={{ color: "var(--chrome-text)", fontSize: "13px", fontWeight: 500 }}>
-            paper-verify
+          <p className="t-num" style={{ color: "var(--chrome-text)", fontSize: "14px" }}>
+            residual
+          </p>
+          <p
+            className="mt-2 max-w-[44ch]"
+            style={{ color: "var(--chrome-faint)", fontSize: "13px", lineHeight: 1.6 }}
+          >
+            A residual is the difference between an observed value and a predicted one, which is
+            what this computes.
           </p>
           <p
             className="mt-3 max-w-[44ch]"
             style={{ color: "var(--chrome-faint)", fontSize: "13px", lineHeight: 1.6 }}
           >
-            Checks whether an ML paper&rsquo;s own numbers agree with each other, and reports
-            discrepancies with evidence. It does not judge whether a paper is good, novel, or true.
+            residual checks whether an ML paper&rsquo;s own numbers agree with each other, and
+            reports discrepancies with evidence. It does not judge whether a paper is good, novel,
+            or true.
           </p>
 
           <div

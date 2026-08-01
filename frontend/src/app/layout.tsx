@@ -27,7 +27,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "paper-verify",
+  title: "residual",
   description: "Checks whether a paper's own numbers agree with each other.",
 };
 

@@ -57,6 +57,39 @@
   /* Group header band in the ledger, between --chrome-base and --chrome-panel. */
   --ledger-band: #191e25;
 
+  /* -------------------------------------------------------------------------
+     Site fields — DESIGN_PLAN.md "Palette". Six additions, none of which
+     replaces anything above. They are used by the marketing route group only:
+     the app chrome is still the two materials of §2 and does not gain a field.
+     ------------------------------------------------------------------------- */
+
+  /* Light section field. Promotes the existing paper colour to a background. */
+  --field-paper: #fbfaf8;
+  /* Dark section field. Below --chrome-base, so a section reads as deeper than
+     the app chrome around it. */
+  --field-deep: #101419;
+
+  /* One hairline construction grid, two inks. */
+  --rule-grid: #e3dfd8;
+  --rule-grid-deep: #232a33;
+
+  /* The single highlight block behind one phrase per section: --focus diluted,
+     so the accent is our interactive colour rather than a new hue. */
+  --wash: #dce1f5;
+  /* The same gesture on a dark field. A pale wash under light text would be
+     unreadable, so the deep field gets --focus at low value instead of low
+     chroma. --chrome-text on it is 11:1. */
+  --wash-deep: #232a4a;
+
+  /* Marginal ink: sigla, line numbers, apparatus marks. Warm grey against cool
+     chrome, the way a pencil note sits on a printed page. The only warm value
+     in the system, and a neutral rather than an orange. */
+  --siglum: #8a7f6d;
+  /* The same ink with enough weight to clear 4.5:1 on --field-paper, where the
+     dark-field value reads at 3.8:1. One mark, two inks, exactly as the grid.
+     Also the secondary text colour on light fields. */
+  --siglum-paper: #766c5c;
+
   /* Shape — §3. 6px on panels and inputs, 4px on chips. Never fully rounded. */
   --radius-panel: 6px;
   --radius-chip: 4px;
@@ -125,6 +158,15 @@
   --color-v-pending: var(--v-pending);
 
   --color-focus: var(--focus);
+
+  --color-field-paper: var(--field-paper);
+  --color-field-deep: var(--field-deep);
+  --color-rule-grid: var(--rule-grid);
+  --color-rule-grid-deep: var(--rule-grid-deep);
+  --color-wash: var(--wash);
+  --color-wash-deep: var(--wash-deep);
+  --color-siglum: var(--siglum);
+  --color-siglum-paper: var(--siglum-paper);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);

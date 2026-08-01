@@ -48,6 +48,35 @@ export function realReports(): SiteReport[] {
     }));
 }
 
+/**
+ * The reports the hero replays, as the contract type the `Ledger` takes.
+ *
+ * Tables are kept but emptied of their cells. The ledger needs each table's
+ * label and anchor to place a mark against it, and nothing else; CLIP's report
+ * alone carries 3,326 cells, and shipping those to the client to render a list
+ * of eight rows would be a megabyte spent on nothing.
+ */
+export function heroReports(): RunReport[] {
+  return listReports()
+    .filter((r) => r.arxiv_id !== SYNTHETIC_ID)
+    .sort((a, b) => a.arxiv_id.localeCompare(b.arxiv_id))
+    .map((report) => ({
+      arxiv_id: report.arxiv_id,
+      title: report.title ?? "",
+      checks: report.checks ?? [],
+      not_checked: report.not_checked ?? [],
+      tables: (report.tables ?? []).map((t) => ({
+        label: t.label,
+        anchor: t.anchor,
+        caption: "",
+        is_nested: t.is_nested,
+      })),
+      tables_parsed: report.tables_parsed ?? 0,
+      started_at: report.started_at ?? null,
+      finished_at: report.finished_at ?? null,
+    }));
+}
+
 export function reportById(arxivId: string): SiteReport | null {
   return realReports().find((r) => r.arxiv_id === arxivId) ?? null;
 }

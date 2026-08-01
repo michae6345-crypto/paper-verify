@@ -2,87 +2,208 @@ import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
+import styles from "./field.module.css";
+
 /**
- * The site's vertical rhythm: every section is a full-bleed band separated from
- * the next by a 1px `--chrome-line` rule, with the same left-aligned label →
- * heading → lede opening. Elevation is borders, never shadow (§3).
+ * The site's primitives: a full-bleed colour field with the margin apparatus
+ * running down it, and the opener every section starts with.
+ *
+ * DESIGN_PLAN.md, "Layout": sections alternate `--field-paper` and
+ * `--field-deep`, and one hairline grid plus one line-number column cross all of
+ * them unchanged, so the page reads as one document that changes colour.
  *
  * Marketing type runs larger than the §3 application scale, which tops out at
  * 15px for a panel title. The faces, weights, colours and `tabular-nums` are the
  * design system unchanged; only the display sizes are new, and they exist only
- * on this route group.
+ * on this route group. Hierarchy comes from size and from the serif-to-sans
+ * switch. Bold is used almost nowhere.
  */
 
-export function Section({
+export type Tone = "paper" | "deep";
+
+/**
+ * How many numbers the margin generates. They are clipped by the field, so this
+ * only has to be at least as many as the tallest the section can get; a count
+ * that is too small would leave the margin stopping short of the text, which is
+ * the one thing that would read as broken.
+ */
+const MARGIN_LINES = 150;
+
+function Margin() {
+  return (
+    // The margin is an apparatus, not content: every siglum it carries is also
+    // printed inline on the entry it belongs to, so nothing is lost by hiding
+    // the numbers from assistive technology.
+    <div className={styles.margin} aria-hidden="true">
+      <div className={styles.lines}>
+        {Array.from({ length: MARGIN_LINES }, (_, i) => (
+          <span key={i} className={styles.line}>
+            {i + 1}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** A full-bleed field with the margin down its left edge. */
+export function Field({
   id,
-  label,
-  heading,
-  lede,
+  tone,
   children,
   className,
 }: {
   id?: string;
-  label?: string;
-  heading?: string;
-  lede?: ReactNode;
-  children?: ReactNode;
+  tone: Tone;
+  children: ReactNode;
   className?: string;
 }) {
   return (
     <section
       id={id}
-      className={cn("border-b px-5 py-14 two:px-8 two:py-20", className)}
-      style={{ borderColor: "var(--chrome-line)" }}
+      className={cn(styles.field, tone === "paper" ? styles.paper : styles.deep, className)}
     >
-      <div className="mx-auto w-full max-w-[1080px]">
-        {(label || heading || lede) && (
-          <header className="max-w-[62ch]">
-            {label && <p className="t-label">{label}</p>}
-            {heading && (
-              <h2
-                className="mt-3 font-medium tracking-[-0.01em]"
-                style={{ color: "var(--chrome-text)", fontSize: "clamp(22px, 3.2vw, 30px)", lineHeight: 1.2 }}
-              >
-                {heading}
-              </h2>
-            )}
-            {lede && (
-              <div
-                className="mt-3"
-                style={{ color: "var(--chrome-dim)", fontSize: "15px", lineHeight: 1.6 }}
-              >
-                {lede}
-              </div>
-            )}
-          </header>
-        )}
-        {children}
+      <div className={styles.inner}>
+        <Margin />
+        <div className={styles.body}>{children}</div>
       </div>
     </section>
   );
 }
 
-/** A bordered panel. The only container on the site. */
-export function Panel({
-  children,
-  className,
-  raised = false,
-}: {
-  children: ReactNode;
-  className?: string;
-  raised?: boolean;
-}) {
+/**
+ * The single accent gesture: `--wash` behind exactly one phrase. Never two on a
+ * screen — the highlight works precisely because it appears once.
+ */
+export function Wash({ children }: { children: ReactNode }) {
   return (
-    <div
-      className={cn("border", className)}
+    <span
       style={{
-        borderColor: "var(--chrome-line)",
-        background: raised ? "var(--chrome-raised)" : "var(--chrome-panel)",
-        borderRadius: "var(--radius-panel)",
+        background: "var(--accent)",
+        color: "var(--accent-ink)",
+        padding: "0.04em 0.07em",
+        boxDecorationBreak: "clone",
+        WebkitBoxDecorationBreak: "clone",
       }}
     >
       {children}
-    </div>
+    </span>
+  );
+}
+
+/**
+ * The label above the heading. Headings never sit alone: the label names the
+ * section, and the short rule marks it on the grid. The mark is a rule rather
+ * than a square on purpose — a small filled square beside a mono label is the
+ * reference's lockup, and the structural job is done here by the margin.
+ */
+export function Label({ children }: { children: ReactNode }) {
+  return (
+    <p className="flex items-center gap-2.5">
+      <span
+        aria-hidden="true"
+        className="inline-block h-px w-3 shrink-0"
+        style={{ background: "var(--mark)" }}
+      />
+      <span
+        className="t-num"
+        style={{
+          color: "var(--mark)",
+          fontSize: "11px",
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+        }}
+      >
+        {children}
+      </span>
+    </p>
+  );
+}
+
+/** Label, then heading, then at most one sentence. In that order, every time. */
+export function Opener({
+  label,
+  heading,
+  lede,
+  level = 2,
+}: {
+  label: string;
+  heading: ReactNode;
+  lede?: ReactNode;
+  level?: 1 | 2;
+}) {
+  const Heading = level === 1 ? "h1" : "h2";
+  return (
+    <header className="max-w-[58ch]">
+      <Label>{label}</Label>
+      <Heading
+        className="mt-5"
+        style={{
+          fontFamily: "var(--font-doc), ui-serif, Georgia, serif",
+          fontWeight: 400,
+          color: "var(--ink)",
+          fontSize:
+            level === 1 ? "clamp(34px, 5.6vw, 64px)" : "clamp(28px, 3.4vw, 40px)",
+          lineHeight: level === 1 ? 1.06 : 1.15,
+          letterSpacing: "-0.015em",
+        }}
+      >
+        {heading}
+      </Heading>
+      {lede && (
+        <div
+          className="mt-6"
+          style={{ color: "var(--ink-dim)", fontSize: "17px", lineHeight: 1.6 }}
+        >
+          {lede}
+        </div>
+      )}
+    </header>
+  );
+}
+
+/** A field with the standard opener above its content. */
+export function Section({
+  id,
+  tone,
+  label,
+  heading,
+  lede,
+  children,
+}: {
+  id?: string;
+  tone: Tone;
+  label: string;
+  heading: ReactNode;
+  lede?: ReactNode;
+  children?: ReactNode;
+}) {
+  return (
+    <Field id={id} tone={tone}>
+      <Opener label={label} heading={heading} lede={lede} />
+      {children}
+    </Field>
+  );
+}
+
+/**
+ * A siglum: the mark that identifies one witness. The same character stands for
+ * the same check in the margin, on the entry, and in the report.
+ */
+export function Siglum({ mark }: { mark: string }) {
+  return (
+    <span
+      className="t-num inline-flex h-6 w-6 shrink-0 items-center justify-center"
+      style={{
+        border: "1px solid var(--grid)",
+        borderRadius: "var(--radius-chip)",
+        color: "var(--mark)",
+        fontSize: "12px",
+        lineHeight: 1,
+      }}
+    >
+      {mark}
+    </span>
   );
 }
 
@@ -95,7 +216,7 @@ export function Output({ children, className }: { children: ReactNode; className
   return (
     <pre
       className={cn("overflow-x-auto whitespace-pre t-num", className)}
-      style={{ color: "var(--chrome-dim)", fontSize: "12px", lineHeight: 1.6 }}
+      style={{ color: "var(--ink-dim)", fontSize: "12px", lineHeight: 1.7 }}
     >
       {children}
     </pre>

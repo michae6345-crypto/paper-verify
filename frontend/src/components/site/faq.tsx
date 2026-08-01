@@ -16,7 +16,7 @@ const FAQS: { q: string; a: ReactNode }[] = [
       <>
         <p>
           Then we want to hear it immediately, and the report is built so you can say so:{" "}
-          <span style={{ color: "var(--chrome-text)" }}>Report this as incorrect</span> sits beside
+          <span style={{ color: "var(--ink)" }}>Report this as incorrect</span> sits beside
           every finding, one click away.
         </p>
         <p>
@@ -113,27 +113,28 @@ const FAQS: { q: string; a: ReactNode }[] = [
 
 export function Faq() {
   return (
-    <div className="mt-10 max-w-[76ch]">
+    <div className="mt-12 max-w-[74ch]">
       {FAQS.map((item) => (
         <details
           key={item.q}
-          className="group border-t py-1 first:border-t-0"
-          style={{ borderColor: "var(--chrome-line)" }}
+          className="group border-t py-1"
+          style={{ borderColor: "var(--grid)" }}
         >
           <summary
             className="cursor-pointer list-none py-4 transition-colors marker:content-none"
             style={{
-              color: "var(--chrome-text)",
-              fontSize: "16px",
-              lineHeight: 1.45,
+              fontFamily: "var(--font-doc), ui-serif, Georgia, serif",
+              color: "var(--ink)",
+              fontSize: "20px",
+              lineHeight: 1.4,
               transitionDuration: "var(--dur-fast)",
             }}
           >
-            <span className="flex items-baseline gap-3">
+            <span className="flex items-baseline gap-4">
               <span
                 aria-hidden="true"
                 className="t-num shrink-0"
-                style={{ color: "var(--chrome-faint)", fontSize: "13px" }}
+                style={{ color: "var(--mark)", fontSize: "13px" }}
               >
                 <span className="group-open:hidden">+</span>
                 <span className="hidden group-open:inline">−</span>
@@ -142,8 +143,8 @@ export function Faq() {
             </span>
           </summary>
           <div
-            className="flex flex-col gap-3 pt-1 pb-5 pl-[26px]"
-            style={{ color: "var(--chrome-dim)", fontSize: "15px", lineHeight: 1.6 }}
+            className="flex flex-col gap-3 pt-1 pb-6 pl-[30px]"
+            style={{ color: "var(--ink-dim)", fontSize: "15px", lineHeight: 1.65 }}
           >
             {item.a}
           </div>

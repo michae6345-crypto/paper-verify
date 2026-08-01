@@ -14,9 +14,11 @@ import { SiteHeader } from "@/components/site/site-header";
  */
 
 export const metadata: Metadata = {
-  title: "paper-verify — check whether a paper's own numbers agree",
+  // Lowercase in the title bar too. A residual is the difference between an
+  // observed value and a predicted one, which is what this computes.
+  title: "residual — check whether a paper's own numbers agree",
   description:
-    "Reads an arXiv paper's LaTeX source, recomputes what can be recomputed, and reports where the numbers match, where they diverge, and where it cannot tell.",
+    "residual reads an arXiv paper's LaTeX source, recomputes what can be recomputed, and reports where the numbers match, where they diverge, and where it cannot tell.",
 };
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {

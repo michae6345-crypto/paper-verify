@@ -39,36 +39,34 @@ const ENTRIES: { hash: string; date: string; title: string; note: string }[] = [
 
 export function Changelog() {
   return (
-    <ul className="mt-10 flex flex-col">
+    <ul className="mt-12 flex flex-col">
       {ENTRIES.map((entry) => (
         <li
           key={entry.hash}
-          className="grid gap-x-6 gap-y-2 border-t py-5 first:border-t-0 first:pt-0 two:grid-cols-[150px_1fr]"
-          style={{ borderColor: "var(--chrome-line)" }}
+          className="grid gap-x-8 gap-y-2 border-t py-5 two:grid-cols-[160px_minmax(0,1fr)]"
+          style={{ borderColor: "var(--grid)" }}
         >
           <div className="flex items-baseline gap-3">
-            <time className="t-num" style={{ color: "var(--chrome-dim)" }} dateTime={entry.date}>
+            <time className="t-num" style={{ color: "var(--ink-dim)" }} dateTime={entry.date}>
               {entry.date}
             </time>
             <a
               href={`${REPO}/commit/${entry.hash}`}
-              className="t-num transition-colors"
+              className="t-num underline underline-offset-4"
               style={{
-                color: "var(--chrome-faint)",
+                color: "var(--ink-dim)",
+                textDecorationColor: "var(--grid)",
                 fontSize: "12px",
-                transitionDuration: "var(--dur-fast)",
               }}
             >
               {entry.hash}
             </a>
           </div>
           <div>
-            <p style={{ color: "var(--chrome-text)", fontSize: "15px", lineHeight: 1.5 }}>
-              {entry.title}
-            </p>
+            <p style={{ color: "var(--ink)", fontSize: "16px", lineHeight: 1.5 }}>{entry.title}</p>
             <p
-              className="mt-1.5 max-w-[70ch]"
-              style={{ color: "var(--chrome-faint)", fontSize: "14px", lineHeight: 1.55 }}
+              className="mt-2 max-w-[68ch]"
+              style={{ color: "var(--ink-dim)", fontSize: "14px", lineHeight: 1.6 }}
             >
               {entry.note}
             </p>

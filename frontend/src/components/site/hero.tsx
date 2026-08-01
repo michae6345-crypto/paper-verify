@@ -1,64 +1,63 @@
 import Link from "next/link";
 
-import { realReports } from "./corpus.server";
+import { heroReports } from "./corpus.server";
 import { HeroRunLoop } from "./hero-run-loop";
+import { Field, Opener, Wash } from "./section";
 import { PAPERS, TABLES } from "./corpus";
 
 /**
- * §16 §1. No mascot, no illustration. What sits beside the headline is the run
- * view itself, playing real recorded output, so the claim and the thing running
- * next to it are the same thing.
+ * The hero is a light field with the instrument sitting on it.
+ *
+ * BRIEF §2's idea, made the page's opening image: the document is warm and
+ * light, the verification chrome is cool and dark, and the interface is the seam
+ * between them. So the field is `--field-paper` and the ledger beside the
+ * headline keeps its own dark chrome rather than being lightened to match.
+ *
+ * No mascot and no illustration. What sits next to the claim is the thing that
+ * makes it.
  */
 export function Hero() {
-  const reports = realReports();
+  const reports = heroReports();
 
   return (
-    <section
-      className="border-b px-5 pt-14 pb-16 two:px-8 two:pt-20 two:pb-24"
-      style={{ borderColor: "var(--chrome-line)" }}
-    >
-      <div className="mx-auto grid w-full max-w-[1080px] gap-10 three:grid-cols-[1.05fr_1fr] three:items-center three:gap-14">
-        <div className="max-w-[56ch]">
-          <p className="t-label">Internal consistency checking for ML papers</p>
-
-          <h1
-            className="mt-4 font-medium tracking-[-0.015em]"
-            style={{
-              color: "var(--chrome-text)",
-              fontSize: "clamp(30px, 5.4vw, 46px)",
-              lineHeight: 1.1,
-            }}
-          >
-            Check whether a paper&rsquo;s own numbers agree with each other.
-          </h1>
-
-          <p
-            className="mt-5"
-            style={{ color: "var(--chrome-dim)", fontSize: "16px", lineHeight: 1.6 }}
-          >
-            paper-verify reads an arXiv paper&rsquo;s LaTeX source, recomputes what can be
-            recomputed, and reports where the numbers match, where they diverge, and where it
-            cannot tell. It does not judge whether a paper is good, novel, or true.
-          </p>
+    <Field tone="paper">
+      <div className="grid gap-12 three:grid-cols-[1.02fr_1fr] three:items-center three:gap-14">
+        <div>
+          <Opener
+            level={1}
+            label="Verification"
+            heading={
+              <>
+                Papers should agree with <Wash>themselves</Wash>.
+              </>
+            }
+            lede={
+              <>
+                residual reads a paper&rsquo;s LaTeX source and recomputes the numbers it
+                states. It reports where they match, where they diverge, and where it cannot
+                tell. It does not judge whether a paper is good, novel, or true.
+              </>
+            }
+          />
 
           <p
-            className="mt-4"
-            style={{ color: "var(--chrome-faint)", fontSize: "15px", lineHeight: 1.6 }}
+            className="mt-5 max-w-[58ch]"
+            style={{ color: "var(--ink-dim)", fontSize: "15px", lineHeight: 1.65 }}
           >
-            A language model never produces a verdict. Every verdict is computed by deterministic
-            Python from extracted structure, so it can be re-derived and defended a year later.
+            A language model never produces a verdict here. Every verdict is computed by
+            deterministic Python from extracted structure, so it can be re-derived and defended a
+            year later.
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
             <Link
               href="/check"
-              className="inline-flex items-center px-4 py-2.5 font-medium transition-colors"
+              className="inline-flex items-center px-5 py-2.5 transition-colors"
               style={{
-                background: "var(--chrome-raised)",
-                color: "var(--chrome-text)",
-                border: "1px solid var(--chrome-line)",
+                border: "1px solid var(--ink)",
                 borderRadius: "var(--radius-panel)",
-                fontSize: "14px",
+                color: "var(--ink)",
+                fontSize: "15px",
                 transitionDuration: "var(--dur-fast)",
               }}
             >
@@ -66,19 +65,18 @@ export function Hero() {
             </Link>
             <Link
               href="/reports/1810.04805"
-              className="inline-flex items-center px-4 py-2.5 transition-colors"
+              className="inline-flex items-center underline underline-offset-4"
               style={{
-                color: "var(--focus)",
-                borderRadius: "var(--radius-panel)",
-                fontSize: "14px",
-                transitionDuration: "var(--dur-fast)",
+                color: "var(--ink)",
+                textDecorationColor: "var(--mark)",
+                fontSize: "15px",
               }}
             >
               Read a finished report
             </Link>
           </div>
 
-          <p className="mt-6 t-num" style={{ color: "var(--chrome-faint)", fontSize: "12px" }}>
+          <p className="mt-8 t-num" style={{ color: "var(--mark)", fontSize: "12px" }}>
             Validated by hand against <span className="t-num">{PAPERS}</span> papers and{" "}
             <span className="t-num">{TABLES}</span> tables.
           </p>
@@ -86,6 +84,6 @@ export function Hero() {
 
         <HeroRunLoop reports={reports} />
       </div>
-    </section>
+    </Field>
   );
 }
