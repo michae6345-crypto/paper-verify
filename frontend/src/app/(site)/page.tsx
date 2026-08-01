@@ -5,6 +5,7 @@ import { Hero } from "@/components/site/hero";
 import { Intro } from "@/components/site/intro";
 import { Measured } from "@/components/site/measured";
 import { Process } from "@/components/site/process";
+import { Roadmap } from "@/components/site/roadmap";
 
 /**
  * The landing page.
@@ -26,6 +27,7 @@ export default function SitePage() {
       <Decides />
       <Measured />
       <Faq />
+      <Roadmap />
     </>
   );
 }
