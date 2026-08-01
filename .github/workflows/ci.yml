@@ -33,6 +33,36 @@ jobs:
       - name: corpus gate
         run: python fixtures/make_reports.py --verify
 
+  # The code graph agents query before editing backend/ (see CLAUDE.md).
+  # Advisory: it reports drift but does not fail the build. The graph is a
+  # navigation aid, not a correctness gate — the corpus gate above is the one
+  # that decides whether findings changed.
+  graph:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install graphifyy
+      # --code-only is local AST parsing: no API key, no LLM, no network.
+      - name: rebuild graph
+        run: |
+          graphify extract . --code-only
+          graphify cluster-only . --no-viz
+      - name: report drift in the committed snapshot
+        run: |
+          git diff --stat -- graphify-out/GRAPH_REPORT.md
+          if ! git diff --quiet -- graphify-out/GRAPH_REPORT.md; then
+            echo "::notice::The code graph changed. Run 'graphify extract . --code-only && graphify cluster-only .' and commit graphify-out/GRAPH_REPORT.md."
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: graph
+          path: graphify-out/GRAPH_REPORT.md
+          if-no-files-found: warn
+
   frontend:
     runs-on: ubuntu-latest
     defaults:

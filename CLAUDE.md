@@ -87,6 +87,42 @@ managed 11/50.
 
 ---
 
+## Query the graph before you edit `backend/`
+
+There is a Graphify code graph of this repo. **Query it before changing a function
+signature, moving a module, or deleting anything** — it answers "who calls this" across
+the whole repo, which no single file read can.
+
+The `graphify` MCP server is registered in `.mcp.json`, so query it directly rather than
+shelling out. The CLI equivalents, if you need them:
+
+```bash
+graphify affected "parse_tables" --depth 2     # who breaks if I change this
+graphify explain "CheckContext"                # what a node is and what touches it
+graphify query "how does a verdict reach the store" --budget 2000
+graphify god-nodes --top 10                    # the hubs; change these carefully
+```
+
+`docs/GRAPH_FINDINGS.md` is a committed snapshot of what the graph says about this
+codebase — read it before a refactor. Rebuild after structural changes:
+
+```bash
+graphify extract . --code-only && graphify cluster-only .
+```
+
+`--code-only` is deliberate: it uses local AST parsing with no API key and no LLM.
+
+**Why this matters here specifically.** Ownership boundaries in `docs/OWNERSHIP.md` stop
+agents colliding, and they also stop agents seeing each other's code — which is how this
+repo ended up with two `latexutil.py` modules implementing the same four LaTeX primitives
+in two different ways. Nothing imports both, so no file read reveals it. Only a
+whole-repo view does.
+
+**Scope: Graphify is development tooling and nothing more.** Never import it from
+`backend/`, never invoke it from the verification pipeline, and never run it against a
+submitted paper. Its doc/PDF pass is LLM-driven and produces `INFERRED` edges;
+adjudication in this product is deterministic by construction. The two must not mix.
+
 ## The recurring bug in this codebase
 
 Every serious defect found so far is the same shape: **a lossy reading of the source
