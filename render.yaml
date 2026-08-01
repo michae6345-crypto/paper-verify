@@ -2,38 +2,55 @@
 # process that stays alive: SSE streaming, multi-second LaTeX parsing, and a
 # 3-second arXiv rate limit are all hostile to serverless functions.
 #
-# The frontend deploys separately on Vercel — see docs/DEPLOY.md.
+# The frontend deploys separately on Vercel. See docs/DEPLOY.md.
 
 services:
   - type: web
-    name: paper-verify-api
+    name: residual-api
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
     plan: free
     healthCheckPath: /runs
     envVars:
-      # Set to the deployed frontend origin. Comma-separated for several.
+      # The deployed frontend origin. Comma-separated for several.
       - key: PV_CORS_ORIGINS
         sync: false
       # Identifies us to arXiv, Crossref and OpenAlex. They ask for a real
-      # address, and Crossref/OpenAlex give a faster pool in return.
+      # address, and Crossref and OpenAlex give a faster pool in return.
       - key: CONTACT_EMAIL
         sync: false
       # Raises the GitHub limit from 60/hour to 5,000 for repository lookups.
       - key: GITHUB_TOKEN
         sync: false
-      - key: ARXIV_CACHE_DIR
-        value: /data/.arxivcache
-      - key: HTTP_CACHE_DIR
-        value: /data/.httpcache
       - key: QUEUE_BACKEND
         value: inline
       - key: LLM_ENABLED
         value: "false"
-    disk:
-      # Without this the caches are lost on every deploy and we re-fetch from
-      # arXiv on the next run. 1GB holds the validation corpus comfortably.
-      name: caches
-      mountPath: /data
-      sizeGB: 1
+
+      # Caches live on the container filesystem, which Render wipes on every
+      # deploy and on every wake from sleep.
+      #
+      # Free instances cannot attach a persistent disk, so this is the only
+      # option at this tier. The consequence is real but bounded: after a
+      # restart, the first request for a given paper fetches from arXiv again.
+      # It is not a bulk re-fetch, and the 3s rate limiter still holds, so we
+      # stay within arXiv's terms. It does mean a cold instance is slow.
+      #
+      # To fix it, move to a paid instance type and restore the disk block at
+      # the foot of this file. Both values then point at /data.
+      - key: ARXIV_CACHE_DIR
+        value: /tmp/.arxivcache
+      - key: HTTP_CACHE_DIR
+        value: /tmp/.httpcache
+
+# Persistent cache, for a paid instance type. Free instances cannot attach a
+# disk, and a blueprint that declares one on `plan: free` is rejected.
+#
+# When you upgrade, set `plan: starter` above, point ARXIV_CACHE_DIR and
+# HTTP_CACHE_DIR back at /data, and uncomment this:
+#
+#    disk:
+#      name: caches
+#      mountPath: /data
+#      sizeGB: 1

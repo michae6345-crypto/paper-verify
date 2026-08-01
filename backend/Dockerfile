@@ -17,12 +17,14 @@ RUN pip install --no-cache-dir \
 
 COPY backend ./backend
 
-# Caches live on a mounted volume in production. Without one, every restart
-# re-fetches from arXiv — which is exactly the behaviour CLAUDE.md forbids.
+# Defaults only. render.yaml overrides both, because where the cache can live
+# depends on the instance type: a paid instance mounts a disk at /data, a free
+# one has no disk at all and falls back to /tmp. Creating both here means the
+# image works either way without a conditional.
 ENV ARXIV_CACHE_DIR=/data/.arxivcache \
     HTTP_CACHE_DIR=/data/.httpcache \
     PYTHONPATH=/app/backend
-RUN mkdir -p /data/.arxivcache /data/.httpcache
+RUN mkdir -p /data/.arxivcache /data/.httpcache /tmp/.arxivcache /tmp/.httpcache
 
 EXPOSE 8000
 
