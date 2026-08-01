@@ -342,6 +342,68 @@ def _cell_spans(raw: str) -> tuple[str, int, int]:
 # --------------------------------------------------------------------------
 
 
+def _row_cells(cells: list[Cell], row: int) -> list[Cell]:
+    return [c for c in cells if c.row == row]
+
+
+def _covered(cell: Cell) -> range:
+    return range(cell.col, cell.col + cell.colspan)
+
+
+def _infer_header_rows(cells: list[Cell]) -> list[int]:
+    """Identify header rows in a table that has no rule under its header.
+
+    Used only as a fallback: a `\\midrule` or `\\hline` is always believed first.
+    Plenty of real tables have no rule there at all — older CVPR and NIPS styles
+    especially — and without this, both checks decline the whole table.
+
+    Why an inference is admissible here, when this codebase refuses them
+    elsewhere: the failure mode is asymmetric, and neither direction can
+    manufacture a false accusation.
+
+      - Mistaking a data row for a header drops one value from the comparison
+        set. A bolded value can then only look correct more often. That is a
+        miss, never a false `diverges`.
+      - Mistaking a header for data contributes cells holding no numbers, and
+        those are excluded from every comparison anyway.
+
+    That asymmetry is the test to apply to any inference added here. An
+    inference that could invent a finding does not belong in this file, however
+    plausible it looks.
+
+    The rule: the first row is a header when none of its cells parse as a number
+    and some later row does put a number in a column where the first row has
+    text. A second row joins it on the same test. If the first row parses as
+    numbers there is no deterministic answer, and the caller keeps the warning.
+    """
+    rows = sorted({c.row for c in cells})
+    if len(rows) < 2:
+        return []
+
+    first = _row_cells(cells, rows[0])
+    if any(c.values for c in first):
+        return []
+
+    labelled = {j for c in first if c.text.strip() for j in _covered(c)}
+    if not labelled:
+        return []
+    if not any(
+        c.values and any(j in labelled for j in _covered(c))
+        for c in cells
+        if c.row != rows[0]
+    ):
+        return []
+
+    header = [rows[0]]
+    # A second header row — BERT's task names over training-set sizes — passes
+    # the same test, provided it leaves at least one row of data behind.
+    if len(rows) > 2:
+        second = _row_cells(cells, rows[1])
+        if any(c.text.strip() for c in second) and not any(c.values for c in second):
+            header.append(rows[1])
+    return header
+
+
 def _table_dom_id(label: str | None, ordinal: int) -> str:
     if label:
         return label if ":" in label else f"tab:{label}"
@@ -462,19 +524,29 @@ def _build_table(
     # --- headers ----------------------------------------------------------
     header_rows = sorted({c.row for c in cells if c.block == 0})
     has_body = any(c.block > 0 for c in cells)
+    # How the header was established, the way `Column.direction_source` records
+    # how direction was: "rule" | "inferred" | "none".
+    header_source = "rule"
     if not has_body:
         header_rows = []
-        if cells:
-            warnings.append(
-                f"{dom_id}: no full-width rule separates a header from the body; "
-                "no row is marked as a header"
-            )
+        header_source = "none"
     elif len(header_rows) > MAX_HEADER_ROWS:
         warnings.append(
             f"{dom_id}: {len(header_rows)} rows precede the first rule, more than the "
             f"{MAX_HEADER_ROWS} a header plausibly spans; none marked as a header"
         )
         header_rows = []
+        header_source = "none"
+
+    if not header_rows and cells:
+        header_rows = _infer_header_rows(cells)
+        if header_rows:
+            header_source = "inferred"
+        else:
+            warnings.append(
+                f"{dom_id}: no full-width rule separates a header from the body, and "
+                "the first row does not read as one either; no row is marked as a header"
+            )
     header_set = set(header_rows)
     for cell in cells:
         cell.is_header = cell.row in header_set
@@ -511,6 +583,12 @@ def _build_table(
     table.n_rows = row_index
     table.n_cols = n_cols
     table.parse_warnings = warnings
+    # `Table` has no `header_source` field yet — requested from the orchestrator,
+    # who owns models.py. Set it the moment it exists rather than leaving the
+    # provenance uncomputed; an inferred header must stay out of parse_warnings,
+    # since a warning would suppress the very checks this fallback recovers.
+    if "header_source" in type(table).model_fields:
+        table.header_source = header_source
     return table
 
 

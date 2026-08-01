@@ -425,6 +425,11 @@ DROP_WITH_ARGS: dict[str, int] = {
     "todo": 1,
     "marginpar": 1,
     "index": 1,
+    # Figure-layout tabulars put \includegraphics in cells. Without this, the
+    # `.83` of [width=.83\linewidth] is read as the cell's value.
+    "includegraphics": 1,
+    "epsfig": 1,
+    "psfig": 1,
 }
 
 # Commands replaced by their (single) argument.

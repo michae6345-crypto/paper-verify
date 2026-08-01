@@ -538,7 +538,9 @@ def test_contradictory_arrows_refuse_to_choose():
     assert column.direction_source is None
 
 
-def test_table_without_any_rule_marks_no_header_and_warns():
+def test_first_row_of_numbers_is_not_inferred_as_a_header():
+    """No rule, and the first row parses as numbers. There is no deterministic
+    answer, so nothing is marked and the checks decline."""
     latex = (
         "\\begin{table}\\label{tab:t}\\begin{tabular}{cc}\n"
         "a & 1 \\\\\nb & 2 \\\\\n\\end{tabular}\\end{table}"
@@ -546,6 +548,76 @@ def test_table_without_any_rule_marks_no_header_and_warns():
     table = parse_tables(latex)[0]
     assert not any(c.is_header for c in table.cells)
     assert any("no full-width rule" in w for w in table.parse_warnings)
+
+
+def test_header_inferred_when_no_rule_separates_it():
+    """Older CVPR and NIPS styles put no rule under the header row. The first
+    row holds no numbers and later rows put numbers under its labels, so it is
+    a header — and no warning fires, because a warning here would suppress the
+    very checks this fallback exists to recover."""
+    latex = (
+        "\\begin{table}\\label{tab:t}\\begin{tabular}{lcc}\n"
+        "Model & BLEU & PPL \\\\\n"
+        "base & 25.8 & 4.92 \\\\\nbig & 26.4 & 4.33 \\\\\n"
+        "\\end{tabular}\\end{table}"
+    )
+    table = parse_tables(latex)[0]
+    assert sorted({c.row for c in table.cells if c.is_header}) == [0]
+    assert [c.header for c in table.columns] == ["Model", "BLEU", "PPL"]
+    assert [c.value for c in table.column_cells(1)] == [25.8, 26.4]
+    assert table.parse_warnings == []
+
+
+def test_two_row_header_is_inferred():
+    """BERT's tab:mask_ablation shape: a grouping row over a names row, with no
+    rule under either."""
+    latex = (
+        "\\begin{table}\\label{tab:t}\\begin{tabular}{lcc}\n"
+        "Masking Rates & Dev Set & Results \\\\\n"
+        "Mask & MNLI & NER \\\\\n"
+        "80\\% & 84.2 & 95.4 \\\\\n"
+        "\\end{tabular}\\end{table}"
+    )
+    table = parse_tables(latex)[0]
+    assert sorted({c.row for c in table.cells if c.is_header}) == [0, 1]
+    assert table.columns[1].header == "Dev Set MNLI"
+
+
+def test_rule_based_header_wins_over_inference():
+    """The fallback runs only when the rule-based path found nothing."""
+    latex = (
+        "\\begin{table}\\label{tab:t}\\begin{tabular}{lcc}\n"
+        "Model & BLEU & PPL \\\\\n\\midrule\n"
+        "Name & Score & Loss \\\\\nbig & 26.4 & 4.33 \\\\\n"
+        "\\end{tabular}\\end{table}"
+    )
+    table = parse_tables(latex)[0]
+    assert sorted({c.row for c in table.cells if c.is_header}) == [0]
+
+
+def test_inference_never_removes_the_only_data_row():
+    """A two-row table cannot give up a row to a second header line."""
+    latex = (
+        "\\begin{table}\\label{tab:t}\\begin{tabular}{lc}\n"
+        "Model & BLEU \\\\\nbig & 26.4 \\\\\n\\end{tabular}\\end{table}"
+    )
+    table = parse_tables(latex)[0]
+    assert sorted({c.row for c in table.cells if c.is_header}) == [0]
+    assert [c.value for c in table.column_cells(1)] == [26.4]
+
+
+def test_includegraphics_width_is_not_a_cell_value():
+    """Figure-layout tabulars put \\includegraphics in cells. The `.83` of
+    [width=.83\\linewidth] is a layout dimension, not a reported number."""
+    latex = (
+        "\\begin{table}\\label{tab:t}\\begin{tabular}{cc}\n"
+        "\\includegraphics[width=.83\\linewidth]{fig1.pdf} & "
+        "\\includegraphics[width=0.28\\linewidth]{fig2.pdf} \\\\\n"
+        "\\end{tabular}\\end{table}"
+    )
+    table = parse_tables(latex)[0]
+    assert all(c.values == [] for c in table.cells)
+    assert all(c.text == "" for c in table.cells)
 
 
 def test_ragged_row_is_warned_not_guessed():
