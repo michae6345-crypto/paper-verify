@@ -439,6 +439,7 @@ def _build_table(
     label: str | None,
     caption: str,
     dom_id: str,
+    is_nested: bool,
     macros: dict[str, str],
     column_types: dict[str, int],
     warnings: list[str],
@@ -583,12 +584,8 @@ def _build_table(
     table.n_rows = row_index
     table.n_cols = n_cols
     table.parse_warnings = warnings
-    # `Table` has no `header_source` field yet — requested from the orchestrator,
-    # who owns models.py. Set it the moment it exists rather than leaving the
-    # provenance uncomputed; an inferred header must stay out of parse_warnings,
-    # since a warning would suppress the very checks this fallback recovers.
-    if "header_source" in type(table).model_fields:
-        table.header_source = header_source
+    table.header_source = header_source
+    table.is_nested = is_nested
     return table
 
 
@@ -618,13 +615,21 @@ def parse_tables(latex: str, macros=None) -> list[Table]:
     positions, discovery_warnings = _discover_positions(src)
     floats = _float_spans(src)
 
+    # Body span of every tabular, so nesting is decided by containment rather
+    # than by proximity. A tabular inside another one's body is a line-break
+    # helper — `{@{}c@{}}Dense Block\\ (1)` stacking two lines inside a cell —
+    # not a table of data. DenseNet has seven.
+    spans = {p: _env_span(src, p) for p in positions}
+    bodies = [(s[2], s[3]) for s in spans.values() if s is not None]
+
     tables: list[Table] = []
     seen_dom_ids: dict[str, int] = {}
     for ordinal, pos in enumerate(positions):
-        span = _env_span(src, pos)
+        span = spans[pos]
         if span is None:
             continue
         _name, colspec, body_start, body_end, env_end = span
+        is_nested = any(lo <= pos and env_end <= hi for lo, hi in bodies if (lo, hi) != (body_start, body_end))
 
         # Caption and label live in the enclosing float, before or after the
         # tabular depending on the paper. Fall back to a window when the float is
@@ -633,21 +638,30 @@ def parse_tables(latex: str, macros=None) -> list[Table]:
         enclosing = [(a, b) for a, b in floats if a <= pos and env_end <= b]
         if enclosing:
             lo, hi = min(enclosing, key=lambda s: s[1] - s[0])
-        # Never let a neighbouring tabular's caption leak in.
+        # Never let a neighbouring tabular's caption leak in. A tabular nested
+        # inside our own body is not a neighbour: clipping the search region at
+        # it would stop this table from ever reaching its own \label, which is
+        # how ELMo's line-break helper came to own `table:lm_perplexities`.
         for other in positions:
-            if other == pos:
+            if other == pos or body_start <= other < body_end:
                 continue
             if other < pos:
-                other_span = _env_span(src, other)
+                other_span = spans[other]
                 other_end = other_span[4] if other_span else other
                 if lo < other_end <= pos:
                     lo = other_end
             elif lo <= other < hi:
                 hi = other
 
-        label = _nearest_command_arg(src, (lo, hi), "label", pos)
-        caption_raw = _nearest_command_arg(src, (lo, hi), "caption", pos)
-        caption = clean_latex(expand_macros(caption_raw or "", merged))
+        # A nested tabular claims no label or caption: those belong to the table
+        # it sits inside. Without this the helper wins on proximity, since it is
+        # physically closer to the \label than its own enclosing \begin{tabular}.
+        if is_nested:
+            label, caption = None, ""
+        else:
+            label = _nearest_command_arg(src, (lo, hi), "label", pos)
+            caption_raw = _nearest_command_arg(src, (lo, hi), "caption", pos)
+            caption = clean_latex(expand_macros(caption_raw or "", merged))
 
         # Anchors must be unique: the gutter and jump-to-anchor both key on
         # dom_id. ResNet comments out an \end{table*}, which leaves two tabulars
@@ -673,6 +687,7 @@ def parse_tables(latex: str, macros=None) -> list[Table]:
                 label=label,
                 caption=caption,
                 dom_id=dom_id,
+                is_nested=is_nested,
                 macros=merged,
                 column_types=column_types,
                 warnings=warnings,

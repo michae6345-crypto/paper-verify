@@ -642,3 +642,66 @@ def test_user_macro_bold_expansion():
     cell = next(c for c in parse_tables(latex)[0].cells if c.value == 41.8)
     assert cell.is_bold is True
     assert cell.bold_source == "macro:mbf"
+
+
+def test_nested_tabular_is_marked_and_claims_no_label():
+    r"""A tabular inside another table's cell is a line-break helper. It is
+    marked `is_nested`, and it must not take the enclosing table's \label — it
+    sits physically closer to it than the outer \begin{tabular} does. ELMo's
+    "Before/After tuning" helper owned `table:lm_perplexities` until this."""
+    latex = "\n".join(
+        [
+            r"\begin{table}\begin{tabular}{lc}",
+            r"\toprule",
+            r"\begin{tabular}[c]{@{}l@{}}Before\\ tuning\end{tabular} & PPL \\",
+            r"\midrule",
+            r"base & 72.1 \\",
+            r"\bottomrule",
+            r"\end{tabular}",
+            r"\caption{Development set perplexity.}\label{tab:ppl}\end{table}",
+        ]
+    )
+    tables = parse_tables(latex)
+    outer = [t for t in tables if not t.is_nested]
+    inner = [t for t in tables if t.is_nested]
+    assert len(outer) == 1 and len(inner) == 1
+    assert outer[0].label == "tab:ppl"
+    assert outer[0].caption == "Development set perplexity."
+    assert inner[0].label is None
+    assert inner[0].caption == ""
+    # The helper's rows never leak into the outer table.
+    assert outer[0].n_rows == 2
+    assert [c.value for c in outer[0].column_cells(1)] == [72.1]
+
+
+def test_header_source_records_provenance():
+    ruled = "\n".join(
+        [
+            r"\begin{table}\label{tab:a}\begin{tabular}{lc}",
+            r"\toprule",
+            r"Model & BLEU \\",
+            r"\midrule",
+            r"big & 26.4 \\",
+            r"\bottomrule",
+            r"\end{tabular}\end{table}",
+        ]
+    )
+    unruled = "\n".join(
+        [
+            r"\begin{table}\label{tab:b}\begin{tabular}{lc}",
+            r"Model & BLEU \\",
+            r"big & 26.4 \\",
+            r"\end{tabular}\end{table}",
+        ]
+    )
+    undecidable = "\n".join(
+        [
+            r"\begin{table}\label{tab:c}\begin{tabular}{cc}",
+            r"1 & 2 \\",
+            r"3 & 4 \\",
+            r"\end{tabular}\end{table}",
+        ]
+    )
+    assert parse_tables(ruled)[0].header_source == "rule"
+    assert parse_tables(unruled)[0].header_source == "inferred"
+    assert parse_tables(undecidable)[0].header_source == "none"
