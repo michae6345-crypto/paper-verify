@@ -211,6 +211,11 @@
         "anchor": {
           "$ref": "#/$defs/Anchor"
         },
+        "verbatim": {
+          "default": "",
+          "title": "Verbatim",
+          "type": "string"
+        },
         "explanation": {
           "default": "",
           "title": "Explanation",

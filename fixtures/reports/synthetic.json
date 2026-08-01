@@ -24,6 +24,7 @@
             "char_end": null,
             "human_locator": "Table 3, row 2, column \"Ours\""
           },
+          "verbatim": "Our method reaches 87.4 on the held-out split, outperforming all prior work.",
           "explanation": "87.4 is bolded, but 84.1 is the highest value in this block of the column."
         }
       ],
@@ -53,6 +54,7 @@
             "char_end": null,
             "human_locator": "Table 1, row 3, column \"Average\""
           },
+          "verbatim": "",
           "explanation": "Within the rounding implied by one decimal place."
         }
       ],
@@ -109,7 +111,7 @@
     {
       "what": "Abstract agrees with the tables",
       "reason": "llm_disabled",
-      "detail": "Set LLM_ENABLED=true to run this check."
+      "detail": "Language model extraction is turned off for this run."
     },
     {
       "what": "Reference 14",

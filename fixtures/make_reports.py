@@ -80,6 +80,8 @@ def synthetic() -> RunReport:
                             col=3,
                             human_locator='Table 3, row 2, column "Ours"',
                         ),
+                        verbatim="Our method reaches 87.4 on the held-out split, "
+                        "outperforming all prior work.",
                         explanation="87.4 is bolded, but 84.1 is the highest value in "
                         "this block of the column.",
                     )
@@ -154,7 +156,9 @@ def synthetic() -> RunReport:
             NotChecked(
                 what="Abstract agrees with the tables",
                 reason=ReasonCode.LLM_DISABLED,
-                detail="Set LLM_ENABLED=true to run this check.",
+                # §7: name things by what the user controls, not by system
+                # internals. An env var is not something the reader can act on.
+                detail="Language model extraction is turned off for this run.",
             ),
             NotChecked(
                 what="Reference 14",

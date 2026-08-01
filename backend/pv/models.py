@@ -277,6 +277,11 @@ class Finding(BaseModel):
     computed: str | None = None
     delta: str | None = None
     anchor: Anchor
+    # The paper's own words, quoted. §5.4 sets this in serif above the comparison
+    # block — it is the claim being examined, not our description of it. Distinct
+    # from `explanation`, which is the checker's sentence. Empty when the claim is
+    # a table cell rather than prose; the anchor locates it either way.
+    verbatim: str = ""
     # One line of plain English. Shown in the verdict pane (§5.4).
     explanation: str = ""
 
