@@ -6,9 +6,21 @@ The local/hosted split (§13, CLAUDE.md) is expressed here as values, not as
     QUEUE_BACKEND      inline            FastAPI BackgroundTasks (the only backend today)
     PV_FIXTURES_DIR    unset             directory of paper sources; when set, a run whose
                                          id has a subdirectory there is ingested from disk
-    PV_OFFLINE         0                 never touch the network during ingest
+    PV_OFFLINE         0                 never touch the network during ingest; a paper we
+                                         have no cached copy of comes back `network_error`
     PV_CORS_ORIGINS    localhost:3000    comma-separated
     PV_MAX_RUNS        200               how many runs the in-memory store keeps
+
+Two variables the API does not read but which govern whether it makes requests:
+
+    ARXIV_CACHE_DIR    <repo root>/.arxivcache
+        Read by `pv.ingest.fetch` at call time. The default is anchored to the
+        repository root, not to `cwd`, so serving from `backend/` uses the same
+        cache the CLI filled rather than silently re-fetching into a second one.
+        Set it only to point at a cache somewhere else.
+    HTTP_BACKEND       live
+        `offline` makes `pv.adapters.http` refuse every request, which is what
+        keeps the link and citation checks off the wire.
 """
 
 from __future__ import annotations

@@ -22,7 +22,7 @@ from pv.api import app as app_module
 from pv.api import jobs
 from pv.api.config import Settings
 from pv.api.store import RunStore
-from pv.models import RunReport, Verdict
+from pv.models import ReasonCode, RunReport, Verdict
 from pv.run import run_paper
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "papers"
@@ -30,23 +30,79 @@ PAPER = "1706.03762"  # the Transformer paper — the canonical end-to-end case
 EXPECTED_CHECKS = ["bold_extreme", "row_arithmetic", "dead_links", "citation_existence"]
 
 
-@pytest.fixture(autouse=True)
-def offline_app(monkeypatch):
-    """Point the app at the fixture corpus and give each test a fresh store."""
-    monkeypatch.setenv("HTTP_BACKEND", "offline")
-    monkeypatch.setattr(
-        app_module,
-        "settings",
-        Settings(fixtures_dir=FIXTURES, offline=True, llm_enabled=False),
-    )
-    monkeypatch.setattr(app_module, "store", RunStore(max_runs=50))
-    return app_module
+@pytest.fixture(scope="module", autouse=True)
+def offline_app():
+    """The app, pointed at the fixture corpus, with the network nailed shut.
+
+    Fail loudly if anything here tries to leave the machine.
+
+    arXiv allows one request every three seconds and bans for abuse (CLAUDE.md),
+    and a test suite is the worst possible offender because it runs constantly.
+    A stray request is otherwise invisible — it does not fail anything, it just
+    makes the suite slower, which is how one survived here until it was timed.
+
+    Both egress points are stubbed rather than merely configured off, so the
+    suite cannot regress into making requests without a test failing:
+      - `fetch._download`, the only place ingest talks to arXiv;
+      - `adapters.http.HttpxClient`, which `get_http_client` builds unless
+        `HTTP_BACKEND=offline`, and which the link and citation checks use.
+
+    `offline=True` is what makes ingest pass `allow_network=False`, so a paper
+    with no fixture and no cache entry resolves to `network_error` immediately
+    instead of fetching. The guards above are the proof that it does.
+    """
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError(
+            "this test tried to reach the network; runs here must be offline"
+        )
+
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr("pv.ingest.fetch._download", forbidden)
+        mp.setattr("pv.adapters.http.HttpxClient", forbidden)
+        mp.setenv("HTTP_BACKEND", "offline")
+        mp.setattr(
+            app_module,
+            "settings",
+            Settings(fixtures_dir=FIXTURES, offline=True, llm_enabled=False),
+        )
+        mp.setattr(app_module, "store", RunStore(max_runs=50))
+        yield app_module
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def client(offline_app):
     with TestClient(offline_app.app) as c:
         yield c
+
+
+@pytest.fixture(scope="module")
+def created(client) -> dict:
+    """One completed run of the Transformer paper, shared by every read-only test.
+
+    Checking a real paper costs about a second. Twenty of them is the difference
+    between a suite people run and a suite people skip, and none of these tests
+    needs its *own* run — the results are append-only, so a finished run answers
+    every question about it as well as a fresh one would.
+
+    Posted as a URL so the endpoint's id normalisation is exercised here too.
+    """
+    resp = client.post("/runs", json={"arxiv_id": f"https://arxiv.org/abs/{PAPER}"})
+    assert resp.status_code == 202
+    return resp.json()
+
+
+@pytest.fixture(scope="module")
+def run_id(created) -> str:
+    return created["run_id"]
+
+
+@pytest.fixture
+def own_store(offline_app):
+    """A private store, for the tests that assert over the whole run list."""
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(offline_app, "store", RunStore(max_runs=50))
+        yield
 
 
 def read_events(response) -> list[tuple[str, dict]]:
@@ -71,31 +127,30 @@ def read_events(response) -> list[tuple[str, dict]]:
 # --------------------------------------------------------------------------
 
 
-def test_create_run_returns_id_and_manifest(client):
-    resp = client.post("/runs", json={"arxiv_id": PAPER})
-    assert resp.status_code == 202
-    body = resp.json()
-
-    assert body["run_id"]
-    assert body["arxiv_id"] == PAPER
+def test_create_run_returns_id_and_manifest(created):
+    assert created["run_id"]
+    # Posted as an arXiv URL; the id comes back normalised.
+    assert created["arxiv_id"] == PAPER
     # The manifest is the whole list of intended checks, known up front — it is
     # what the UI derives `pending` from.
-    assert [c["checker"] for c in body["manifest"]["checks"]] == EXPECTED_CHECKS
-    assert all(c["display_name"] for c in body["manifest"]["checks"])
+    assert [c["checker"] for c in created["manifest"]["checks"]] == EXPECTED_CHECKS
+    assert all(c["display_name"] for c in created["manifest"]["checks"])
 
 
 @pytest.mark.parametrize(
     "given",
     ["1706.03762", "1706.03762v5", "https://arxiv.org/abs/1706.03762", "arXiv:1706.03762"],
 )
-def test_arxiv_id_is_normalised(client, given):
-    body = client.post("/runs", json={"arxiv_id": given}).json()
-    assert body["arxiv_id"] == PAPER
+def test_arxiv_id_is_normalised(given):
+    """Normalisation is a pure function; the endpoint wiring is covered by
+    `created`, which posts a URL. Running a paper per form would cost four
+    seconds to test a regex."""
+    arxiv_id, _version, error = jobs.normalize_id(given)
+    assert (arxiv_id, error) == (PAPER, None)
 
 
-def test_run_result_matches_the_headless_runner(client):
+def test_run_result_matches_the_headless_runner(client, run_id):
     """The API is a surface over the runner, not a second opinion."""
-    run_id = client.post("/runs", json={"arxiv_id": PAPER}).json()["run_id"]
     report = RunReport.model_validate(client.get(f"/runs/{run_id}").json()["report"])
     expected = run_paper(PAPER, from_directory=str(FIXTURES / PAPER))
 
@@ -106,15 +161,13 @@ def test_run_result_matches_the_headless_runner(client):
     assert [n.reason for n in report.not_checked] == [n.reason for n in expected.not_checked]
 
 
-def test_report_endpoint_returns_the_bare_contract_type(client):
-    run_id = client.post("/runs", json={"arxiv_id": PAPER}).json()["run_id"]
+def test_report_endpoint_returns_the_bare_contract_type(client, run_id):
     report = RunReport.model_validate(client.get(f"/runs/{run_id}/report").json())
     assert report.arxiv_id == PAPER
     assert report.finished_at is not None
 
 
-def test_status_is_complete_and_checks_are_terminal(client):
-    run_id = client.post("/runs", json={"arxiv_id": PAPER}).json()["run_id"]
+def test_status_is_complete_and_checks_are_terminal(client, run_id):
     body = client.get(f"/runs/{run_id}").json()
     assert body["status"] == "complete"
     # Append-only: nothing pending or running is ever stored as a result.
@@ -135,17 +188,43 @@ def test_bad_arxiv_id_yields_a_report_not_a_500(client):
     assert body["status"] == "complete"
     report = RunReport.model_validate(body["report"])
     assert report.checks == []
-    # §5.5 has to say what happened, in a reason code the UI can label.
-    assert [n.reason for n in report.not_checked] == ["no_latex_source"]
+    # §5.5 has to say what happened, in a reason code the UI can label. A
+    # malformed identifier is not `no_latex_source` — that means a real paper
+    # that shipped no LaTeX, which reads completely differently.
+    assert [n.reason for n in report.not_checked] == [ReasonCode.INVALID_PAPER_ID]
     assert report.not_checked[0].detail
 
 
 def test_paper_with_no_source_yields_a_report(client):
-    """A well-formed id we have no source for is still a valid run."""
+    """A well-formed id we have no source for is still a valid run.
+
+    Offline, an uncached paper resolves to `network_error` without a request
+    going out — `no_network` would fail this test if one did.
+    """
     run_id = client.post("/runs", json={"arxiv_id": "2401.00001"}).json()["run_id"]
     report = RunReport.model_validate(client.get(f"/runs/{run_id}/report").json())
-    assert report.not_checked
-    assert report.not_checked[0].reason.value in {"no_latex_source", "network_error"}
+    assert report.checks == []
+    assert [n.reason for n in report.not_checked] == [ReasonCode.NETWORK_ERROR]
+
+
+def test_the_offline_app_never_reaches_the_network(client, own_store):
+    """The whole suite must be network-free; this states it as a requirement
+    rather than leaving it to be noticed in the wall-clock time.
+
+    Every path that could reach out is exercised — a cached paper, an uncached
+    one, and a malformed id, through both the run and the repository endpoints.
+    If any of them made a request, the guard in `offline_app` would raise.
+    """
+    for arxiv_id in ("2401.00001", "not-a-paper"):
+        assert client.post("/runs", json={"arxiv_id": arxiv_id}).status_code == 202
+        assert client.get(f"/papers/{arxiv_id}/repositories").status_code == 200
+    # The fixture-backed paper goes through ingest for real; `created` already
+    # ran the check pipeline for it under the same guard.
+    assert client.get(f"/papers/{PAPER}/repositories").status_code == 200
+
+    runs = client.get("/runs").json()["runs"]
+    assert len(runs) == 2
+    assert all(r["status"] == "complete" for r in runs)
 
 
 def test_unknown_run_id_is_404(client):
@@ -160,23 +239,31 @@ def test_unknown_run_id_is_404(client):
 # --------------------------------------------------------------------------
 
 
-def test_recent_runs_are_listed_most_recent_first(client):
-    first = client.post("/runs", json={"arxiv_id": PAPER}).json()["run_id"]
-    second = client.post("/runs", json={"arxiv_id": "1409.1556"}).json()["run_id"]
+def test_recent_runs_are_listed_most_recent_first(client, own_store):
+    # Uncached papers: runs that finish at once, so ordering costs no parses.
+    first = client.post("/runs", json={"arxiv_id": "2401.00001"}).json()["run_id"]
+    second = client.post("/runs", json={"arxiv_id": "2401.00002"}).json()["run_id"]
 
     runs = client.get("/runs").json()["runs"]
     assert [r["run_id"] for r in runs] == [second, first]
+    # A paper we could not read is still a row, with an empty verdict strip.
+    assert runs[0]["verdicts"] == []
+    assert runs[0]["not_checked"] == 1
 
-    row = runs[1]
+
+def test_run_summary_carries_the_verdict_strip(client, run_id):
+    """§5.1's row: enough to render the fingerprint without fetching the report."""
+    row = next(r for r in client.get("/runs").json()["runs"] if r["run_id"] == run_id)
     assert row["arxiv_id"] == PAPER
+    assert row["title"] == "Attention Is All You Need"
     assert row["status"] == "complete"
     assert len(row["verdicts"]) == len(EXPECTED_CHECKS)
     assert row["tables_parsed"] > 0
 
 
-def test_recent_runs_respects_limit(client):
+def test_recent_runs_respects_limit(client, own_store):
     for _ in range(3):
-        client.post("/runs", json={"arxiv_id": PAPER})
+        client.post("/runs", json={"arxiv_id": "2401.00001"})
     assert len(client.get("/runs", params={"limit": 2}).json()["runs"]) == 2
 
 
@@ -185,9 +272,7 @@ def test_recent_runs_respects_limit(client):
 # --------------------------------------------------------------------------
 
 
-def test_stream_emits_manifest_then_one_event_per_check_then_done(client):
-    run_id = client.post("/runs", json={"arxiv_id": PAPER}).json()["run_id"]
-
+def test_stream_emits_manifest_then_one_event_per_check_then_done(client, run_id):
     with client.stream("GET", f"/runs/{run_id}/stream") as resp:
         assert resp.status_code == 200
         assert resp.headers["content-type"].startswith("text/event-stream")
@@ -213,10 +298,9 @@ def test_stream_emits_manifest_then_one_event_per_check_then_done(client):
     assert len(done["run"]["report"]["checks"]) == len(EXPECTED_CHECKS)
 
 
-def test_a_finished_run_still_replays_the_whole_stream(client):
+def test_a_finished_run_still_replays_the_whole_stream(client, run_id):
     """Connecting late shows the whole run, not the tail of it. Only possible
     because results are append-only."""
-    run_id = client.post("/runs", json={"arxiv_id": PAPER}).json()["run_id"]
     first = read_events(client.get(f"/runs/{run_id}/stream"))
     second = read_events(client.get(f"/runs/{run_id}/stream"))
     assert [n for n, _ in first] == [n for n, _ in second]
@@ -320,8 +404,6 @@ def test_openapi_exposes_the_contract_models(client):
         assert name in components, f"{name} missing from the generated schema"
 
     # Every reason code and verdict, so the UI can label all of them.
-    from pv.models import ReasonCode
-
     assert set(components["ReasonCode"]["enum"]) == {r.value for r in ReasonCode}
     assert set(components["Verdict"]["enum"]) == {v.value for v in Verdict}
 
@@ -348,9 +430,8 @@ def test_cors_allows_the_frontend_origin(client):
     assert resp.headers["access-control-allow-origin"] == "http://localhost:3000"
 
 
-def test_no_check_result_is_stored_with_a_non_terminal_status(client):
+def test_no_check_result_is_stored_with_a_non_terminal_status(client, run_id):
     """§10 is append-only: `pending` and `running` are derived from the manifest,
     so they must not appear anywhere in a stored result."""
-    run_id = client.post("/runs", json={"arxiv_id": PAPER}).json()["run_id"]
     body = client.get(f"/runs/{run_id}").json()
     assert "status" not in json.dumps(body["report"])

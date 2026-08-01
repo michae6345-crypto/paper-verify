@@ -76,7 +76,12 @@ def manifest_checks(names: tuple[str, ...] = DEFAULT_CHECKS) -> list[CheckDescri
 
 
 def _no_source_report(
-    arxiv_id: str, reason: ReasonCode, detail: str, started: datetime, title: str = ""
+    arxiv_id: str,
+    reason: ReasonCode,
+    detail: str,
+    started: datetime,
+    title: str = "",
+    what: str | None = None,
 ) -> RunReport:
     """A paper we could not read. A valid report, not an error — §5.5 carries the
     reason and the UI shows it as "not checked"."""
@@ -85,7 +90,9 @@ def _no_source_report(
         title=title,
         checks=[],
         not_checked=[
-            NotChecked(what=f"Source for {arxiv_id}", reason=reason, detail=detail)
+            NotChecked(
+                what=what or f"Source for {arxiv_id}", reason=reason, detail=detail
+            )
         ],
         started_at=started,
         finished_at=_now(),
@@ -130,8 +137,16 @@ async def execute(
 
     try:
         if id_error is not None:
+            # A malformed identifier, not a real paper that shipped no LaTeX.
+            # The two read very differently in §5.5, so they get different codes.
             record.finish(
-                _no_source_report(arxiv_id, ReasonCode.NO_LATEX_SOURCE, id_error, started)
+                _no_source_report(
+                    arxiv_id,
+                    ReasonCode.INVALID_PAPER_ID,
+                    id_error,
+                    started,
+                    what=f"Paper {arxiv_id}",
+                )
             )
             return
 
