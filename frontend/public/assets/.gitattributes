@@ -1,4 +1,0 @@
-# These files are served byte-for-byte as they were fetched from the CDN.
-# Git's newline normalisation would rewrite the runtime chunks and the CSS on
-# checkout, which is fine for a diff and wrong for a subresource hash.
-* -text
