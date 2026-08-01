@@ -1,8 +1,8 @@
 # Deploying
 
-Two pieces, deployed separately: a **persistent backend** and a **static frontend**.
+Two pieces, deployed separately: a persistent backend and a static frontend.
 
-Nothing here can be run from an automated session — every host requires an interactive
+Nothing here can be run from an automated session. Every host requires an interactive
 login. The configuration is written and committed; the deploy itself is three commands
 once you are logged in.
 
@@ -13,21 +13,21 @@ once you are logged in.
 The brief (§8) puts the frontend on Vercel, and that still holds. The API does not
 belong there:
 
-- **SSE streaming.** Checks stream one event at a time (§5.3). Serverless functions
+- SSE streaming. Checks stream one event at a time (§5.3), and serverless functions
   have execution ceilings and buffer responses.
-- **Multi-second parses.** TexSoup takes 0.9–5.8s per paper. That is a request timeout
+- Multi-second parses. TexSoup takes 0.9–5.8s per paper. That is a request timeout
   on most function platforms.
-- **The arXiv rate limit.** One request per three seconds, enforced in-process. A
+- The arXiv rate limit. One request per three seconds, enforced in-process. A
   function that cold-starts per request cannot hold a token bucket, and CLAUDE.md is
   explicit that we get IP-banned for ignoring this.
-- **Caches must persist.** `.arxivcache` and `.httpcache` on ephemeral disk means
+- Caches must persist. `.arxivcache` and `.httpcache` on ephemeral disk means
   re-fetching arXiv after every deploy.
 
-So: backend on Render (or Railway/Fly — same Dockerfile), frontend on Vercel.
+So: backend on Render (or Railway/Fly, same Dockerfile), frontend on Vercel.
 
 ---
 
-## Backend — Render
+## Backend on Render
 
 ```bash
 # 1. Push this repo to GitHub (done).
@@ -51,7 +51,7 @@ curl -s -X POST https://<api-host>/runs \
 The first run of any paper fetches from arXiv and takes a few seconds. Subsequent runs
 are served from the mounted cache.
 
-## Frontend — Vercel
+## Frontend on Vercel
 
 ```bash
 cd frontend
@@ -68,26 +68,26 @@ redeploy so it is baked into the client bundle.
 
 Be honest about these rather than discover them live.
 
-**Runs are held in memory.** `pv/api/store.py` keeps them in a process-local dict. Any
+Runs are held in memory. `pv/api/store.py` keeps them in a process-local dict. Any
 restart or redeploy loses every run, so §5.5 permalinks return 404. This is the single
 biggest gap between the MVP and something you can send a link to. The fix is the
-Postgres schema in §10 — deferred because Docker is not installed locally, and because
+Postgres schema in §10, deferred because Docker is not installed locally and because
 build-order step 1 deliberately needed no database.
 
-**One worker only.** The Dockerfile pins `--workers 1`. With runs in memory, a second
+One worker only. The Dockerfile pins `--workers 1`. With runs in memory, a second
 worker would answer `GET /runs/{id}` for a run it has never seen. Do not scale out
 before the store is shared.
 
-**No auth.** §8 specifies Supabase Auth; local mode is single-user with no login. A
+No auth. §8 specifies Supabase Auth; local mode is single-user with no login. A
 public deployment is open to anyone, and every run costs an arXiv fetch. Consider a
 rate limit at the edge before publicising the URL.
 
-**Permalinks are public by default.** The primary user (§1) is a researcher checking
+Permalinks are public by default. The primary user (§1) is a researcher checking
 their own unsubmitted draft. A public permalink asserting that a named paper `diverges`
 is a different product from a private pre-submission check, and §8's reasoning about
 liability applies directly. Decide this deliberately.
 
-**LLM checks are off.** `LLM_ENABLED=false` in the blueprint. Checks 1, 2, 3 and 6 are
+LLM checks are off. `LLM_ENABLED=false` in the blueprint. Checks 1, 2, 3 and 6 are
 the entire first release and none of them call a model (§13), so the deployment is fully
 functional without an OpenRouter key. Turning it on needs `OPENROUTER_API_KEY`, and the
 free tier is 50 requests/day unless the account has bought $10 of credits lifetime.

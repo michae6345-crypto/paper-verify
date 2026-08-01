@@ -3,7 +3,7 @@
 Checks whether an ML paper's own numbers agree with each other, and reports
 discrepancies with evidence.
 
-It does **not** judge whether a paper is good, novel, or true.
+It does not judge whether a paper is good, novel, or true.
 
 ---
 
@@ -11,9 +11,9 @@ It does **not** judge whether a paper is good, novel, or true.
 
 **A language model never produces a verdict.** Models extract structure only. Every
 verdict is computed by deterministic Python from that structure. A check that cannot be
-made deterministic returns `unverifiable` with a reason code — it never guesses.
+made deterministic returns `unverifiable` with a reason code. It never guesses.
 
-Checks 1, 2, 3 and 6 are the entire first release and **none of them call a model.**
+Checks 1, 2, 3 and 6 are the entire first release, and none of them call a model.
 
 The corollary matters as much: **honest incompleteness is the product.** A run where half
 the checks are `unverifiable` with clear reasons is a success. The "not checked" section
@@ -61,11 +61,11 @@ as it completes. Deployment: `docs/DEPLOY.md`.
 | --- | --- |
 | Checks 1, 2, 3, 6 | Implemented, validated against 10 papers |
 | Tests | 391, network-free |
-| False findings on the corpus | **0** |
-| API | Complete — runs, SSE streaming, repository candidates |
+| False findings on the corpus | 0 |
+| API | Complete: runs, SSE streaming, repository candidates |
 | Frontend | Design system, shell, submit and run views; gutter in progress |
-| Persistence | **In memory.** Restarts lose runs; permalinks 404 |
-| Checks 4, 5, 7 | Not started — these are the ones needing a model |
+| Persistence | In memory. Restarts lose runs; permalinks 404 |
+| Checks 4, 5, 7 | Not started. These are the ones that need a model |
 
 ## What the corpus taught us
 
@@ -79,21 +79,21 @@ before shipping:
 - Comparing a bolded value against its whole column instead of its rule-delimited block
   → a false divergence on the Transformer paper.
 - Reading `all` in a header as "average" → six false divergences on ELMo, whose "All
-  layers" column is a grouping. **This one came from a specification, not from code.**
+  layers" column is a grouping. This one came from a specification, not from code.
 - Letting `\includegraphics[width=.83\linewidth]` reach the number scanner → a figure
   layout dimension reported as a data value.
 - A nested line-break tabular stealing its parent table's `\label` → findings that point
   at the wrong table.
 
 When a step narrows or normalises data, ask what it discards and whether a verdict could
-rest on the discarded part. If it could, the answer is `unverifiable` with a reason code
-— plus the comparison attached as evidence, so the user still sees the numbers even when
-we decline to call the paper wrong.
+rest on the discarded part. If it could, the answer is `unverifiable` with a reason code,
+plus the comparison attached as evidence, so the user still sees the numbers even when we
+decline to call the paper wrong.
 
 ## Layout
 
 ```
-backend/pv/models.py     the contract — every workstream meets here
+backend/pv/models.py     the contract; every workstream meets here
 backend/pv/ingest/       arXiv fetch, \input resolution, macro table
 backend/pv/parse/        LaTeX tabular -> Table, with bold and block detection
 backend/pv/checks/       the checks, plus the registry that runs them
@@ -103,5 +103,5 @@ fixtures/GROUND_TRUTH.md hand-derived answers the checkers must reproduce
 docs/BRIEF.md            the full design and build brief
 ```
 
-`fixtures/papers/` holds ten papers' LaTeX as test fixtures — see
+`fixtures/papers/` holds ten papers' LaTeX as test fixtures. See
 [PROVENANCE.md](fixtures/papers/PROVENANCE.md) for attribution and licensing.

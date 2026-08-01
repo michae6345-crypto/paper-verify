@@ -1,4 +1,4 @@
-# Architecture — the acting layer
+# Architecture: the acting layer
 
 Companion to `docs/BRIEF.md`. The brief specifies *what* to build; this specifies *what
 runs it*. Sections continue the brief's numbering.
@@ -13,7 +13,7 @@ Written against the repository as of the current `master`. File paths are real.
 
 | Concern | Today | Gap |
 | --- | --- | --- |
-| Run execution | `pv/run.py::run_paper` — a pure function | No object owns a run over time |
+| Run execution | `pv/run.py::run_paper`, a pure function | No object owns a run over time |
 | Streaming | `pv/api/jobs.py` re-walks the same stages | Two implementations of one pipeline |
 | Claims | `Claim` declared in `models.py`, **never constructed** | The database thesis has no input |
 | Verdicts | Checkers return `CheckResult` with a verdict | Observation and judgement are fused |
@@ -42,7 +42,7 @@ layer up. A skipped module must produce `NOT_ATTEMPTED / CHECKER_ERROR`, not not
 ### 14.2 Run state machine
 
 Currently implicit in the ordering of statements in `jobs.py`. Make it explicit and
-persisted, so a run can be resumed, resumed after restart, and paused for human input.
+persisted, so a run can be resumed after a restart and paused for human input.
 
 ```
 queued → resolving → extracting → mining → awaiting_artifact → planning
@@ -52,16 +52,16 @@ queued → resolving → extracting → mining → awaiting_artifact → plannin
 ```
 
 `awaiting_artifact` is the state the repository confirmation screen (BRIEF §5.2) needs
-and which today has nowhere to live — `checks/repos.py` finds candidates, but there is
+and which today has nowhere to live. `checks/repos.py` finds candidates, but there is
 no state in which the run waits for a choice. Give it a 10-minute timeout: on expiry the
 run proceeds with `artifact = None` and code-dependent checks resolve to
 `unverifiable / NO_CODE_REPOSITORY`. **A run must never block indefinitely on a human.**
 
 `failed` stays reserved for the two stages where there is genuinely nothing to show.
-Once extraction succeeds every outcome is `complete` or `partial` — this already matches
-the behaviour of `run_paper`, it just needs a name.
+Once extraction succeeds every outcome is `complete` or `partial`. This already matches
+the behaviour of `run_paper`; it just needs a name.
 
-### 14.3 Claim mining — the change that matters most
+### 14.3 Claim mining
 
 `Claim` has zero call sites. Until it has some, every run produces a report and discards
 the structured intermediate, which means ten papers processed leaves exactly as much
@@ -96,7 +96,7 @@ class Claim(BaseModel):
 Checkers change from "given the whole document, find things to check" to "given these
 claims, evaluate the ones you apply to." That is a real refactor of the five existing
 checks, but it is what turns each run into rows in a claims table rather than a
-transient report — and it is strictly cheaper now, at five checkers, than at twelve.
+transient report. It is also strictly cheaper now, at five checkers, than at twelve.
 
 Add `applies()` to the checker protocol so planning is explicit:
 
@@ -129,8 +129,8 @@ New module `backend/pv/adjudicate.py` maps `Observation + policy -> CheckResult`
 `CheckResult` gains `policy_version: str`.
 
 The payoff is concrete: the ±0.05 rounding band currently living inside
-`row_arithmetic.py` moves to `policies/tolerance.yaml`, and when you revise it — publicly,
-under argument, which will happen — you replay adjudication over stored observations
+`row_arithmetic.py` moves to `policies/tolerance.yaml`, and when you revise it (publicly,
+under argument, which will happen) you replay adjudication over stored observations
 instead of re-running every check on every paper.
 
 ```yaml
@@ -151,7 +151,7 @@ comparative:
 in public: a value written `87.4` carries an implicit ±0.05. `GROUND_TRUTH.md` already
 encodes exactly this for the ELMo case (70.944 vs a stated 71.0 → `within_tolerance`),
 so the policy file is a lift of existing behaviour, not a change to it. Verify that by
-running the corpus before and after and diffing — the outputs must be identical.
+running the corpus before and after and diffing. The outputs must be identical.
 
 ### 14.5 Idempotency and backfill
 
@@ -191,12 +191,12 @@ class Orchestrator:
 
 After this lands:
 - `pv/run.py::run_paper` becomes a thin synchronous driver (`start` then `advance` to
-  completion) — the CLI keeps working unchanged.
+  completion), and the CLI keeps working unchanged.
 - `pv/api/jobs.py` becomes a thin async driver that publishes after each `advance`.
 - The duplicated stage walk disappears. There is one pipeline with two drivers.
 
 `run.collect_not_checked` moves into the aggregation stage as-is; it is already correct
-and already shared, which is the right instinct — this just gives it a home.
+and already shared, which is the right instinct. This just gives it a home.
 
 ### 14.7 Failure taxonomy
 
@@ -205,7 +205,7 @@ Already largely right in `registry.run_check`. Complete it:
 | Condition | Result |
 | --- | --- |
 | Checker raises | `unverifiable / CHECKER_ERROR`, traceback stored, run continues |
-| Checker module missing or malformed | `not_attempted / CHECKER_ERROR` — **never silent** |
+| Checker module missing or malformed | `not_attempted / CHECKER_ERROR`, never silent |
 | Stage timeout | `unverifiable / CHECKER_ERROR` with detail, run continues |
 | arXiv unreachable | `failed` only if no cached source; otherwise serve cache |
 | GitHub 403 | `Artifact.lookup_error` set, candidate retained (already implemented) |
@@ -248,7 +248,7 @@ plumbing.
 
 ## 15. Deployment
 
-`docs/DEPLOY.md` is already correct about the hard part — why the API cannot be
+`docs/DEPLOY.md` is already correct about the hard part: why the API cannot be
 serverless, and what is not production-ready. This extends it to the shape a startup
 needs rather than the shape a demo needs.
 
@@ -273,10 +273,10 @@ to its local SSE subscribers. Same three-method interface, no new service.
 | `web` | Next.js | Vercel | unchanged |
 
 Splitting `worker` out of `api` is what lets you scale parse throughput without scaling
-SSE connections. Keep `QUEUE_BACKEND=inline` until the shared store lands — an inline
+SSE connections. Keep `QUEUE_BACKEND=inline` until the shared store lands. An inline
 queue with one worker is honest; an inline queue with three is a race.
 
-### 15.3 CI — the gate that matters
+### 15.3 CI and the corpus gate
 
 There is no `.github/` directory. Given that `docs/OWNERSHIP.md` describes multiple
 agents working simultaneously in one shared directory with no worktree isolation, this
@@ -311,7 +311,7 @@ generated types can never drift from `models.py`.
 
 ### 15.4 Migrations and environments
 
-- Alembic, forward-only, run as a **separate gated job before** the app deploy — never in
+- Alembic, forward-only, run as a **separate gated job before** the app deploy, never in
   the same step.
 - Preview per pull request: Vercel preview for `web`, ephemeral service for `api`, and a
   Neon branch for the database. Branch databases are what let an agent run migrations
@@ -323,11 +323,11 @@ generated types can never drift from `models.py`.
 
 OpenTelemetry, one span per stage and one per check. Sentry on both frontend and worker.
 
-Product metrics from day one — these drive the roadmap:
+Product metrics from day one. These drive the roadmap:
 
-- `unverifiable_rate_by_reason` — **the single most important number.** Whatever reason
-  code dominates it is what to build next.
-- `suppression_rate` — the closest available proxy for false-positive rate, and the
+- `unverifiable_rate_by_reason`: the one to watch. Whatever reason code dominates it is
+  what to build next.
+- `suppression_rate`: the closest available proxy for false-positive rate, and the
   number that decides whether public permalinks are ever safe.
 - `findings_per_paper`, `verdict_distribution`, `p95_run_duration`, `cost_per_paper`,
   `tables_parsed / tables_present`.
@@ -343,7 +343,7 @@ roadmap yet.
 
 ## 16. Marketing site
 
-Reference: insforge.dev — take the **section rhythm and interaction ideas**, not the
+Reference: insforge.dev. Take the section rhythm and interaction ideas, not the
 palette. The tokens in `frontend/src/app/globals.css` already define the design system;
 the site uses them unchanged. No new colours, no gradients, no glassmorphism (BRIEF §2).
 
@@ -352,13 +352,13 @@ sharing the `NavRail` shell.
 
 | # | Section | insforge analogue | What we do differently |
 | --- | --- | --- | --- |
-| 1 | Hero | mascot + CTA | Replace the mascot with a **live looping miniature of the run view** — check rows streaming, verdicts resolving, using real corpus output. The product demonstrating itself beats any illustration. |
+| 1 | Hero | mascot + CTA | Replace the mascot with a live looping miniature of the run view: check rows streaming and verdicts resolving, from real corpus output. The product demonstrating itself beats any illustration. |
 | 2 | Trust strip | coding-agent logos | The sources we read: arXiv, OpenAlex, Crossref, GitHub, Hugging Face. Grayscale, slow marquee, no colour on hover. |
-| 3 | Feature bento | service grid | One cell per check, unequal sizes. Each shows the check name, one sentence, and **a real finding from the corpus** in IBM Plex Mono. Concrete output, not abstractions. |
+| 3 | Feature bento | service grid | One cell per check, unequal sizes. Each shows the check name, one sentence, and a real finding from the corpus in IBM Plex Mono. Concrete output, not abstractions. |
 | 4 | Mechanism | animated branch timeline | An animated run timeline walking the §14.2 states with real intermediate artifacts appearing. This is the section a technical visitor uses to decide whether to trust us. |
-| 5 | **Honesty** | *no analogue* | A plain statement of what the system cannot check, with the live `unverifiable_rate_by_reason` figure pulled from production. Publishing our own limitation metric is the most credible thing on the page — and it is the product thesis stated in public. |
+| 5 | Honesty | *no analogue* | A plain statement of what the system cannot check, with the live `unverifiable_rate_by_reason` figure pulled from production. Publishing our own limitation metric is the product thesis stated in public. |
 | 6 | Changelog | changelog | Four most recent entries, dated. Signals active development. |
-| 7 | Stats | odometer counters | Papers checked, findings surfaced, claims in the database. `tabular-nums`, digits rolling — never counting up. |
+| 7 | Stats | odometer counters | Papers checked, findings surfaced, claims in the database. `tabular-nums`, digits rolling, never counting up. |
 | 8 | FAQ | accordion | Lead with the hard ones: "What if you're wrong?", "Do you contact authors?", "Is this AI detection?" (no). |
 | 9 | Footer | links + status | Status, GitHub, docs, contact. |
 
@@ -366,5 +366,5 @@ Deliberately omit: the testimonial wall (there are no users yet, and fabricated 
 obvious) and any "Backed by" badge not yet earned.
 
 Motion follows BRIEF §6 without exception. The only additions permitted on the site are
-the hero run-view loop, the trust marquee, and the stats odometer — and all three respect
+the hero run-view loop, the trust marquee, and the stats odometer. All three respect
 `prefers-reduced-motion`.

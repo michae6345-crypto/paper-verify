@@ -1,0 +1,67 @@
+/*
+  The two CSS animations §16 permits on the site: the trust marquee and the
+  stats odometer. Scoped to this module so nothing leaks into the app chrome,
+  and both collapse under `prefers-reduced-motion`.
+
+  BRIEF §6's 300ms ceiling governs transitions that explain a state change. A
+  continuous marquee and a settling odometer are not state changes; they are the
+  two additions §16 names by hand. Nothing else on the site moves without a
+  click.
+*/
+
+.marqueeTrack {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 42s linear infinite;
+}
+
+.marqueeViewport:hover .marqueeTrack {
+  /* §16: no colour on hover. Pausing is the whole hover affordance — it lets a
+     visitor actually read the list. */
+  animation-play-state: paused;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    /* The track holds the list twice; -50% lands on the seam. */
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/*
+  Odometer. §16: digits roll, never count up — a counter that ticks 0 → 7,034
+  is inventing 7,033 numbers that were never measured. Each digit is rendered
+  once, in its final value, and slides into place from below.
+*/
+
+.digit {
+  display: inline-block;
+  animation: digit-roll 260ms cubic-bezier(0, 0, 0.2, 1) both;
+}
+
+@keyframes digit-roll {
+  from {
+    transform: translateY(0.36em);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marqueeTrack {
+    animation: none;
+    /* Without the scroll the doubled track is just a duplicated list; the
+       component drops the second copy and this keeps the first from stretching. */
+    width: 100%;
+  }
+
+  .digit {
+    animation: none;
+  }
+}

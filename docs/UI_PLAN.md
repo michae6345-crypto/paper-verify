@@ -41,18 +41,18 @@ already carries meaning.
 
 Provenance is deliberately not a colour pair. EXTRACTED and INFERRED are told apart by
 fill: EXTRACTED is a solid 1px-bordered chip, INFERRED is the same chip with a 45° hairline
-hatch in `--provenance-line` and the word spelled out. Colour-blind safe, survives
-greyscale, and it cannot be confused with a verdict.
+hatch in `--provenance-line` and the word spelled out. It is colour-blind safe and
+survives greyscale. It also cannot be confused with a verdict.
 
 ## Type
 
 No new families. Three roles across the three faces already loaded.
 
-- **Display — Source Serif 4.** Ledger group headings sit in the dark chrome in the
+- Display, Source Serif 4. Ledger group headings sit in the dark chrome in the
   paper's own serif. The instrument quotes the document it is examining. This is the
   §2 two-material idea applied one level down.
-- **Body — Instrument Sans.** All ledger prose, labels, controls.
-- **Numeric and utility — IBM Plex Mono.** Every value, delta, page reference, checker
+- Body, Instrument Sans. All ledger prose, labels, controls.
+- Numeric and utility, IBM Plex Mono. Every value, delta, page reference, checker
   name, and policy version.
 
 IBM Plex Mono was checked against the brief's requirement rather than swapped for

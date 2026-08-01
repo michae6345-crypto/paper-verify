@@ -1,4 +1,4 @@
-# Design & build brief — paper verification app
+# Design and build brief: paper verification app
 
 Context document for an autonomous coding agent. Read fully before writing code.
 
@@ -7,7 +7,7 @@ Context document for an autonomous coding agent. Read fully before writing code.
 ## 1. What this product is
 
 A web app that checks whether a machine learning paper's own numbers agree with each
-other, and — where a code repository is available — whether the paper's reported results
+other, and, where a code repository is available, whether the paper's reported results
 match what the code produces.
 
 It does **not** decide whether a paper is good, novel, or true. It reports discrepancies
@@ -33,16 +33,16 @@ and prove it.
 
 ### The idea
 Two materials, held against each other: **the document** and **the machine**. The paper
-is warm, light, typeset, serif — a real artifact. The verification chrome is cool, dark,
-dense, monospaced — an instrument examining it. The interface is the seam between them.
+is warm, light, typeset, serif: a real artifact. The verification chrome is cool, dark,
+dense, monospaced: an instrument examining it. The interface is the seam between them.
 
 Do not unify these into one surface. The contrast is the concept.
 
-### Signature element — build this, it is the thing the product is remembered for
+### Signature element: build this
 
 **The margin gutter.** A narrow vertical strip (48px) running between the document pane
 and the verdict pane. Verdict marks appear in it, vertically aligned to the exact line,
-table, or cell they refer to — the way a proofreader's marks sit in a manuscript margin.
+table, or cell they refer to, the way a proofreader's marks sit in a manuscript margin.
 
 - Each mark is a small glyph, not an icon-library icon: a thin horizontal rule for
   `matches`, a short diagonal stroke for `diverges`, a hollow circle for `unverifiable`.
@@ -71,7 +71,7 @@ These read as AI-generated and will get the design rejected:
 
 ### Color
 
-Chrome (application surfaces — always dark):
+Chrome (application surfaces, always dark):
 
 | Token | Hex | Use |
 |---|---|---|
@@ -83,7 +83,7 @@ Chrome (application surfaces — always dark):
 | `--chrome-dim` | `#8B95A1` | Secondary text, labels |
 | `--chrome-faint` | `#5A646F` | Tertiary, disabled |
 
-Document (paper pane — always light, never inverts):
+Document (paper pane, always light, never inverts):
 
 | Token | Hex | Use |
 |---|---|---|
@@ -108,15 +108,15 @@ Interactive:
 | `--focus` | `#6A7BFF` | Focus rings, selected state, links |
 
 Rules: exactly one interactive color. Verdict colors never appear on buttons, logos, or
-headers — only on verdicts. Every verdict color is paired with a distinct glyph so the
+headers, only on verdicts. Every verdict color is paired with a distinct glyph so the
 UI is legible without color.
 
 ### Type
 
 Load from Google Fonts:
-- **Instrument Sans** — all application UI. Not Inter, not Geist.
-- **Source Serif 4** — the document pane only. Papers are set in serif; honor that.
-- **IBM Plex Mono** — every number, every identifier, every log line, every table cell.
+- **Instrument Sans**: all application UI. Not Inter, not Geist.
+- **Source Serif 4**: the document pane only. Papers are set in serif; honor that.
+- **IBM Plex Mono**: every number, every identifier, every log line, every table cell.
 
 Scale (application chrome):
 
@@ -186,22 +186,22 @@ cards): repo path in mono, stars, last commit date, and the location in the pape
 the link appeared (e.g. `§4.1, footnote 3`). One is preselected if confidence is high.
 
 A final row: `Use a different repository` with an inline input.
-A final option: `Continue without code` — this is a legitimate path, not a failure. Make
+A final option: `Continue without code`. This is a legitimate path, not a failure. Make
 it visually equal, not de-emphasized.
 
 ### 5.3 Run view
 The check list streams. Each row: glyph, check name, and a right-aligned status. States:
 
-- `pending` — `--v-pending`, glyph at 40% opacity
-- `running` — name in `--chrome-text`, a 1px indeterminate progress line under the row
-- complete — verdict glyph in its semantic color, plus a count (`3 findings`)
+- `pending`: `--v-pending`, glyph at 40% opacity
+- `running`: name in `--chrome-text`, a 1px indeterminate progress line under the row
+- complete: verdict glyph in its semantic color, plus a count (`3 findings`)
 
-Rows appear as their results land. Never render the full list greyed out in advance — the
+Rows appear as their results land. Never render the full list greyed out in advance. The
 user should watch the work accumulate.
 
 At the top of the rail: the paper title, arXiv ID in mono, and elapsed time.
 
-### 5.4 Finding detail — the core screen
+### 5.4 Finding detail
 Selecting a finding does three things at once:
 1. Document pane scrolls to the anchor and applies a highlight to the exact table cell
    or sentence (background `#FFF3C4`, 1px `--v-diverges` outline if divergent).
@@ -221,14 +221,14 @@ source      Table 3, row 2, column "Ours"
 ```
 
 - The check that produced it, with a one-line plain-English description of what it does
-- `Report this as incorrect` — always present, always one click
+- `Report this as incorrect`: always present, always one click
 
 ### 5.5 Report
 Permalink page. Verdict summary as a horizontal strip of gutter glyphs (a visual
 fingerprint of the paper). Findings grouped by severity. **The "not checked" section is
 first-class and appears above the fold**, listing each thing that could not be verified
 and the specific reason (`no code repository`, `dataset not public`, `table structure not
-parsed`). This section is what makes the tool trustworthy — do not hide it.
+parsed`). This section is what makes the tool trustworthy. Do not hide it.
 
 ---
 
@@ -264,7 +264,7 @@ Global rules:
   running` state and a `Checks complete` result.
 - Never call a finding an error, a problem, or misconduct. The vocabulary is:
   `matches`, `within tolerance`, `diverges`, `unverifiable`.
-- Errors state what happened and what to do: `Couldn't fetch source for 2401.01234 —
+- Errors state what happened and what to do: `Couldn't fetch source for 2401.01234.
   arXiv has no LaTeX source for this paper. Try uploading the PDF.` Never apologize,
   never be vague.
 - Empty states are invitations: `No papers checked yet. Paste an arXiv ID to start.`
@@ -280,7 +280,7 @@ Framer Motion for the transitions in §6, Radix primitives via shadcn for menus 
 dialogs. Deploy on Vercel.
 
 **Backend:** Python, FastAPI. Pydantic models are the contract between backend and
-frontend — generate TypeScript types from the OpenAPI schema, do not hand-write them.
+frontend. Generate TypeScript types from the OpenAPI schema; do not hand-write them.
 
 **Data:** Postgres via Supabase, with `pgvector`. Supabase Storage for run logs and
 fetched artifacts. Supabase Auth.
@@ -328,14 +328,14 @@ the product works.
 Core tables. Append-only: a check result is never updated, only superseded by a newer
 row with a later `checker_version`.
 
-- `papers` — arxiv_id, title, venue, fetched_at, source_hash
-- `tables` — paper_id, label, caption, cells (jsonb), latex_source, anchor
-- `claims` — paper_id, kind, locator, verbatim, normalized (jsonb), embedding (vector)
-- `artifacts` — paper_id, kind, url, commit_sha, resolved_at, status
-- `runs` — paper_id, artifact_id, started_at, finished_at, status
-- `checks` — run_id, claim_id, checker, checker_version, verdict, created_at
-- `findings` — check_id, severity, claimed, computed, delta, anchor, explanation
-- `not_checked` — run_id, reason_code, detail
+- `papers`: arxiv_id, title, venue, fetched_at, source_hash
+- `tables`: paper_id, label, caption, cells (jsonb), latex_source, anchor
+- `claims`: paper_id, kind, locator, verbatim, normalized (jsonb), embedding (vector)
+- `artifacts`: paper_id, kind, url, commit_sha, resolved_at, status
+- `runs`: paper_id, artifact_id, started_at, finished_at, status
+- `checks`: run_id, claim_id, checker, checker_version, verdict, created_at
+- `findings`: check_id, severity, claimed, computed, delta, anchor, explanation
+- `not_checked`: run_id, reason_code, detail
 
 `verdict` is an enum: `matches | within_tolerance | diverges | unverifiable | not_attempted`.
 There is no boolean pass/fail anywhere in the schema.
@@ -364,7 +364,7 @@ incorrect checker is worse than no product.
 - Every interactive element has a visible focus ring (`--focus`, 2px offset).
 - `prefers-reduced-motion` respected on every transition.
 - Keyboard: `j`/`k` move between findings, `Enter` opens, `Esc` closes the verdict pane.
-- Color is never the only signal — every verdict has its own glyph.
+- Color is never the only signal: every verdict has its own glyph.
 - All numbers use `tabular-nums`.
 
 ---
@@ -372,7 +372,7 @@ incorrect checker is worse than no product.
 ## 13. Local free-tier configuration
 
 For development and testing, every managed service in §8 has a local substitute. The
-schema, API contracts, and frontend code do not change — only the adapters behind them.
+schema, API contracts, and frontend code do not change, only the adapters behind them.
 
 ### Service substitutions
 
@@ -461,20 +461,20 @@ Rules for the free tier:
    | 2,000-paper corpus study | ~4,000 | 4 days, or switch to a paid cheap model |
 
    For anything above ~500 papers, stop using `:free`. Cheap paid routes cost cents per
-   thousand calls and remove the rate limit entirely — the free tier is for development,
+   thousand calls and remove the rate limit entirely. The free tier is for development,
    not for the corpus study that produces your results.
 
 2b. **Payload size is the hidden limit.** Free routes carry provider-side tokens-per-minute
    caps that are tighter than the request caps. Never send a full LaTeX source to the
-   model. Send only the extracted structure — a table's cells and caption, or the
-   abstract text — typically under 2k tokens. This also improves extraction accuracy.
+   model. Send only the extracted structure (a table's cells and caption, or the
+   abstract text), typically under 2k tokens. This also improves extraction accuracy.
 3. **Cache every response to disk**, keyed by SHA-256 of the full request payload. Store
    under `./.llmcache/`. During development you will re-run the same paper dozens of
    times; without caching you will burn the daily quota in an hour.
 4. **Add a global `LLM_ENABLED` flag**, default true at this tier. When false,
    model-dependent checks return `unverifiable` with reason `llm_disabled` rather than
-   failing. The app must remain fully usable and demoable with `LLM_ENABLED=false` —
-   this is both the offline dev path and the proof that the deterministic core stands
+   failing. The app must remain fully usable and demoable with `LLM_ENABLED=false`.
+   That is both the offline dev path and the proof that the deterministic core stands
    on its own.
 5. **Handle 429 as a normal outcome**, not an error: mark the check `unverifiable` with
    reason `rate_limited` and let the run complete. Never fail a whole run on a rate limit.
@@ -496,12 +496,12 @@ validate those before wiring OpenRouter at all.
 
 ### Other free external services
 
-- **arXiv API** — free, no key. Be polite: 1 request per 3 seconds, set a real
+- **arXiv API**: free, no key. Be polite: 1 request per 3 seconds, set a real
   User-Agent, and cache every fetched source tarball under `./.arxivcache/` keyed by
   arXiv ID and version. Never re-fetch during development.
-- **Crossref** — free, no key. Include a `mailto` parameter to get the faster pool.
-- **OpenAlex** — free, no key. Same `mailto` convention.
-- **GitHub API** — 60 requests/hour unauthenticated, 5,000/hour with a personal access
+- **Crossref**: free, no key. Include a `mailto` parameter to get the faster pool.
+- **OpenAlex**: free, no key. Same `mailto` convention.
+- **GitHub API**: 60 requests/hour unauthenticated, 5,000/hour with a personal access
   token. Use a token; link-liveness checks will hit this limit fast otherwise.
 
 ### .env.example
@@ -532,28 +532,28 @@ CONTACT_EMAIL=you@example.com
 Nothing changes visually, but two states become common in local mode and must look
 intentional rather than broken:
 
-- Checks returning `unverifiable / llm_disabled` — render in the normal amber verdict
+- Checks returning `unverifiable / llm_disabled`: render in the normal amber verdict
   style with the reason shown. This is the `not checked` section from §5.5 doing its job.
-- `rate_limited` — same treatment, with a `Retry this check` action on the row.
+- `rate_limited`: same treatment, with a `Retry this check` action on the row.
 
 If the local build looks bad when half the checks are unverifiable, the design is wrong.
-Honest incompleteness is the product's core value proposition.
+Honest incompleteness is the product.
 
 ---
 
-## Addendum — corrections found during setup
+## Addendum: corrections found during setup
 
 Verified against live sources, 2026-07-31:
 
 - **OpenRouter free tier is 50 requests/day**, not 1,000, unless the account has
-  purchased $10 in credits lifetime — that is a permanent unlock, not a balance
-  requirement, and raises the cap to 1,000/day. 20 rpm holds either way. §13's workload
-  table assumes the unlocked tier.
-- `openrouter/free` is real (the Free Models Router) — §13 is correct.
+  purchased $10 in credits lifetime. That is a permanent unlock, not a balance
+  requirement, and it raises the cap to 1,000/day. 20 rpm holds either way. §13's
+  workload table assumes the unlocked tier.
+- `openrouter/free` is real (the Free Models Router), so §13 is correct.
 - A 429 that arrives mid-stream is delivered as an SSE event with
   `finish_reason: "error"`, not an HTTP 429, because the 200 was already sent.
 - **Streaming does not abstract cleanly.** Supabase Realtime is a client subscribing to
-  Postgres; local SSE is a server endpoint — opposite data flow, and Realtime bypasses
+  Postgres; local SSE is a server endpoint. Opposite data flow, and Realtime bypasses
   the Pydantic contract that §8 makes the source of truth for types. Decision: use SSE
   in both local and hosted modes.
 - **Check 1 needs metric direction and block scoping**, neither of which §9 mentions.
