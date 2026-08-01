@@ -27,7 +27,7 @@ export type Tone = "paper" | "deep";
  * that is too small would leave the margin stopping short of the text, which is
  * the one thing that would read as broken.
  */
-const MARGIN_LINES = 150;
+const MARGIN_LINES = 320;
 
 function Margin() {
   return (
@@ -92,6 +92,29 @@ export function Wash({ children }: { children: ReactNode }) {
 }
 
 /**
+ * A two-tone heading: setup lines in the dim ink, punchline at full contrast,
+ * same face, same size, same weight. The only variable is colour.
+ *
+ * Static on purpose. A per-line reveal would say the same thing more slowly and
+ * would say nothing at all in a screenshot, and the contrast is already doing
+ * the work. It is also the cheapest device on the page and the strongest.
+ */
+export function TwoTone({ setup, punch }: { setup: ReactNode[]; punch: ReactNode }) {
+  return (
+    <>
+      {setup.map((line, i) => (
+        <span key={i} className="block" style={{ color: "var(--ink-dim)" }}>
+          {line}
+        </span>
+      ))}
+      <span className="block" style={{ color: "var(--ink)" }}>
+        {punch}
+      </span>
+    </>
+  );
+}
+
+/**
  * The label above the heading. Headings never sit alone: the label names the
  * section, and the short rule marks it on the grid. The mark is a rule rather
  * than a square on purpose — a small filled square beside a mono label is the
@@ -134,26 +157,28 @@ export function Opener({
 }) {
   const Heading = level === 1 ? "h1" : "h2";
   return (
-    <header className="max-w-[58ch]">
+    // The heading runs to about fourteen words a line at most, and the sentence
+    // under it sits in a column narrower still. Most of the field stays open.
+    <header>
       <Label>{label}</Label>
       <Heading
-        className="mt-5"
+        className="mt-8 max-w-[16ch] three:max-w-[20ch]"
         style={{
           fontFamily: "var(--font-doc), ui-serif, Georgia, serif",
           fontWeight: 400,
           color: "var(--ink)",
           fontSize:
-            level === 1 ? "clamp(34px, 5.6vw, 64px)" : "clamp(28px, 3.4vw, 40px)",
-          lineHeight: level === 1 ? 1.06 : 1.15,
-          letterSpacing: "-0.015em",
+            level === 1 ? "clamp(36px, 6vw, 68px)" : "clamp(30px, 4.4vw, 52px)",
+          lineHeight: level === 1 ? 1.05 : 1.1,
+          letterSpacing: "-0.018em",
         }}
       >
         {heading}
       </Heading>
       {lede && (
         <div
-          className="mt-6"
-          style={{ color: "var(--ink-dim)", fontSize: "17px", lineHeight: 1.6 }}
+          className="mt-10 max-w-[52ch] min-w-0"
+          style={{ color: "var(--ink-dim)", fontSize: "17px", lineHeight: 1.7 }}
         >
           {lede}
         </div>
@@ -193,10 +218,10 @@ export function Section({
 export function Siglum({ mark }: { mark: string }) {
   return (
     <span
-      className="t-num inline-flex h-6 w-6 shrink-0 items-center justify-center"
+      className="t-num inline-flex h-7 w-7 shrink-0 items-center justify-center"
       style={{
         border: "1px solid var(--grid)",
-        borderRadius: "var(--radius-chip)",
+        borderRadius: "var(--radius-site-chip)",
         color: "var(--mark)",
         fontSize: "12px",
         lineHeight: 1,

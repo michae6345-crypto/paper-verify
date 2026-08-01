@@ -104,6 +104,19 @@
   --radius-panel: 6px;
   --radius-chip: 4px;
 
+  /* Shape, marketing route group only. §3's 6px/4px is a considered choice for a
+     dense instrument, and it stays that way inside the app: a run with twelve
+     checks on a 900px viewport cannot afford 18px of corner on every row.
+
+     The landing page is not that surface. It has one idea per screen and a lot
+     of air around it, and at that scale a 6px corner reads as an unfinished
+     square rather than as precision. Four steps, used consistently — nothing
+     square, nothing fully rounded (§2). */
+  --radius-site-panel: 20px;
+  --radius-site-card: 16px;
+  --radius-site-control: 12px;
+  --radius-site-chip: 10px;
+
   /* Layout — §4 */
   --nav-rail-w: 56px;
   --run-rail-w: 280px;

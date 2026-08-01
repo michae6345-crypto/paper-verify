@@ -24,7 +24,11 @@
      component is correct on either field without knowing which it is on. */
   --site-margin: 64px;
   --site-rhythm: 30px;
-  --site-pad-block: clamp(72px, 8vw, 120px);
+  /* One idea per section, and a lot of air around it. This is the single
+     biggest lever on the page: at the old 72–120px a section read as a block in
+     a stack, and at this height it reads as a page turn. If a section looks
+     sparse on its own it is usually right in sequence. */
+  --site-pad-block: clamp(120px, 14vw, 220px);
 }
 
 .paper {
@@ -54,25 +58,12 @@
   padding-left: var(--site-margin);
 }
 
-/* The outer construction rules. Both run the full height of every field, and
-   both are hairlines at 1px — thinner than the lightest type stroke on the page,
-   so the grid recedes behind the text. */
-.inner::before,
-.inner::after {
-  content: "";
-  position: absolute;
-  inset-block: 0;
-  width: 1px;
-  background: var(--grid);
-}
-
-.inner::before {
-  left: 0;
-}
-
-.inner::after {
-  right: 0;
-}
+/* The outer construction rules that used to run down both edges of every field
+   are gone. DESIGN_PLAN.md predicted they would turn out to be the decoration
+   doing the least work, and once the sections grew to their present height that
+   was plainly true: the margin rule already establishes the grid, and two more
+   verticals boxing in a mostly-empty field only made the emptiness look like a
+   container rather than like air. */
 
 /* The margin proper: line numbers, right-aligned against the rule that divides
    them from the text, exactly as a numbered edition sets them.

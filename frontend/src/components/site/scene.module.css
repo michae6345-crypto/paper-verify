@@ -1,0 +1,104 @@
+/*
+  The two pinned, scroll-scrubbed scenes: the hero and the reading.
+
+  Both are built the same way. A tall `.track` provides the scroll distance, a
+  `.pin` sticks to the top of the viewport for the length of it, and every
+  element inside maps its own slice of `scrollYProgress` onto one property. The
+  user turns the crank: stall and the sequence stalls, scroll back and it runs
+  backwards, scroll fast and the whole thing compresses rather than queueing.
+
+  Nothing here has a duration, so nothing here can exceed one (§6). The rule the
+  brief writes as "no animation on scroll position" is aimed at scattered
+  reveals — a dozen blocks each fading in as they cross a threshold. There are
+  exactly two scrubbed moments on this page and none anywhere else in the
+  product.
+
+  ---
+
+  Pinning is conditional, and the condition is at the bottom of this file rather
+  than in the components, so it holds on the first paint.
+
+  A scene only pins when it fits. A pinned panel taller than the viewport is a
+  panel whose lower half can never be scrolled to, and these scenes do not fit a
+  390×700 phone — the headline, five stages, a result card and the copy come to
+  roughly 900px there however tightly they are set. So below 1100px wide, below
+  640px tall, or under `prefers-reduced-motion`, the track collapses to its
+  content, the pin stops pinning, and every scrubbed element is forced to its
+  final state. What is left is a plain, complete, static document with no scroll
+  sequence in it at all — which is also exactly what a reduced-motion visitor is
+  owed, and the same three lines of CSS serve both.
+
+  The components read the same condition through `useScrubbing()`, for the one
+  thing CSS cannot do: keeping the hero's links in the tab order when they are
+  visible from the start.
+*/
+
+.track {
+  position: relative;
+}
+
+.pin {
+  position: sticky;
+  top: 0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* How much scroll each scene is worth. Long enough that a stage can be read on
+   the way past, short enough that a reader who flicks is through it in one
+   gesture. */
+.heroTrack {
+  height: 320vh;
+}
+
+.readingTrack {
+  height: 260vh;
+}
+
+/* The two fields, as local inks. Same contract as `field.module.css`: a child
+   reads `--ink`, `--mark` and `--grid` and is correct on either field without
+   knowing which one it is on. */
+.paperField {
+  background: var(--field-paper);
+  --ink: var(--paper-ink);
+  --ink-dim: var(--siglum-paper);
+  --grid: var(--rule-grid);
+  --mark: var(--siglum-paper);
+}
+
+.deepField {
+  background: var(--field-deep);
+  --ink: var(--chrome-text);
+  --ink-dim: var(--chrome-dim);
+  --grid: var(--rule-grid-deep);
+  --mark: var(--siglum);
+}
+
+/* Every element whose state is driven by scroll progress carries this. */
+.scrub {
+  will-change: opacity, transform, filter;
+}
+
+/* Not enough room to pin, or a reader who has asked for stillness. */
+@media (max-width: 1099px), (max-height: 639px), (prefers-reduced-motion: reduce) {
+  .track {
+    height: auto !important;
+  }
+
+  .pin {
+    position: static;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .scrub {
+    will-change: auto;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+}

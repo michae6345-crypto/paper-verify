@@ -3,7 +3,7 @@ import Link from "next/link";
 const NAV = [
   { href: "#checks", label: "What it checks" },
   { href: "#mechanism", label: "How it works" },
-  { href: "#limits", label: "What it cannot check" },
+  { href: "#decides", label: "How it decides" },
 ];
 
 /**
@@ -48,11 +48,11 @@ export function SiteHeader() {
 
         <Link
           href="/check"
-          className="ml-auto inline-flex items-center px-3.5 py-1.5 transition-colors two:ml-0"
+          className="ml-auto inline-flex items-center px-4 py-2 transition-colors two:ml-0"
           style={{
             color: "var(--chrome-text)",
             border: "1px solid var(--chrome-line)",
-            borderRadius: "var(--radius-chip)",
+            borderRadius: "var(--radius-site-chip)",
             fontSize: "13px",
             transitionDuration: "var(--dur-fast)",
           }}
