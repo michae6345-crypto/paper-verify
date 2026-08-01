@@ -11,8 +11,8 @@
       "findings": [],
       "display_name": "Bolded value is the best in its block",
       "description": "Checks that each bolded number is the best value in its column, comparing only within the same rule-delimited block of the table.",
-      "duration_ms": 1,
-      "created_at": "2026-08-01T07:18:37.640195Z"
+      "duration_ms": 2,
+      "created_at": "2026-08-01T07:26:55.741152Z"
     },
     {
       "checker": "row_arithmetic",
@@ -22,8 +22,8 @@
       "findings": [],
       "display_name": "Average columns match their row",
       "description": "Checks that a column labelled average, mean or overall equals the mean of the other numbers in the same row, to the precision they were printed at.",
-      "duration_ms": 4,
-      "created_at": "2026-08-01T07:18:37.644471Z"
+      "duration_ms": 3,
+      "created_at": "2026-08-01T07:26:55.744746Z"
     }
   ],
   "not_checked": [
@@ -49,6 +49,6 @@
     }
   ],
   "tables_parsed": 20,
-  "started_at": "2026-08-01T07:18:31.316270Z",
-  "finished_at": "2026-08-01T07:18:37.644504Z"
+  "started_at": "2026-08-01T07:26:49.060524Z",
+  "finished_at": "2026-08-01T07:26:55.744770Z"
 }
