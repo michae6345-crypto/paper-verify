@@ -316,6 +316,26 @@ def test_bolded_multi_value_cell_is_unverifiable():
     assert result.reason is ReasonCode.CELL_HAS_MULTIPLE_VALUES
 
 
+def test_a_multi_value_peer_also_stops_the_comparison():
+    """The bold is a single value, but a peer is a pair. Comparing against the
+    single-valued cells alone would narrow the column silently; including the
+    pair's second value could convict a paper that only ever compares the first.
+    Neither is honest, so the column is reported instead."""
+    cells = [
+        cell(0, 1, "84.6", is_bold=True),
+        cell(1, 1, "86.7/85.9"),
+        cell(2, 1, "80.1"),
+    ]
+    t = table(
+        [column(0, "System"), column(1, "MNLI-(m/mm)", direction=Direction.HIGHER_IS_BETTER)],
+        cells,
+    )
+    findings, reasons, comparisons = bold_extreme.check_table(t)
+    assert findings == []
+    assert reasons == [ReasonCode.CELL_HAS_MULTIPLE_VALUES]
+    assert comparisons == 0
+
+
 def test_no_bolds_anywhere_is_not_attempted():
     t = table([column(0, "BLEU", direction=Direction.HIGHER_IS_BETTER)], [cell(0, 0, "41.8")])
     assert bold_extreme.run(context(t)).verdict is Verdict.NOT_ATTEMPTED
@@ -441,12 +461,34 @@ def test_row_averaging_to_the_stated_value_matches():
     assert verdicts(tally) == {"matches": 1}
 
 
-@pytest.mark.parametrize("header", ["Avg", "average", "Mean", "Overall", "ALL"])
+@pytest.mark.parametrize("header", ["Avg", "average", "Mean", "Overall", "Overall score"])
 def test_average_column_headers_are_recognised(header):
     _, _, tally = row_arithmetic.check_table(
         simple_average(["80.0", "82.0", "81.0"], "81.0", header=header)
     )
     assert verdicts(tally) == {"matches": 1}
+
+
+@pytest.mark.parametrize(
+    "header", ["All", "All layers", "All tasks", "Overallocation", "Baseline", "F1"]
+)
+def test_headers_that_do_not_name_an_average(header):
+    """`all` labels a grouping far more often than an aggregate, and `overall`
+    only counts as a whole word."""
+    _, _, tally = row_arithmetic.check_table(
+        simple_average(["80.0", "82.0", "81.0"], "81.0", header=header)
+    )
+    assert tally == {}
+
+
+def test_weak_keyword_mid_table_is_not_an_average():
+    """An average sits after the values it averages. `Overall` with data columns
+    to its right is a section label, not an aggregate."""
+    columns = [column(0, "Model"), column(1, "Overall"), column(2, "T1"), column(3, "T2")]
+    cells = [cell(0, 0, "Ours"), cell(0, 1, "81.0"), cell(0, 2, "80.0"), cell(0, 3, "82.0")]
+    t = table(columns, cells)
+    assert row_arithmetic.average_columns(t) == set()
+    assert row_arithmetic.check_table(t)[2] == {}
 
 
 def test_row_clearly_outside_its_own_range_diverges():
@@ -526,6 +568,66 @@ def test_cell_values_falls_back_to_strict_slash_parsing():
 
 
 # --------------------------------------------------------------------------
+# Check 3 — case 4, ELMo's "All layers" grouping
+# --------------------------------------------------------------------------
+
+
+def elmo_alternate_weights() -> Table:
+    """`table:alternate_weights`. "All layers" is a `\\multicolumn` heading two
+    lambda sub-columns — all layers *of the biLM*, contrasted with "Last Only".
+    It averages nothing. Reading it as an average produced six false
+    divergences."""
+    columns = [
+        column(0, "Task"),
+        column(1, "Baseline"),
+        column(2, "Last Only"),
+        column(3, "All layers =1"),
+        column(4, "All layers =0.001"),
+    ]
+    cells = [
+        cell(0, 0, "Task", is_header=True),
+        cell(0, 1, "Baseline", is_header=True),
+        cell(0, 2, "Last Only", is_header=True),
+        cell(0, 3, "All layers", is_header=True, colspan=2),
+        cell(1, 3, "=1", is_header=True),
+        cell(1, 4, "=0.001", is_header=True),
+    ]
+    rows = [
+        ("SQuAD", "80.8", "84.7", "85.0", "85.2"),
+        ("SNLI", "88.1", "89.1", "89.3", "89.5"),
+        ("SRL", "81.6", "84.1", "84.6", "84.8"),
+    ]
+    for r, values in enumerate(rows, start=2):
+        for c, text in enumerate(values):
+            cells.append(cell(r, c, text, is_bold=c == 4))
+    return table(columns, cells, label="table:alternate_weights")
+
+
+def test_elmo_all_layers_is_not_an_average():
+    t = elmo_alternate_weights()
+    assert row_arithmetic.average_columns(t) == set()
+
+    findings, reasons, tally = row_arithmetic.check_table(t)
+    assert (findings, reasons, tally) == ([], [], {})
+    assert row_arithmetic.run(context(t)).verdict is Verdict.NOT_ATTEMPTED
+
+
+def test_sub_columns_of_a_multicolumn_group_are_never_averages():
+    """Even spelled `Average`, a sub-column of a group is one alternative being
+    compared, not an aggregate of its neighbours."""
+    t = elmo_alternate_weights()
+    grouped = t.model_copy(
+        update={
+            "columns": [
+                c.model_copy(update={"header": "Average"}) if c.index == 4 else c
+                for c in t.columns
+            ]
+        }
+    )
+    assert row_arithmetic.average_columns(grouped) == set()
+
+
+# --------------------------------------------------------------------------
 # Check 3 — end to end, against the real parser
 #
 # Everything above builds its tables by hand. This closes the loop: the BERT
@@ -571,6 +673,23 @@ def test_bert_glue_fixture_through_the_parser():
     assert result.verdict is Verdict.WITHIN_TOLERANCE
     assert [f.claimed for f in result.findings] == ["71.0"]
     assert [f.computed for f in result.findings] == ["70.944"]
+
+
+def test_elmo_fixture_through_the_parser_finds_no_average():
+    """The regression, from the fixture: six false divergences, now none."""
+    parse = pytest.importorskip("pv.parse")
+    source = "".join(
+        path.read_text(encoding="utf-8", errors="replace")
+        for path in sorted((BERT_FIXTURE.parents[1] / "1802.05365").glob("*.tex"))
+    )
+    tables = [t for t in parse.parse_tables(source, {}) if t.label == "table:alternate_weights"]
+    assert len(tables) == 1
+    parsed = tables[0]
+
+    assert row_arithmetic.average_columns(parsed) == set()
+    findings, reasons, tally = row_arithmetic.check_table(parsed)
+    assert (findings, reasons, tally) == ([], [], {})
+    assert row_arithmetic.run(context(parsed)).verdict is Verdict.NOT_ATTEMPTED
 
 
 def test_bert_glue_fixture_bolds_are_declined_out_loud():

@@ -190,15 +190,15 @@ def check_table(
             if not bolds:
                 continue
 
-        multi_valued = [c for c in bolds if len(c.values) > 1]
-        if multi_valued:
-            # BERT bolds `{\bf 86.7/85.9}`. A pair has no single value to be the
-            # best, and we say so: declining to judge is expected, declining
-            # silently would make the report look complete when it is not.
+        if any(len(c.values) > 1 for c in cells):
+            # BERT bolds `{\bf 86.7/85.9}`: a pair has no single value to be the
+            # best of. The same applies when a *peer* holds a pair — comparing the
+            # bold against the single-valued cells alone would silently narrow the
+            # column. Widening it instead would let a peer's second value convict a
+            # paper whose convention only ever compares first values, so we decline
+            # and say that we declined.
             reasons.append(ReasonCode.CELL_HAS_MULTIPLE_VALUES)
-            bolds = [c for c in bolds if len(c.values) <= 1]
-            if not bolds:
-                continue
+            continue
 
         # A bolded label or a bolded cell with no parseable number makes no
         # numeric claim; there is nothing to compare.

@@ -48,7 +48,14 @@ DESCRIPTION = (
 )
 
 # Header words that mark a column as the average of the others in its row.
-_AVERAGE_WORDS = {"avg", "average", "mean", "overall", "all"}
+# `all` is deliberately absent: it labels a grouping — "all layers", "all tasks",
+# "all data" — far more often than an aggregate. ELMo's `table:alternate_weights`
+# heads two sub-columns "All layers", meaning all layers of the biLM, and reading
+# them as averages produced six false divergences (GROUND_TRUTH.md case 4).
+_STRONG_AVERAGE_WORDS = {"avg", "average", "mean"}
+# Weaker evidence: a real word in its own right. Only counts in the position an
+# average actually occupies — the end of the row, after the values it averages.
+_WEAK_AVERAGE_WORDS = {"overall"}
 
 _AMBIGUOUS_REASON = ReasonCode.AVERAGE_DENOMINATOR_AMBIGUOUS
 
@@ -61,8 +68,68 @@ def _words(text: str) -> set[str]:
     return set(re.findall(r"[a-z0-9]+", (text or "").lower()))
 
 
+def average_keyword(header: str, metric: str | None = None) -> str | None:
+    """"strong", "weak" or None, from the header alone. Whole words only."""
+    words = _words(f"{metric or ''} {header}")
+    if words & _STRONG_AVERAGE_WORDS:
+        return "strong"
+    if words & _WEAK_AVERAGE_WORDS:
+        return "weak"
+    return None
+
+
 def is_average_column(header: str, metric: str | None = None) -> bool:
-    return bool(_words(f"{metric or ''} {header}") & _AVERAGE_WORDS)
+    """Whether the header alone names an aggregate. `average_columns` is the real
+    test — it also weighs grouping and position, which need the whole table."""
+    return average_keyword(header, metric) == "strong"
+
+
+def _grouped_columns(table: Table) -> set[int]:
+    """Columns sitting under a shared `\\multicolumn` header.
+
+    Sub-columns of a group are alternatives being compared — ELMo's two
+    "All layers" columns are lambda=1 and lambda=0.001 — never an aggregate of
+    their neighbours. Read from the header cells' colspan, which is the
+    `\\multicolumn` itself rather than an inference about it.
+    """
+    grouped: set[int] = set()
+    for cell in table.cells:
+        if cell.is_header and cell.colspan > 1:
+            grouped.update(range(cell.col, cell.col + cell.colspan))
+    return grouped
+
+
+def _last_data_column(table: Table) -> int | None:
+    """Index of the rightmost column carrying numbers."""
+    indices = [
+        column.index
+        for column in table.columns
+        if not column.is_spacer and any(cell_values(c) for c in table.column_cells(column.index))
+    ]
+    return max(indices) if indices else None
+
+
+def average_columns(table: Table) -> set[int]:
+    """Which columns state an average of their row.
+
+    Three signals, all deterministic: the header word, whether the column is one
+    of several under a shared `\\multicolumn` (then it is a grouping, not an
+    aggregate), and position — an average sits after the values it averages.
+    """
+    grouped = _grouped_columns(table)
+    last = _last_data_column(table)
+
+    found: set[int] = set()
+    for column in table.columns:
+        if column.is_spacer or column.index in grouped:
+            continue
+        keyword = average_keyword(column.header, column.metric)
+        if keyword is None:
+            continue
+        if keyword == "weak" and column.index != last:
+            continue
+        found.add(column.index)
+    return found
 
 
 def cell_values(cell: Cell) -> list[float]:
@@ -163,11 +230,7 @@ def check_table(table: Table) -> tuple[list[Finding], list[ReasonCode], dict[Ver
         return [], [ReasonCode.TABLE_STRUCTURE_NOT_PARSED], tally
 
     columns = {column.index: column for column in table.columns}
-    average_cols = {
-        column.index
-        for column in table.columns
-        if not column.is_spacer and is_average_column(column.header, column.metric)
-    }
+    average_cols = average_columns(table)
     if not average_cols:
         return [], [], tally
 
