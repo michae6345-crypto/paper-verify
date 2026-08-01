@@ -119,3 +119,19 @@ export const CORPUS_FINDINGS = 4;
 export function percent(part: number, whole: number): string {
   return `${Math.round((part / whole) * 100)}%`;
 }
+
+/**
+ * Checks in the first release, and how many of them call a language model.
+ *
+ * The second number is zero, and stating it is the point. `bold_extreme` and
+ * `row_arithmetic` are arithmetic on parsed cells, `dead_links` issues HTTP
+ * requests, and `citation_existence` looks identifiers up in Crossref and
+ * OpenAlex. There is no model client in `backend/pv/` at all, so there is
+ * nothing for a checker to call even by accident.
+ *
+ * Reproduce:
+ *
+ *   cd backend && grep -ril 'openrouter' pv/ | wc -l    # 0
+ */
+export const CHECKS_TODAY = 4;
+export const CHECKS_CALLING_MODEL = 0;

@@ -2,6 +2,7 @@ import { Checks } from "@/components/site/checks";
 import { Decides } from "@/components/site/decides";
 import { Hero } from "@/components/site/hero";
 import { Intro } from "@/components/site/intro";
+import { Measured } from "@/components/site/measured";
 import { Process } from "@/components/site/process";
 
 /**
@@ -22,6 +23,7 @@ export default function SitePage() {
       <Process />
       <Checks />
       <Decides />
+      <Measured />
     </>
   );
 }
