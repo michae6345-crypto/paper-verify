@@ -263,7 +263,8 @@
         "checker_error",
         "reference_not_indexed",
         "cell_has_multiple_values",
-        "no_applicable_claims"
+        "no_applicable_claims",
+        "invalid_paper_id"
       ],
       "title": "ReasonCode",
       "type": "string"

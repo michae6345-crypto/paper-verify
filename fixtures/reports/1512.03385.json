@@ -12,7 +12,7 @@
       "display_name": "Bolded value is the best in its block",
       "description": "Checks that each bolded number is the best value in its column, comparing only within the same rule-delimited block of the table.",
       "duration_ms": 0,
-      "created_at": "2026-08-01T07:26:49.059043Z"
+      "created_at": "2026-08-01T07:44:28.577520Z"
     },
     {
       "checker": "row_arithmetic",
@@ -23,7 +23,7 @@
       "display_name": "Average columns match their row",
       "description": "Checks that a column labelled average, mean or overall equals the mean of the other numbers in the same row, to the precision they were printed at.",
       "duration_ms": 0,
-      "created_at": "2026-08-01T07:26:49.059429Z"
+      "created_at": "2026-08-01T07:44:28.577883Z"
     }
   ],
   "not_checked": [
@@ -55,10 +55,10 @@
     {
       "what": "Average columns match their row",
       "reason": "table_structure_not_parsed",
-      "detail": "Checks that a column labelled average, mean or overall equals the mean of the other numbers in the same row, to the precision they were printed at."
+      "detail": ""
     }
   ],
   "tables_parsed": 15,
-  "started_at": "2026-08-01T07:26:47.605425Z",
-  "finished_at": "2026-08-01T07:26:49.059457Z"
+  "started_at": "2026-08-01T07:44:27.039733Z",
+  "finished_at": "2026-08-01T07:44:28.577910Z"
 }

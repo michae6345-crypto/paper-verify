@@ -76,22 +76,18 @@ def collect_not_checked(
                 )
             )
 
-    # 3. Checks that declined outright.
+    # 3. Checks that declined outright. `detail` stays empty rather than echoing
+    # the check's description: §5.5 asks for the specific reason something could
+    # not be verified, and restating what the check does answers a different
+    # question. The reason code carries the meaning; the UI renders its label.
     for res in results:
         if res.verdict is Verdict.UNVERIFIABLE and res.reason is not None:
-            out.append(
-                NotChecked(
-                    what=res.display_name or res.checker,
-                    reason=res.reason,
-                    detail=res.description,
-                )
-            )
+            out.append(NotChecked(what=res.display_name or res.checker, reason=res.reason))
         elif res.verdict is Verdict.NOT_ATTEMPTED:
             out.append(
                 NotChecked(
                     what=res.display_name or res.checker,
                     reason=res.reason or ReasonCode.NO_APPLICABLE_CLAIMS,
-                    detail=res.description,
                 )
             )
 
