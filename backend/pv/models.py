@@ -304,8 +304,17 @@ class SourceDocument(BaseModel):
 # --------------------------------------------------------------------------
 
 
+Provenance = Literal["extracted", "inferred"]
+
+
 class Finding(BaseModel):
     severity: Severity = Severity.MEDIUM
+    # Short stable mark for this finding within its report: a, b, c, ... z, aa, ab.
+    # Assigned by the runner in document order. The same mark appears in the margin,
+    # the ledger, the document pane, and the exported PDF, so a reader can move
+    # between the four places a claim appears. Borrowed from the siglum an editor
+    # uses to cite a witness in an apparatus criticus.
+    siglum: str = ""
     claimed: str | None = None
     computed: str | None = None
     delta: str | None = None
@@ -336,6 +345,12 @@ class CheckResult(BaseModel):
     fingerprint: str = ""
     verdict: Verdict
     reason: ReasonCode | None = None
+    # Whether this result was read straight from the source or resolved by a model.
+    # Checks 1, 2, 3 and 6 call no model, so they are always "extracted". A
+    # model-assisted check that returned llm_disabled or rate_limited is also
+    # "extracted": nothing was resolved by a model, and saying otherwise would be
+    # a false claim about how we reached the answer.
+    provenance: Provenance = "extracted"
     findings: list[Finding] = Field(default_factory=list)
     # Human-readable name and one-line description, shown in the run rail.
     display_name: str = ""
@@ -348,6 +363,30 @@ class NotChecked(BaseModel):
     what: str
     reason: ReasonCode
     detail: str = ""
+    siglum: str = ""
+
+
+class Amendment(BaseModel):
+    """An author's contest of one finding, and what happened to it.
+
+    Append-only, like everything else. An amendment never edits or deletes the
+    finding it answers. It supersedes it in the reader's view.
+
+    Keyed on `finding_fingerprint` rather than a row id on purpose: a contest is
+    against a specific judgement produced by a specific checker version under a
+    specific policy. Bump either and the fingerprint changes, so the objection
+    correctly stops applying to a result it was never made about.
+    """
+
+    finding_fingerprint: str
+    claim_id: str = ""  # Claim.content_hash, when the finding came from one
+    submitted_at: datetime | None = None
+    author_statement: str = ""
+    corrected_value: str | None = None
+    status: Literal["open", "recheck_requested", "resolved", "withdrawn"] = "open"
+    # Fingerprint of the result produced by re-running this claim, if it was rerun.
+    recheck_result_fingerprint: str | None = None
+    resolution_note: str = ""
 
 
 class RunReport(BaseModel):
@@ -363,6 +402,8 @@ class RunReport(BaseModel):
     # has nothing to align to. Excludes nested layout tabulars.
     tables: list[Table] = Field(default_factory=list)
     tables_parsed: int = 0
+    # Author contests against findings in this report, newest last.
+    amendments: list[Amendment] = Field(default_factory=list)
     started_at: datetime | None = None
     finished_at: datetime | None = None
 
