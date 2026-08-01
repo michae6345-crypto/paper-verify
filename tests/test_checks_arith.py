@@ -24,6 +24,7 @@ from pv.models import (  # noqa: E402
     Column,
     Direction,
     ReasonCode,
+    Severity,
     SourceDocument,
     Table,
     Verdict,
@@ -34,11 +35,21 @@ from pv.models import (  # noqa: E402
 # --------------------------------------------------------------------------
 
 _NUMERIC = re.compile(r"^[-+]?\d+(?:\.\d+)?$")
+_PAIR = re.compile(r"^[-+]?\d+(?:\.\d+)?(?:\s*/\s*[-+]?\d+(?:\.\d+)?)+$")
 
 
 def cell(row: int, col: int, text: str, **kwargs) -> Cell:
-    value = float(text) if _NUMERIC.match(text.strip()) else None
-    kwargs.setdefault("value", value)
+    """A cell as agent B emits it, including the `values` / `value` invariant:
+    one number populates both, several populate only `values`."""
+    stripped = text.strip()
+    if _NUMERIC.match(stripped):
+        values = [float(stripped)]
+    elif _PAIR.match(stripped):
+        values = [float(part) for part in stripped.split("/")]
+    else:
+        values = [kwargs["value"]] if kwargs.get("value") is not None else []
+    kwargs.setdefault("values", values)
+    kwargs.setdefault("value", values[0] if len(values) == 1 else None)
     return Cell(row=row, col=col, raw_latex=text, text=text, **kwargs)
 
 
@@ -284,6 +295,19 @@ def test_bolded_row_label_makes_no_numeric_claim():
     assert (findings, reasons, comparisons) == ([], [], 0)
 
 
+def test_bolded_multi_value_cell_is_not_judged():
+    """BERT bolds `{\\bf 86.7/85.9}`. A pair has no single value to be the best,
+    so check 1 passes over it silently rather than picking one of the two.
+    Documented gap: element-wise comparison is a decision for the orchestrator."""
+    cells = [
+        cell(0, 1, "86.7/85.9", is_bold=True, bold_source="bf"),
+        cell(1, 1, "84.6/83.4"),
+    ]
+    t = table([column(0, "System"), column(1, "MNLI-(m/mm)", direction=Direction.HIGHER_IS_BETTER)], cells)
+    findings, reasons, comparisons = bold_extreme.check_table(t)
+    assert (findings, reasons, comparisons) == ([], [], 0)
+
+
 def test_no_bolds_anywhere_is_not_attempted():
     t = table([column(0, "BLEU", direction=Direction.HIGHER_IS_BETTER)], [cell(0, 0, "41.8")])
     assert bold_extreme.run(context(t)).verdict is Verdict.NOT_ATTEMPTED
@@ -433,10 +457,33 @@ def test_row_clearly_outside_its_own_range_diverges():
 
 def test_a_plausible_weighting_is_preferred_over_an_accusation():
     """81.9 is not the mean of 80/82/81, but a weighted average would give it.
-    We cannot tell the two apart, so we say nothing."""
+    We cannot tell the two apart, so we decline to assert it."""
     _, reasons, tally = row_arithmetic.check_table(simple_average(["80.0", "82.0", "81.0"], "81.9"))
     assert verdicts(tally) == {"unverifiable": 1}
-    assert reasons == [row_arithmetic._AMBIGUOUS_REASON]
+    assert reasons == [ReasonCode.AVERAGE_DENOMINATOR_AMBIGUOUS]
+
+
+def test_an_ambiguous_average_still_shows_the_user_the_numbers():
+    """Declining to assert is not declining to inform. The verdict stays
+    unverifiable; the comparison is attached so the reader can judge."""
+    t = simple_average(["80.0", "82.0", "84.0", "86.0"], "85.9")
+    findings, reasons, tally = row_arithmetic.check_table(t)
+    assert verdicts(tally) == {"unverifiable": 1}
+    assert reasons == [ReasonCode.AVERAGE_DENOMINATOR_AMBIGUOUS]
+
+    assert len(findings) == 1
+    finding = findings[0]
+    assert finding.severity is Severity.LOW
+    assert finding.claimed == "85.9"
+    assert finding.computed == "83.000"
+    assert finding.delta == "+2.900"
+    assert finding.anchor.dom_id == "tab:test/r0/c5"
+    assert "83.000" in finding.explanation and "weighted" in finding.explanation
+
+    result = row_arithmetic.run(context(t))
+    assert result.verdict is Verdict.UNVERIFIABLE
+    assert result.reason is ReasonCode.AVERAGE_DENOMINATOR_AMBIGUOUS
+    assert len(result.findings) == 1
 
 
 def test_missing_value_in_the_averaged_range_is_unverifiable():
@@ -452,11 +499,22 @@ def test_no_average_column_is_not_attempted():
     assert row_arithmetic.run(context(t)).verdict is Verdict.NOT_ATTEMPTED
 
 
-def test_multi_value_cells_are_split_strictly():
+def test_cell_values_prefers_the_parsers_field():
     assert row_arithmetic.cell_values(cell(0, 0, "86.7/85.9")) == [86.7, 85.9]
     assert row_arithmetic.cell_values(cell(0, 0, "84.6")) == [84.6]
-    assert row_arithmetic.cell_values(cell(0, 0, "86.7 +- 0.2")) == []
     assert row_arithmetic.cell_values(cell(0, 0, "")) == []
+    # The field wins over the text when the parser read the cell differently.
+    odd = Cell(row=0, col=0, raw_latex="", text="86.7/85.9", values=[86.7])
+    assert row_arithmetic.cell_values(odd) == [86.7]
+
+
+def test_cell_values_falls_back_to_strict_slash_parsing():
+    """For cells that predate `Cell.values`. Strict: a variance is one value."""
+    bare = Cell(row=0, col=0, raw_latex="", text="86.7/85.9")
+    assert row_arithmetic.cell_values(bare) == [86.7, 85.9]
+    variance = Cell(row=0, col=0, raw_latex="", text="86.7 +- 0.2", value=86.7)
+    assert row_arithmetic.cell_values(variance) == [86.7]
+    assert row_arithmetic.cell_values(Cell(row=0, col=0, raw_latex="", text="")) == []
 
 
 # --------------------------------------------------------------------------
@@ -498,5 +556,6 @@ def test_a_check_that_raises_becomes_unverifiable_and_does_not_fail_the_run():
 
     result = registry.run_check(broken, context())
     assert result.verdict is Verdict.UNVERIFIABLE
+    assert result.reason is ReasonCode.CHECKER_ERROR
     assert result.checker == "broken"
     assert "RuntimeError" in result.description

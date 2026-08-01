@@ -20,7 +20,7 @@ import time
 from datetime import datetime, timezone
 from types import ModuleType
 
-from ..models import CheckContext, CheckResult, Verdict
+from ..models import CheckContext, CheckResult, ReasonCode, Verdict
 
 # Fixed order so a run report reads the same way every time. Modules that do not
 # exist yet are simply absent — other workstreams are still landing theirs.
@@ -61,8 +61,7 @@ def _unverifiable(module: ModuleType, detail: str, elapsed_ms: int) -> CheckResu
         checker=getattr(module, "CHECKER_NAME", module.__name__.rsplit(".", 1)[-1]),
         checker_version=getattr(module, "CHECKER_VERSION", "0"),
         verdict=Verdict.UNVERIFIABLE,
-        # No ReasonCode covers "the checker itself failed" — see the final report.
-        reason=None,
+        reason=ReasonCode.CHECKER_ERROR,
         display_name=getattr(module, "DISPLAY_NAME", ""),
         description=detail,
         duration_ms=elapsed_ms,

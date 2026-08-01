@@ -50,9 +50,7 @@ DESCRIPTION = (
 # Header words that mark a column as the average of the others in its row.
 _AVERAGE_WORDS = {"avg", "average", "mean", "overall", "all"}
 
-# Stand-in reason: the contract has no ReasonCode yet for "the denominator of this
-# average is ambiguous". See the final report — one line to swap when it gains one.
-_AMBIGUOUS_REASON = ReasonCode.NO_NUMERIC_VALUES
+_AMBIGUOUS_REASON = ReasonCode.AVERAGE_DENOMINATOR_AMBIGUOUS
 
 # A cell holding several values, e.g. BERT's `86.7/85.9`. Deliberately strict: only
 # slash-separated bare numbers count, so `86.7 +- 0.2` stays a single value.
@@ -73,9 +71,12 @@ def cell_values(cell: Cell) -> list[float]:
     Usually one. `86.7/85.9` is two — MNLI matched and mismatched, counted
     separately in BERT's average.
 
-    When the contract grows a multi-value field on `Cell`, this function is the
-    only place that has to change.
+    `Cell.values` is authoritative when the parser populated it. The slash-parsing
+    fallback covers cells that predate the field; it is deliberately strict, so
+    `86.7 +- 0.2` stays a single value.
     """
+    if cell.values:
+        return list(cell.values)
     text = (cell.text or "").strip()
     if _MULTI_VALUE.match(text):
         return [float(part) for part in text.split("/")]
@@ -246,7 +247,11 @@ def check_table(table: Table) -> tuple[list[Finding], list[ReasonCode], dict[Ver
             if subset_match or in_range:
                 # Either some subset of the row reproduces the number, or some
                 # weighting of it does. Both leave a reading under which the paper
-                # is right, so there is nothing here we can state.
+                # is right, so there is nothing here we can assert. The comparison
+                # is still attached: the reader sees the numbers and decides.
+                other_reading = (
+                    "averaging a subset of the columns" if subset_match else "a weighted average"
+                )
                 reasons.append(_AMBIGUOUS_REASON)
                 note(Verdict.UNVERIFIABLE)
                 findings.append(
@@ -257,10 +262,10 @@ def check_table(table: Table) -> tuple[list[Finding], list[ReasonCode], dict[Ver
                         delta=f"{delta:+.{detail}f}",
                         anchor=anchor,
                         explanation=(
-                            f"The stated average {claimed_text} is not the mean of the "
-                            f"values in its row, {fmt(computed, detail)}, but another "
-                            "reading of the row — a subset of the columns, or a weighted "
-                            "average — would reproduce it."
+                            f"Stated {claimed_text}; the unweighted mean of the row is "
+                            f"{fmt(computed, detail)}. Nothing states how the average was "
+                            f"taken, and {other_reading} would give the stated value, so "
+                            "this cannot be called a divergence."
                         ),
                     )
                 )
