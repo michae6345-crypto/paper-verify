@@ -19,7 +19,8 @@ import uuid
 from collections import OrderedDict
 from datetime import datetime, timezone
 
-from ..models import CheckResult, NotChecked, RunReport
+from ..models import Artifact, CheckResult, NotChecked, RunReport
+from ..orchestrator import RunStage
 from .schemas import (
     CheckEvent,
     DoneEvent,
@@ -27,10 +28,25 @@ from .schemas import (
     RunManifest,
     RunStatus,
     RunSummary,
+    StateEvent,
     StreamEvent,
 )
 
-Event = tuple[StreamEvent, CheckEvent | DoneEvent | RunManifest]
+Event = tuple[StreamEvent, CheckEvent | DoneEvent | RunManifest | StateEvent]
+
+# The coarse status the run list renders, derived from the §14.2 state. `failed`
+# and `partial` map to `complete` on purpose: both produced a report, and §5.5's
+# job is to say what is in it. A run does not fail; a paper we could not check is
+# a report saying so.
+_TERMINAL_STAGES = {RunStage.COMPLETE, RunStage.PARTIAL, RunStage.FAILED}
+
+
+def _status_for(stage: RunStage) -> RunStatus:
+    if stage in _TERMINAL_STAGES:
+        return RunStatus.COMPLETE
+    if stage is RunStage.QUEUED:
+        return RunStatus.QUEUED
+    return RunStatus.RUNNING
 
 
 def _now() -> datetime:
@@ -46,11 +62,15 @@ class RunRecord:
         self.manifest = manifest
         self.title = ""
         self.status = RunStatus.QUEUED
+        self.stage = RunStage.QUEUED
         self.started_at: datetime | None = None
         self.finished_at: datetime | None = None
         self.tables_parsed = 0
         self.checks: list[CheckResult] = []
         self.not_checked: list[NotChecked] = []
+        self.artifact_candidates: list[Artifact] = []
+        self.artifact: Artifact | None = None
+        self.artifact_deadline: datetime | None = None
         self._subscribers: list[asyncio.Queue[Event | None]] = []
 
     # -- reads ------------------------------------------------------------
@@ -74,8 +94,11 @@ class RunRecord:
             run_id=self.run_id,
             arxiv_id=self.arxiv_id,
             status=self.status,
+            state=self.stage,
             manifest=self.manifest,
             report=self.report(),
+            artifact_candidates=list(self.artifact_candidates),
+            artifact=self.artifact,
         )
 
     def summary(self) -> RunSummary:
@@ -96,9 +119,44 @@ class RunRecord:
 
     def start(self, title: str = "") -> None:
         self.status = RunStatus.RUNNING
+        self.stage = RunStage.RESOLVING if self.stage is RunStage.QUEUED else self.stage
         self.started_at = self.started_at or _now()
         if title:
             self.title = title
+
+    def await_artifact(
+        self, candidates: list[Artifact], deadline: datetime | None = None
+    ) -> None:
+        """Enter the §5.2 pause and say so, once.
+
+        Published only on entry: the driver polls this state, and one event per
+        poll would be a stream that says the same thing three hundred times while
+        nothing happens.
+        """
+        if self.stage is RunStage.AWAITING_ARTIFACT:
+            return
+        self.stage = RunStage.AWAITING_ARTIFACT
+        self.artifact_candidates = list(candidates)
+        self.artifact_deadline = deadline
+        self._publish(
+            (
+                StreamEvent.STATE,
+                StateEvent(
+                    run_id=self.run_id,
+                    state=self.stage,
+                    artifact_candidates=list(candidates),
+                    deadline=deadline,
+                ),
+            )
+        )
+
+    def confirm_artifact(self, artifact: Artifact | None) -> None:
+        """Record the answer. The orchestrator releases the run; this is the
+        view of it the API reads back."""
+        self.artifact = artifact
+        self.artifact_candidates = []
+        self.stage = RunStage.PLANNING
+        self.status = RunStatus.RUNNING
 
     def append_check(self, result: CheckResult) -> None:
         """Append one terminal result and tell every subscriber. Never updates."""
@@ -108,15 +166,29 @@ class RunRecord:
             (StreamEvent.CHECK, CheckEvent(run_id=self.run_id, index=index, result=result))
         )
 
-    def finish(self, report: RunReport) -> None:
+    def finish(
+        self,
+        report: RunReport,
+        *,
+        stage: RunStage = RunStage.COMPLETE,
+        artifact: Artifact | None = None,
+    ) -> None:
         """Record the run-level fields the individual checks cannot know, and
-        close every stream."""
+        close every stream.
+
+        `stage` carries the §14.2 outcome — `complete`, `partial` or `failed`.
+        `status` stays `complete` for all three: every one of them produced a
+        report, and that is what `status` is about.
+        """
         self.title = report.title or self.title
         self.tables_parsed = report.tables_parsed
         self.not_checked = list(report.not_checked)
         self.started_at = report.started_at or self.started_at
         self.finished_at = report.finished_at or _now()
-        self.status = RunStatus.COMPLETE
+        self.stage = stage
+        self.artifact = artifact or self.artifact
+        self.artifact_candidates = []
+        self.status = _status_for(stage)
         self._publish(
             (StreamEvent.DONE, DoneEvent(run_id=self.run_id, run=self.envelope()))
         )
@@ -134,6 +206,20 @@ class RunRecord:
         for index, result in enumerate(self.checks):
             replay.append(
                 (StreamEvent.CHECK, CheckEvent(run_id=self.run_id, index=index, result=result))
+            )
+        if self.stage is RunStage.AWAITING_ARTIFACT:
+            # A client that connects while the run is paused has to be told, or
+            # it renders a run that appears stuck.
+            replay.append(
+                (
+                    StreamEvent.STATE,
+                    StateEvent(
+                        run_id=self.run_id,
+                        state=self.stage,
+                        artifact_candidates=list(self.artifact_candidates),
+                        deadline=self.artifact_deadline,
+                    ),
+                )
             )
         queue: asyncio.Queue[Event | None] = asyncio.Queue()
         if self.status is RunStatus.COMPLETE:

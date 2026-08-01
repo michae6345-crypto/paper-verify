@@ -27,9 +27,11 @@ from sse_starlette.sse import EventSourceResponse
 
 from ..checks.repos import find_repositories, find_repository_candidates
 from ..models import Artifact, RunReport
+from ..orchestrator import RunNotFound, RunNotWaiting, get_orchestrator
 from . import jobs
 from .config import Settings
 from .schemas import (
+    ConfirmArtifactRequest,
     CreateRunRequest,
     DoneEvent,
     Run,
@@ -56,6 +58,10 @@ app = FastAPI(
 
 settings = Settings.from_env()
 store = RunStore(max_runs=settings.max_runs)
+# One orchestrator for the process, so a `POST /runs/{id}/artifact` addresses the
+# same run the background job is driving. The state store behind it is what makes
+# a run survive a restart (`PV_STATE_DIR`).
+orchestrator = get_orchestrator()
 
 app.add_middleware(
     CORSMiddleware,
@@ -91,10 +97,22 @@ async def create_run(body: CreateRunRequest, background: BackgroundTasks) -> Run
     The returned `manifest` is the full list of checks this run intends to
     execute. Render it now; `pending` and `running` are the difference between it
     and the results that have landed.
+
+    `confirm_repository` pauses the run in `awaiting_artifact` when the paper
+    links a repository, for the §5.2 confirmation screen. It is not a commitment:
+    the run proceeds without code after ten minutes either way, because a run must
+    never block indefinitely on a human.
     """
     arxiv_id, version, id_error = jobs.normalize_id(body.arxiv_id)
     record = store.create(arxiv_id, jobs.manifest_checks(), version=version)
-    background.add_task(jobs.execute, record, settings, id_error=id_error)
+    background.add_task(
+        jobs.execute,
+        record,
+        settings,
+        id_error=id_error,
+        await_artifact=body.confirm_repository,
+        orchestrator=orchestrator,
+    )
     return record.envelope()
 
 
@@ -117,6 +135,31 @@ async def get_report(run_id: str = Path(...)) -> RunReport:
     return _record_or_404(run_id).report()
 
 
+@app.post("/runs/{run_id}/artifact", response_model=Run, tags=["runs"])
+async def confirm_artifact(
+    body: ConfirmArtifactRequest, run_id: str = Path(...)
+) -> Run:
+    """Answer the §5.2 repository question and release the run.
+
+    `artifact: null` means "continue without code", which §5.2 calls a legitimate
+    path — the run proceeds and code-dependent checks resolve to
+    `unverifiable / no_code_repository`.
+
+    409 when the run is not waiting: usually the ten-minute window closed and the
+    run already took that same path automatically. Nothing is broken, and the
+    report is on its way — which is why this is a conflict and not an error.
+    """
+    record = _record_or_404(run_id)
+    try:
+        orchestrator.confirm_artifact(run_id, body.artifact)
+    except RunNotFound:
+        raise HTTPException(status_code=404, detail=f"No run {run_id}") from None
+    except RunNotWaiting as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
+    record.confirm_artifact(body.artifact)
+    return record.envelope()
+
+
 @app.get(
     "/runs/{run_id}/stream",
     tags=["runs"],
@@ -127,7 +170,8 @@ async def get_report(run_id: str = Path(...)) -> RunReport:
             "content": {"text/event-stream": {}},
             "description": (
                 "Server-sent events. `manifest` once, then one `check` per completed "
-                "check in manifest order, then a terminal `done`."
+                "check in manifest order, then a terminal `done`. A run paused for "
+                "the §5.2 repository confirmation also emits one `state`."
             ),
         }
     },
@@ -142,6 +186,7 @@ async def stream_run(request: Request, run_id: str = Path(...)) -> EventSourceRe
     Event names and their `data` payloads:
       `manifest` -> RunManifest   the checks this run intends to execute
       `check`    -> CheckEvent    one terminal CheckResult, with its manifest index
+      `state`    -> StateEvent    the run is paused on the §5.2 confirmation screen
       `done`     -> DoneEvent     the complete run; the stream closes after it
     """
     record = _record_or_404(run_id)

@@ -557,17 +557,28 @@ def _env_int(name: str, default: int) -> int:
 
 
 def get_http_client() -> HttpClient:
-    """The single place the backend is chosen. Do not branch on env anywhere else."""
+    """The single place the backend is chosen. Do not branch on env anywhere else.
+
+    The live client is wrapped in a circuit breaker (§14.7): a host that has
+    failed five times in a row stops being asked until a cooldown passes. The
+    wrapper changes no verdict — a short-circuited request is a failed request,
+    which every check already reads as `unverifiable / network_error` — it only
+    stops us re-learning that a free API is down once per reference.
+    """
     if os.getenv("HTTP_BACKEND", "live").strip().lower() == "offline":
+        # Nothing to break: this client already answers nothing, every time.
         return OfflineClient()
     ttl = _env_int("HTTP_CACHE_TTL_SECONDS", 604_800)
     cache_dir = os.getenv("HTTP_CACHE_DIR", ".httpcache")
-    return HttpxClient(
+    client = HttpxClient(
         concurrency=_env_int("HTTP_CONCURRENCY", 8),
         timeout=_env_float("HTTP_TIMEOUT", 15.0),
         cache=ResponseCache(cache_dir, ttl) if cache_dir else None,
         limiter=HostRateLimiter(default_interval=_env_float("HTTP_MIN_INTERVAL", 1.0)),
     )
+    from .circuit import BreakingClient  # here: circuit imports this module
+
+    return BreakingClient(client)
 
 
 T = TypeVar("T")

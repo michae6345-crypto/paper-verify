@@ -23,6 +23,7 @@ from pv.api import jobs
 from pv.api.config import Settings
 from pv.api.store import RunStore
 from pv.models import ReasonCode, RunReport, Verdict
+from pv.orchestrator import MemoryStateStore, Orchestrator, RunStage
 from pv.run import run_paper
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "papers"
@@ -67,6 +68,9 @@ def offline_app():
             Settings(fixtures_dir=FIXTURES, offline=True, llm_enabled=False),
         )
         mp.setattr(app_module, "store", RunStore(max_runs=50))
+        # Its own orchestrator, with its own state store: run state outlives a
+        # single test otherwise, and a resumable run is exactly the kind that does.
+        mp.setattr(app_module, "orchestrator", Orchestrator(store=MemoryStateStore()))
         yield app_module
 
 
@@ -103,6 +107,16 @@ def own_store(offline_app):
     with pytest.MonkeyPatch.context() as mp:
         mp.setattr(offline_app, "store", RunStore(max_runs=50))
         yield
+
+
+async def _until(predicate, timeout: float = 30.0) -> None:
+    """Wait for a condition the driver reaches on its own. Polled rather than
+    slept for, so the test is not a race on a fixed duration."""
+    deadline = asyncio.get_running_loop().time() + timeout
+    while not predicate():
+        if asyncio.get_running_loop().time() > deadline:
+            raise AssertionError("the run never reached the expected state")
+        await asyncio.sleep(0.02)
 
 
 def read_events(response) -> list[tuple[str, dict]]:
@@ -358,6 +372,138 @@ async def test_stream_delivers_each_check_while_the_run_is_in_flight(offline_app
 
 
 # --------------------------------------------------------------------------
+# §5.2 / §14.2 — the repository confirmation state and the resume endpoint
+# --------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_a_run_can_pause_for_the_repository_confirmation(offline_app):
+    """The state BRIEF §5.2's confirmation screen needs, and which had nowhere to
+    live: `checks/repos.py` found candidates, but no state waited for a choice."""
+    record = offline_app.store.create(PAPER, jobs.manifest_checks())
+    orchestrator = Orchestrator(store=MemoryStateStore())
+    task = asyncio.create_task(
+        jobs.execute(
+            record, offline_app.settings, await_artifact=True, orchestrator=orchestrator
+        )
+    )
+    try:
+        await _until(lambda: record.stage is RunStage.AWAITING_ARTIFACT)
+        assert record.envelope().state is RunStage.AWAITING_ARTIFACT
+        assert record.artifact_candidates[0].path == "tensorflow/tensor2tensor"
+
+        chosen = record.artifact_candidates[0]
+        orchestrator.confirm_artifact(record.run_id, chosen)
+        record.confirm_artifact(chosen)
+        await asyncio.wait_for(task, timeout=30)
+    finally:
+        task.cancel()
+
+    assert record.status.value == "complete"
+    assert record.artifact is not None and record.artifact.path == "tensorflow/tensor2tensor"
+
+
+@pytest.mark.asyncio
+async def test_the_paused_run_publishes_one_state_event(offline_app):
+    """A client that sees no event renders a run that appears stuck. One event,
+    not one per poll — the driver polls, and a stream that repeats itself three
+    hundred times while nothing happens says nothing."""
+    record = offline_app.store.create(PAPER, jobs.manifest_checks())
+    queue, replay = record.subscribe()
+    orchestrator = Orchestrator(store=MemoryStateStore())
+    task = asyncio.create_task(
+        jobs.execute(
+            record, offline_app.settings, await_artifact=True, orchestrator=orchestrator
+        )
+    )
+    try:
+        await _until(lambda: record.stage is RunStage.AWAITING_ARTIFACT)
+        await asyncio.sleep(0.3)  # several polls' worth
+        orchestrator.confirm_artifact(record.run_id, None)
+        record.confirm_artifact(None)
+        await asyncio.wait_for(task, timeout=30)
+    finally:
+        task.cancel()
+
+    events = []
+    while not queue.empty():
+        event = queue.get_nowait()
+        if event is not None:
+            events.append(event[0].value)
+    assert events.count("state") == 1
+    assert [name.value for name, _ in replay] == ["manifest"]
+
+
+def test_the_endpoint_releases_a_waiting_run(client, offline_app):
+    """The §5.2 answer, over HTTP.
+
+    Driven to the pause by hand rather than through `POST /runs`: the test client
+    runs background tasks to completion before it returns a response, so a run
+    that pauses through the endpoint could never be answered through it.
+    """
+    record = offline_app.store.create(PAPER, jobs.manifest_checks())
+    run_id = offline_app.orchestrator.start(
+        PAPER,
+        opts=jobs.run_options(PAPER, offline_app.settings, await_artifact=True),
+        run_id=record.run_id,
+    )
+    for _ in range(10):
+        state = offline_app.orchestrator.advance(run_id)
+        if state.is_awaiting_artifact:
+            break
+    record.await_artifact(state.artifact_candidates, state.artifact_deadline)
+
+    body = client.get(f"/runs/{run_id}").json()
+    assert body["state"] == "awaiting_artifact"
+    assert body["artifact_candidates"][0]["path"] == "tensorflow/tensor2tensor"
+
+    resp = client.post(
+        f"/runs/{run_id}/artifact",
+        json={"artifact": body["artifact_candidates"][0]},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["artifact"]["path"] == "tensorflow/tensor2tensor"
+    assert resp.json()["state"] == "planning"
+    # And the run really is released — it walks to a terminal state on its own.
+    assert offline_app.orchestrator.drive(run_id).is_terminal
+
+
+def test_continue_without_code_is_accepted_over_http(client, offline_app):
+    """§5.2 calls it a legitimate path, so it is a 200 with `artifact: null`, not
+    a refusal to answer."""
+    record = offline_app.store.create(PAPER, jobs.manifest_checks())
+    run_id = offline_app.orchestrator.start(
+        PAPER,
+        opts=jobs.run_options(PAPER, offline_app.settings, await_artifact=True),
+        run_id=record.run_id,
+    )
+    for _ in range(10):
+        if offline_app.orchestrator.advance(run_id).is_awaiting_artifact:
+            break
+
+    resp = client.post(f"/runs/{run_id}/artifact", json={"artifact": None})
+    assert resp.status_code == 200 and resp.json()["artifact"] is None
+
+
+def test_confirming_a_run_that_is_not_waiting_is_a_conflict(client, run_id):
+    """The ten-minute window closed, or the run never paused. Nothing is broken
+    and a report exists, so this is 409 and not 500."""
+    resp = client.post(f"/runs/{run_id}/artifact", json={"artifact": None})
+    assert resp.status_code == 409
+    assert "not waiting" in resp.json()["detail"]
+
+
+def test_confirming_an_unknown_run_is_404(client):
+    assert client.post("/runs/deadbeef/artifact", json={"artifact": None}).status_code == 404
+
+
+def test_a_run_created_without_confirmation_never_pauses(client, run_id):
+    """Off by default: a client that will not answer must not be able to leave a
+    run waiting."""
+    assert client.get(f"/runs/{run_id}").json()["state"] in {"complete", "partial"}
+
+
+# --------------------------------------------------------------------------
 # §5.2 repositories
 # --------------------------------------------------------------------------
 
@@ -415,6 +561,7 @@ def test_openapi_covers_every_endpoint(client):
         "/runs/{run_id}",
         "/runs/{run_id}/report",
         "/runs/{run_id}/stream",
+        "/runs/{run_id}/artifact",
         "/papers/{arxiv_id}/repositories",
     }
 

@@ -23,14 +23,19 @@ from typing import Union
 
 from pydantic import BaseModel, Field
 
-from ..models import CheckResult, RunReport, Verdict
+from ..models import Artifact, CheckResult, RunReport, Verdict
+from ..orchestrator import RunStage
 
 
 class RunStatus(str, Enum):
-    """Run-level lifecycle. Derived, never stored on a check.
+    """Run-level lifecycle, coarse. Derived, never stored on a check.
 
     `complete` means the run finished, whatever the verdicts were. A run does not
     fail: a paper we could not check is a report saying so.
+
+    The fine-grained §14.2 state is `Run.state` (`RunStage`). This stays because
+    it is what the run list and the verdict strip need — three values, and the
+    difference between "waiting" and "working" is not one of them.
     """
 
     QUEUED = "queued"
@@ -66,9 +71,19 @@ class Run(BaseModel):
     run_id: str
     arxiv_id: str
     status: RunStatus
+    # The §14.2 state. `awaiting_artifact` is the one a client must react to: the
+    # run is paused on the §5.2 confirmation screen and will proceed without code
+    # when its window closes.
+    state: RunStage = RunStage.QUEUED
     manifest: RunManifest
     # The contract type, unchanged. `report.checks` holds only terminal results.
     report: RunReport
+    # §5.2 candidates, best first, populated only while `state` is
+    # `awaiting_artifact`. Empty is a legitimate answer.
+    artifact_candidates: list[Artifact] = Field(default_factory=list)
+    # The confirmed repository, or null for "continue without code" — which §5.2
+    # calls a normal path, not a failure.
+    artifact: Artifact | None = None
 
 
 class RunSummary(BaseModel):
@@ -96,6 +111,18 @@ class CreateRunRequest(BaseModel):
     or a full arXiv URL. It is normalised server-side."""
 
     arxiv_id: str
+    # Pause in `awaiting_artifact` for the §5.2 confirmation screen when the paper
+    # links a repository. Off by default: a client that will not answer must not
+    # be able to leave a run waiting, and the ten-minute ceiling means even one
+    # that asked and walked away gets a report.
+    confirm_repository: bool = False
+
+
+class ConfirmArtifactRequest(BaseModel):
+    """The §5.2 answer. `artifact: null` is "continue without code" — a normal
+    choice that releases the run exactly as a repository does."""
+
+    artifact: Artifact | None = None
 
 
 # --------------------------------------------------------------------------
@@ -107,7 +134,21 @@ class CreateRunRequest(BaseModel):
 class StreamEvent(str, Enum):
     MANIFEST = "manifest"
     CHECK = "check"
+    # Emitted only when a run enters `awaiting_artifact`. Every other transition
+    # is already visible in the events around it, and a client that does not use
+    # the §5.2 flow never sees this one.
+    STATE = "state"
     DONE = "done"
+
+
+class StateEvent(BaseModel):
+    """`event: state`. The run is paused for a decision it cannot make itself."""
+
+    run_id: str
+    state: RunStage
+    artifact_candidates: list[Artifact] = Field(default_factory=list)
+    # When the run will proceed without code if nobody answers (§14.2).
+    deadline: datetime | None = None
 
 
 class CheckEvent(BaseModel):
@@ -128,16 +169,20 @@ class DoneEvent(BaseModel):
     run: Run
 
 
-StreamPayload = Union[RunManifest, CheckEvent, DoneEvent]
+StreamPayload = Union[RunManifest, CheckEvent, StateEvent, DoneEvent]
 """What `data:` holds on the stream, by event name:
-`manifest` -> RunManifest, `check` -> CheckEvent, `done` -> DoneEvent."""
+`manifest` -> RunManifest, `check` -> CheckEvent, `state` -> StateEvent,
+`done` -> DoneEvent."""
 
 
 __all__ = [
     "CheckDescriptor",
     "CheckEvent",
+    "ConfirmArtifactRequest",
     "CreateRunRequest",
     "DoneEvent",
+    "RunStage",
+    "StateEvent",
     "Run",
     "RunList",
     "RunManifest",

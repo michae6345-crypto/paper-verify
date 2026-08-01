@@ -10,6 +10,15 @@ The local/hosted split (§13, CLAUDE.md) is expressed here as values, not as
                                          have no cached copy of comes back `network_error`
     PV_CORS_ORIGINS    localhost:3000    comma-separated
     PV_MAX_RUNS        200               how many runs the in-memory store keeps
+    PV_ARTIFACT_TIMEOUT_SECONDS
+                       600               how long a run waits on the §5.2 repository
+                                         confirmation before proceeding without code.
+                                         A run must never block indefinitely on a
+                                         human (§14.2), so this has a ceiling, not
+                                         an off switch.
+    PV_STATE_DIR       unset             read by `pv.orchestrator`, not here: where run
+                                         state is persisted so a run survives a restart.
+                                         Unset, state lives in memory
 
 Two variables the API does not read but which govern whether it makes requests:
 
@@ -29,6 +38,8 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from ..orchestrator import DEFAULT_ARTIFACT_TIMEOUT_SECONDS
+
 DEFAULT_CORS_ORIGINS = ("http://localhost:3000", "http://127.0.0.1:3000")
 
 
@@ -47,6 +58,7 @@ class Settings:
     cors_origins: tuple[str, ...] = DEFAULT_CORS_ORIGINS
     max_runs: int = 200
     llm_enabled: bool = False
+    artifact_timeout_s: float = DEFAULT_ARTIFACT_TIMEOUT_SECONDS
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -56,6 +68,13 @@ class Settings:
             max_runs = int(os.getenv("PV_MAX_RUNS", "200"))
         except ValueError:
             max_runs = 200
+        try:
+            artifact_timeout = float(
+                os.getenv("PV_ARTIFACT_TIMEOUT_SECONDS", "")
+                or DEFAULT_ARTIFACT_TIMEOUT_SECONDS
+            )
+        except ValueError:
+            artifact_timeout = DEFAULT_ARTIFACT_TIMEOUT_SECONDS
         return cls(
             queue_backend=os.getenv("QUEUE_BACKEND", "inline").strip().lower() or "inline",
             fixtures_dir=Path(fixtures) if fixtures else None,
@@ -64,6 +83,7 @@ class Settings:
             or DEFAULT_CORS_ORIGINS,
             max_runs=max_runs,
             llm_enabled=_flag("PV_LLM_ENABLED"),
+            artifact_timeout_s=artifact_timeout,
         )
 
     def fixture_for(self, arxiv_id: str) -> str | None:
