@@ -1,0 +1,29 @@
+# Vercel builds the Next.js app from the repo root, not from frontend/, because
+# the app reads fixtures/reports/*.json at build time and those live outside
+# frontend/. Everything not needed for that build is excluded here.
+
+backend/
+tests/
+policies/
+conftest.py
+render.yaml
+.github/
+
+# The ten papers' LaTeX source. Large, and the frontend never reads it — it
+# renders from the parsed tables already inside fixtures/reports/*.json.
+fixtures/papers/
+fixtures/*.py
+
+.arxivcache/
+.httpcache/
+.llmcache/
+.pgdata/
+storage/
+.playwright-mcp/
+
+node_modules/
+frontend/node_modules/
+frontend/.next/
+__pycache__/
+*.pyc
+*.png
