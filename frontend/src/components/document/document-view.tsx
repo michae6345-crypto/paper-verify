@@ -51,14 +51,20 @@ export const DocumentView = forwardRef<
       aria-label="Paper"
     >
       <article className="measure-doc mx-auto px-5 py-10 t-doc two:px-8">
-        <h1 className="text-[26px] leading-[1.25] font-semibold">
+        {/* Display voice. Source Serif 4 carries an optical size axis, so at 28px
+            it picks up its own stroke contrast — the hierarchy is the size and
+            the face, not a heavier weight (DESIGN_PLAN.md). */}
+        <h1 className="text-[28px] leading-[1.2] font-normal">
           {report.title || "Untitled paper"}
         </h1>
         <p className="mt-3 t-num" style={{ color: "var(--paper-ink)", opacity: 0.55 }}>
           arXiv:{report.arxiv_id}
         </p>
 
-        <hr className="my-8 border-0 border-t" style={{ borderColor: "var(--paper-rule)" }} />
+        {/* Our construction grid, not one of the paper's rules. `--rule-grid` is
+            the hairline that crosses the light field; `--paper-rule` stays with
+            the tabular rules the paper actually draws. */}
+        <hr className="my-8 border-0 border-t" style={{ borderColor: "var(--rule-grid)" }} />
 
         {tables.length === 0 ? (
           <p style={{ opacity: 0.72 }}>
@@ -71,8 +77,20 @@ export const DocumentView = forwardRef<
               {/* Deliberately not "in the margin": below 760px there is no
                   margin, and the marks sit in the cells themselves. */}
               {tables.length === 1 ? "The one table" : `The ${tables.length} tables`} the
-              checker parsed from the LaTeX source, as it read them. Each mark points at the
-              cell a check looked at.
+              checker parsed from the LaTeX source,{" "}
+              {/* DESIGN_PLAN.md's wash: one phrase, once, behind residual's own
+                  words. It sits on this paragraph and nowhere else on the pane,
+                  because `--anchor-live` is the paper's other highlight and two
+                  highlight blocks on one surface would each weaken the other.
+                  Nothing below this line is ever washed — the tables carry the
+                  live anchor instead. */}
+              <span
+                className="box-decoration-clone px-1 py-[1px]"
+                style={{ background: "var(--wash)" }}
+              >
+                as it read them
+              </span>
+              . Each mark points at the cell a check looked at.
             </p>
 
             {tables.map((table, i) => {

@@ -10,6 +10,8 @@ export type Title = string;
 export type SchemaVersion = number;
 export type Checker = string;
 export type CheckerVersion = string;
+export type PolicyVersion = string;
+export type Fingerprint = string;
 export type Verdict = "matches" | "within_tolerance" | "diverges" | "unverifiable" | "not_attempted";
 /**
  * Why something could not be checked. Surfaced verbatim in the §5.5
@@ -33,7 +35,9 @@ export type ReasonCode =
   | "cell_has_multiple_values"
   | "no_applicable_claims"
   | "invalid_paper_id";
+export type Provenance = "extracted" | "inferred";
 export type Severity = "high" | "medium" | "low";
+export type Siglum = string;
 export type Claimed = string | null;
 export type Computed = string | null;
 export type Delta = string | null;
@@ -55,6 +59,7 @@ export type CreatedAt = string | null;
 export type Checks = CheckResult[];
 export type What = string;
 export type Detail = string;
+export type Siglum1 = string;
 export type NotChecked = NotChecked1[];
 export type Label = string | null;
 export type Caption = string;
@@ -89,6 +94,15 @@ export type IsNested = boolean;
 export type ParseWarnings = string[];
 export type Tables = Table[];
 export type TablesParsed = number;
+export type FindingFingerprint = string;
+export type ClaimId = string;
+export type SubmittedAt = string | null;
+export type AuthorStatement = string;
+export type CorrectedValue = string | null;
+export type Status = "open" | "recheck_requested" | "resolved" | "withdrawn";
+export type RecheckResultFingerprint = string | null;
+export type ResolutionNote = string;
+export type Amendments = Amendment[];
 export type StartedAt = string | null;
 export type FinishedAt = string | null;
 
@@ -103,6 +117,7 @@ export interface RunReport {
   not_checked?: NotChecked;
   tables?: Tables;
   tables_parsed?: TablesParsed;
+  amendments?: Amendments;
   started_at?: StartedAt;
   finished_at?: FinishedAt;
 }
@@ -114,8 +129,11 @@ export interface RunReport {
 export interface CheckResult {
   checker: Checker;
   checker_version: CheckerVersion;
+  policy_version?: PolicyVersion;
+  fingerprint?: Fingerprint;
   verdict: Verdict;
   reason?: ReasonCode | null;
+  provenance?: Provenance;
   findings?: Findings;
   display_name?: DisplayName;
   description?: Description;
@@ -124,6 +142,7 @@ export interface CheckResult {
 }
 export interface Finding {
   severity?: Severity;
+  siglum?: Siglum;
   claimed?: Claimed;
   computed?: Computed;
   delta?: Delta;
@@ -145,6 +164,7 @@ export interface NotChecked1 {
   what: What;
   reason: ReasonCode;
   detail?: Detail;
+  siglum?: Siglum1;
 }
 export interface Table {
   label?: Label;
@@ -186,4 +206,25 @@ export interface Cell {
   rowspan?: Rowspan;
   block?: Block;
   is_header?: IsHeader;
+}
+/**
+ * An author's contest of one finding, and what happened to it.
+ *
+ * Append-only, like everything else. An amendment never edits or deletes the
+ * finding it answers. It supersedes it in the reader's view.
+ *
+ * Keyed on `finding_fingerprint` rather than a row id on purpose: a contest is
+ * against a specific judgement produced by a specific checker version under a
+ * specific policy. Bump either and the fingerprint changes, so the objection
+ * correctly stops applying to a result it was never made about.
+ */
+export interface Amendment {
+  finding_fingerprint: FindingFingerprint;
+  claim_id?: ClaimId;
+  submitted_at?: SubmittedAt;
+  author_statement?: AuthorStatement;
+  corrected_value?: CorrectedValue;
+  status?: Status;
+  recheck_result_fingerprint?: RecheckResultFingerprint;
+  resolution_note?: ResolutionNote;
 }

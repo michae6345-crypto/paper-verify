@@ -1,6 +1,14 @@
-import type { CheckResult, Finding, ReasonCode, RunReport, Verdict } from "@/types/run-report";
+import type {
+  CheckResult,
+  Finding,
+  Provenance,
+  ReasonCode,
+  RunReport,
+  Verdict,
+} from "@/types/run-report";
 import type { Mark } from "@/components/gutter/marks";
-import { provenanceOf, type Provenance } from "./provenance";
+import { siglaFor } from "@/components/gutter/sigla";
+import { provenanceOf } from "./provenance";
 
 /**
  * The ledger's three display groups, and how the five stored verdicts map onto
@@ -70,6 +78,13 @@ export type LedgerRowData = {
    * `content_hash` the day the contract carries it.
    */
   identity: string;
+  /**
+   * The apparatus mark, shown in the row's margin and in the other two panes.
+   * Empty on a row the gutter derived rather than read off the report. It is
+   * navigation and nothing else: not the key, not the identity, not a way to
+   * match this row against the same row in another run.
+   */
+  siglum: string;
   group: LedgerGroup;
   verdict: Verdict;
   check: CheckResult;
@@ -98,6 +113,7 @@ function rowFromMark(mark: Mark): LedgerRowData {
   return {
     key: mark.key,
     identity: `${mark.domId}:${check.checker}`,
+    siglum: mark.siglum,
     group: GROUP_OF[mark.verdict],
     verdict: mark.verdict,
     check,
@@ -131,6 +147,7 @@ function rowFromMark(mark: Mark): LedgerRowData {
  */
 export function buildLedger(report: RunReport, marks: Mark[]): LedgerItem[] {
   const rows = marks.map(rowFromMark);
+  const sigla = siglaFor(report);
 
   const placed = new Set<number>();
   marks.forEach((m) => {
@@ -151,6 +168,10 @@ export function buildLedger(report: RunReport, marks: Mark[]): LedgerItem[] {
     rows.push({
       key: `not-checked-only#${i}`,
       identity: `not-checked:${item.what}`,
+      // Same entry as the placed variant above, so the same mark: whether §5.5
+      // could point this row at a table changes where it is drawn, not what it
+      // is cited as.
+      siglum: sigla.get(`not-checked-only#${i}`) ?? "",
       group: "unverifiable",
       verdict: "not_attempted",
       check,

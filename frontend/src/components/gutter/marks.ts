@@ -8,6 +8,7 @@ import type {
   Verdict,
 } from "@/types/run-report";
 import { VERDICT_RANK } from "@/lib/verdict";
+import { siglaFor } from "./sigla";
 
 /**
  * What the gutter is made of.
@@ -30,6 +31,12 @@ export type Mark = {
   reason: ReasonCode | null;
   /** One line, sentence case, for the tooltip and the screen reader. */
   locator: string;
+  /**
+   * The apparatus mark this claim is cited by, in every pane at once. Empty on a
+   * mark the gutter derived rather than read off the report — see `sigla.ts`.
+   * Navigation only: never a key, never an identity.
+   */
+  siglum: string;
   /** Document order: table index, then row, then column. */
   order: [number, number, number];
 };
@@ -120,6 +127,7 @@ export function deriveMarks(report: RunReport): Mark[] {
   const notChecked = report.not_checked ?? [];
 
   const ids = tableDomIds(tables);
+  const sigla = siglaFor(report);
 
   // Label → table, but only where the label picks out exactly one table. A paper
   // that declares `tab:single` twice gives us no way to know which one an anchor
@@ -163,8 +171,10 @@ export function deriveMarks(report: RunReport): Mark[] {
         tableIndex === -1
           ? [tables.length, 0, marks.length]
           : [tableIndex, anchor.row ?? -1, anchor.col ?? -1];
+      const key = `${check.checker}#${i}`;
       marks.push({
-        key: `${check.checker}#${i}`,
+        key,
+        siglum: sigla.get(key) ?? "",
         domId: anchor.dom_id,
         verdict: check.verdict,
         check,
@@ -191,6 +201,7 @@ export function deriveMarks(report: RunReport): Mark[] {
     tablesWithMarks.add(hit);
     marks.push({
       key: `not-checked#${i}`,
+      siglum: sigla.get(`not-checked#${i}`) ?? "",
       domId: ids[hit],
       verdict: "not_attempted",
       // Synthesised so the verdict pane has something to name. It is not a
@@ -233,6 +244,9 @@ export function deriveMarks(report: RunReport): Mark[] {
     const source = contributions.find((c) => c.verdict === verdict)!;
     marks.push({
       key: `table#${i}`,
+      // No siglum: this mark is the gutter's own summary of a table nothing was
+      // found in, not an entry in the report's apparatus.
+      siglum: "",
       domId: ids[i],
       verdict,
       check: source.check,

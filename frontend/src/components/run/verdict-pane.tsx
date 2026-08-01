@@ -6,6 +6,8 @@ import type { CheckResult, Finding, RunReport } from "@/types/run-report";
 import { REASON, VERDICT_LABEL, reasonLabel } from "@/lib/verdict";
 import { VerdictChip } from "@/components/verdict/verdict-chip";
 import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
+import { SiglumMark } from "@/components/gutter/siglum-mark";
+import { siglaFor } from "@/components/gutter/sigla";
 
 /**
  * The verdict pane (§4): dark, dense, mono. The other half of §2's two
@@ -80,9 +82,14 @@ function ReportControl() {
   );
 }
 
-function FindingBlock({ finding }: { finding: Finding }) {
+function FindingBlock({ finding, siglum }: { finding: Finding; siglum: string }) {
   return (
     <li className="border-t pt-4 first:border-t-0 first:pt-0" style={{ borderColor: "var(--chrome-line)" }}>
+      {/* The same mark this finding carries in the report's ledger, gutter and
+          document pane. A finding that were cited one way here and another way
+          there would make the mark useless, which is the only way to get a
+          siglum wrong. */}
+      <SiglumMark siglum={siglum} size={12} className="mb-1 block" />
       {finding.explanation && (
         // §5.4 sets the claim in serif — it is the paper speaking, not the instrument.
         <p
@@ -100,9 +107,20 @@ function FindingBlock({ finding }: { finding: Finding }) {
   );
 }
 
-function CheckDetail({ check, onClose }: { check: CheckResult; onClose: () => void }) {
+function CheckDetail({
+  report,
+  check,
+  onClose,
+}: {
+  report: RunReport;
+  check: CheckResult;
+  onClose: () => void;
+}) {
   const findings = check.findings ?? [];
   const reason = check.reason ? REASON[check.reason] : null;
+  // Indexed over the whole report, not over this check, because that is what a
+  // siglum means: one mark per claim in one report, wherever it is shown.
+  const sigla = siglaFor(report);
 
   return (
     <div className="px-5 py-4">
@@ -158,7 +176,11 @@ function CheckDetail({ check, onClose }: { check: CheckResult; onClose: () => vo
       {findings.length > 0 ? (
         <ul className="mt-5 flex flex-col gap-4">
           {findings.map((f, i) => (
-            <FindingBlock key={`${f.anchor.dom_id}-${i}`} finding={f} />
+            <FindingBlock
+              key={`${f.anchor.dom_id}-${i}`}
+              finding={f}
+              siglum={f.siglum || sigla.get(`${check.checker}#${i}`) || ""}
+            />
           ))}
         </ul>
       ) : (
@@ -181,6 +203,7 @@ function CheckDetail({ check, onClose }: { check: CheckResult; onClose: () => vo
 
 function NotCheckedList({ report }: { report: RunReport }) {
   const items = report.not_checked ?? [];
+  const sigla = siglaFor(report);
 
   return (
     <div className="px-5 py-4">
@@ -206,6 +229,13 @@ function NotCheckedList({ report }: { report: RunReport }) {
                   style={{ borderColor: "var(--chrome-line)" }}
                 >
                   <div className="flex items-baseline gap-2">
+                    {/* §5.5's entries are cited too. Not checked is a result, so
+                        it gets a mark like any other. */}
+                    <SiglumMark
+                      siglum={item.siglum || sigla.get(`not-checked#${i}`) || ""}
+                      size={12}
+                      className="mt-[2px] w-5 self-start"
+                    />
                     <span className="mt-[3px] self-start">
                       <VerdictGlyph verdict="not_attempted" size={12} />
                     </span>
@@ -264,7 +294,7 @@ export function VerdictPane({
       aria-label="Verdict detail"
     >
       {check ? (
-        <CheckDetail check={check} onClose={onClose} />
+        <CheckDetail report={report} check={check} onClose={onClose} />
       ) : (
         <NotCheckedList report={report} />
       )}

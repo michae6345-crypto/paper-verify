@@ -84,6 +84,7 @@ export function Ledger({
   reduced,
   onSelect,
   className,
+  style,
   headerSlot,
   instance = "pane",
 }: {
@@ -93,6 +94,8 @@ export function Ledger({
   reduced: boolean;
   onSelect: (key: string) => void;
   className?: string;
+  /** Merged over the panel background — the caller sets the seam's ink here. */
+  style?: React.CSSProperties;
   /** Rendered above the list — the mobile sheet puts its handle here. */
   headerSlot?: React.ReactNode;
   /**
@@ -227,7 +230,7 @@ export function Ledger({
     // win over it — which showed up as the desktop pane rendering on a phone.
     <div
       className={cn("flex flex-col", className)}
-      style={{ background: "var(--chrome-panel)" }}
+      style={{ background: "var(--chrome-panel)", ...style }}
     >
       {headerSlot}
 
@@ -236,7 +239,18 @@ export function Ledger({
           the title block there would spend a third of a phone screen saying what
           the reader can already see. */}
       <header className={cn("shrink-0 px-4 pt-4 pb-3", instance === "sheet" && "hidden")}>
-        <h1 className="t-panel-title" style={{ color: "var(--chrome-text)" }}>
+        {/* The instrument names the document in the document's own voice, one
+            size down from the paper pane's title. Serif against the sans of
+            everything else in this pane is what makes it read as the heading —
+            not weight (DESIGN_PLAN.md). */}
+        <h1
+          style={{
+            fontFamily: "var(--font-doc), ui-serif, Georgia, serif",
+            fontSize: "19px",
+            lineHeight: 1.25,
+            color: "var(--chrome-text)",
+          }}
+        >
           {report.title || "Untitled paper"}
         </h1>
         <p className="mt-1 t-num" style={{ fontSize: "12px", color: "var(--chrome-faint)" }}>

@@ -1,4 +1,4 @@
-import type { CheckResult } from "@/types/run-report";
+import type { CheckResult, Provenance } from "@/types/run-report";
 import { cn } from "@/lib/utils";
 
 /**
@@ -17,45 +17,32 @@ import { cn } from "@/lib/utils";
  * the verdict colours and would vanish in greyscale; fill and texture do not.
  */
 
-export type Provenance = "extracted" | "inferred";
+export type { Provenance };
 
 /**
- * §9's "Needs a model?" column, by checker name. Checks 1, 2, 3 and 6 —
- * bold_extreme, dead_links, row_arithmetic, citation_existence — call no model
- * at all, which is the entire first release. The three that do are listed here
- * so the state is driven by which check produced the row, not by a flag someone
- * has to remember to set.
- */
-const MODEL_ASSISTED = new Set([
-  "abstract_vs_table", // §9 check 4 — matching abstract numbers to cells
-  "missing_variance", // §9 check 5 — claim detection
-  "baseline_fidelity", // §9 check 7 — retrieval
-]);
-
-/**
- * A model that never ran resolved nothing.
+ * `CheckResult.provenance` is a contract field, so the row simply reads it.
  *
- * `abstract_vs_table` is model-assisted and, with the model layer off, returns
- * `llm_disabled` without calling anything. The row it produces says "we did not
- * run this", which is a deterministic statement about the run, so it is
- * EXTRACTED. Marking it INFERRED would attribute a model's judgement to a row no
- * model touched — the same lossy narrowing this codebase keeps producing, in a
- * new place.
- */
-const NO_MODEL_RAN = new Set(["llm_disabled", "rate_limited"]);
-
-/**
- * The contract has no provenance field, so this is derived. `CheckResult` would
- * be the natural home for one — see the final report. Until then the optional
- * read below means a future field wins the moment it exists, without touching
- * any row code.
+ * It was derived from the checker's name before the field existed. Two things
+ * that derivation had to know are now the backend's to state, and both are worth
+ * keeping written down because they are what makes the field mean anything:
+ *
+ *   - Checks 1, 2, 3 and 6 — bold_extreme, row_arithmetic, dead_links,
+ *     citation_existence — call no model at all, which is the entire first
+ *     release. Nothing in a validated paper is INFERRED today.
+ *   - A model-assisted check that returned `llm_disabled` or `rate_limited` is
+ *     EXTRACTED. Nothing was resolved by a model: the row says "we did not run
+ *     this", which is a deterministic statement about the run. Calling it
+ *     INFERRED would attribute a model's judgement to a row no model touched, and
+ *     would misdescribe how we reached the answer — the same lossy narrowing this
+ *     codebase keeps producing, in a new place.
+ *
+ * The field is optional in the generated types because it carries a default, so
+ * a report serialised before it landed still reads as EXTRACTED. That is the
+ * right default and not a guess: every check in those reports is one of the four
+ * that call no model.
  */
 export function provenanceOf(check: CheckResult): Provenance {
-  const declared = (check as { provenance?: string }).provenance;
-  if (declared === "inferred" || declared === "extracted") return declared;
-  if (!MODEL_ASSISTED.has(check.checker)) return "extracted";
-  if (check.reason && NO_MODEL_RAN.has(check.reason)) return "extracted";
-  return "inferred";
+  return check.provenance ?? "extracted";
 }
 
 const HATCH =

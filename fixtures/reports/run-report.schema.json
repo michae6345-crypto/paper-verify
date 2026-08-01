@@ -1,5 +1,82 @@
 {
   "$defs": {
+    "Amendment": {
+      "description": "An author's contest of one finding, and what happened to it.\n\nAppend-only, like everything else. An amendment never edits or deletes the\nfinding it answers. It supersedes it in the reader's view.\n\nKeyed on `finding_fingerprint` rather than a row id on purpose: a contest is\nagainst a specific judgement produced by a specific checker version under a\nspecific policy. Bump either and the fingerprint changes, so the objection\ncorrectly stops applying to a result it was never made about.",
+      "properties": {
+        "finding_fingerprint": {
+          "title": "Finding Fingerprint",
+          "type": "string"
+        },
+        "claim_id": {
+          "default": "",
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "submitted_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Submitted At"
+        },
+        "author_statement": {
+          "default": "",
+          "title": "Author Statement",
+          "type": "string"
+        },
+        "corrected_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Corrected Value"
+        },
+        "status": {
+          "default": "open",
+          "enum": [
+            "open",
+            "recheck_requested",
+            "resolved",
+            "withdrawn"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "recheck_result_fingerprint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recheck Result Fingerprint"
+        },
+        "resolution_note": {
+          "default": "",
+          "title": "Resolution Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "finding_fingerprint"
+      ],
+      "title": "Amendment",
+      "type": "object"
+    },
     "Anchor": {
       "properties": {
         "kind": {
@@ -210,6 +287,15 @@
           ],
           "default": null
         },
+        "provenance": {
+          "default": "extracted",
+          "enum": [
+            "extracted",
+            "inferred"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
         "findings": {
           "items": {
             "$ref": "#/$defs/Finding"
@@ -328,6 +414,11 @@
           "$ref": "#/$defs/Severity",
           "default": "medium"
         },
+        "siglum": {
+          "default": "",
+          "title": "Siglum",
+          "type": "string"
+        },
         "claimed": {
           "anyOf": [
             {
@@ -396,6 +487,11 @@
         "detail": {
           "default": "",
           "title": "Detail",
+          "type": "string"
+        },
+        "siglum": {
+          "default": "",
+          "title": "Siglum",
           "type": "string"
         }
       },
@@ -567,6 +663,13 @@
       "default": 0,
       "title": "Tables Parsed",
       "type": "integer"
+    },
+    "amendments": {
+      "items": {
+        "$ref": "#/$defs/Amendment"
+      },
+      "title": "Amendments",
+      "type": "array"
     },
     "started_at": {
       "anyOf": [

@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import { VERDICT_LABEL } from "@/lib/verdict";
 import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
 import { cn } from "@/lib/utils";
-import { policyVersion } from "./contract";
+import { SiglumSlot } from "@/components/gutter/siglum-mark";
 import { Derivation } from "./derivation";
 import { reasonSentence } from "./reasons";
 import { ProvenanceChip } from "./provenance";
@@ -59,7 +59,13 @@ export function LedgerRow({
 }) {
   const { finding, check } = row;
   const sentence = reasonSentence(row.reason);
-  const policy = policyVersion(check);
+  // §5.4 and UI_PLAN.md both insist this appears on every discrepancy row, where
+  // it looks like internal detail. It is not: it is what lets an author argue
+  // with a specific tolerance rule instead of with the verdict, and that argument
+  // is the point of the amendment flow. "not versioned" where the checker left it
+  // empty — honest about a check whose policy is still implicit, and never an
+  // invented version number.
+  const policy = check.policy_version ?? "";
   const derivationId = `derivation-${instance}-${row.key}`;
 
   const values: React.ReactNode[] = [];
@@ -101,8 +107,12 @@ export function LedgerRow({
         onClick={() => onSelect(row.key)}
         aria-current={selected ? "true" : undefined}
         aria-label={spoken}
-        className="flex w-full items-start gap-2.5 px-4 py-3 text-left"
+        className="flex w-full items-start gap-2 px-4 py-3 text-left"
       >
+        {/* The margin. The mark here is the mark in the paper and the mark in
+            the gutter, which is how a reader moves between the three. */}
+        <SiglumSlot siglum={row.siglum} size={12} className="mt-[3px]" />
+
         <span className="mt-[3px] shrink-0">
           <VerdictGlyph verdict={row.verdict} size={13} active={selected} />
         </span>
@@ -172,7 +182,9 @@ export function LedgerRow({
         </span>
       </button>
 
-      <div className="px-4 pb-3 ps-[42px]">
+      {/* Indented to the row's text column: 16px padding, the 20px margin slot,
+          the verdict glyph, and the gaps between them. */}
+      <div className="px-4 pb-3 ps-[65px]">
         <button
           type="button"
           onClick={() => onToggle(row.key)}

@@ -6,6 +6,7 @@ import type { Cell, Table, Verdict } from "@/types/run-report";
 import { cn } from "@/lib/utils";
 import { cellDomId, type Mark } from "@/components/gutter/marks";
 import { InlineMark } from "@/components/gutter/inline-mark";
+import { SiglumMark } from "@/components/gutter/siglum-mark";
 import { HIGHLIGHT_MS, SCROLL_MS } from "./scroll";
 
 /**
@@ -214,6 +215,18 @@ export function PaperTable({
         ) : (
           cell.text
         )}
+        {/* The mark rides the reading, the way an apparatus cites a variant in
+            the text it is about. Raised and quarter-size so it annotates the
+            value rather than joining it — a mark that sat on the baseline beside
+            `41.8` would read as part of the number. */}
+        {mark && (
+          <SiglumMark
+            siglum={mark.siglum}
+            size={10}
+            surface="paper"
+            className="ms-[3px] align-super"
+          />
+        )}
         {mark && (
           <InlineMark
             mark={mark}
@@ -242,6 +255,18 @@ export function PaperTable({
         className="mb-2.5 flex items-baseline gap-2"
         style={{ color: "var(--paper-ink)" }}
       >
+        {/* The caption's leading slot is the margin on this pane. A hanging
+            column outside the measure was the plan's sketch and does not survive
+            the two-pane report: at 1100px the document column is 55% of the
+            window and the 68ch measure already fills it, so there is nothing to
+            hang into. Leading the caption line puts the same mark in the same
+            reading position at every width, which is what it is for. */}
+        <SiglumMark
+          siglum={tableMark?.siglum ?? ""}
+          size={12}
+          surface="paper"
+          className="shrink-0"
+        />
         <span
           className="t-num shrink-0"
           style={{ fontSize: "12px", opacity: 0.55, letterSpacing: "0.02em" }}

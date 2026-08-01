@@ -130,7 +130,8 @@ export function RunView({ report }: { report: RunReport }) {
 
           <div
             className="hidden min-h-0 min-w-0 border-l three:block"
-            style={{ borderColor: "var(--chrome-line)" }}
+            // Column seam: the construction grid's ink, not the row separator's.
+            style={{ borderColor: "var(--rule-grid-deep)" }}
           >
             {verdictPane}
           </div>
@@ -150,7 +151,10 @@ export function RunView({ report }: { report: RunReport }) {
             exit={{ opacity: 0, y: reduced ? 0 : 8 }}
             transition={{ duration: reduced ? 0.001 : 0.2, ease: [0, 0, 0.2, 1] }}
             className="fixed inset-x-0 bottom-0 z-20 max-h-[70dvh] overflow-y-auto rounded-t-[6px] border-t three:hidden"
-            style={{ borderColor: "var(--chrome-line)", background: "var(--chrome-panel)" }}
+            style={{
+              borderColor: "var(--rule-grid-deep)",
+              background: "var(--chrome-panel)",
+            }}
           >
             {verdictPane}
           </motion.div>

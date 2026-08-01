@@ -3,7 +3,6 @@
 import { useState } from "react";
 
 import { VERDICT_LABEL } from "@/lib/verdict";
-import { fingerprint, policyVersion } from "./contract";
 import { reasonSentence } from "./reasons";
 import type { LedgerRowData } from "./groups";
 
@@ -55,8 +54,11 @@ function ReportControl({ subject }: { subject: string }) {
 export function Derivation({ row, id }: { row: LedgerRowData; id: string }) {
   const { check, finding } = row;
   const sentence = reasonSentence(row.reason);
-  const policy = policyVersion(check);
-  const print = fingerprint(check);
+  const policy = check.policy_version ?? "";
+  // The identity that survives a version bump, unlike the siglum beside it. Cut
+  // to twelve characters: enough to quote back in a bug report, and the full
+  // hash would wrap three lines of a 45%-wide pane to no one's benefit.
+  const print = check.fingerprint ?? "";
 
   const values: [string, string][] = [];
   if (finding?.claimed != null) values.push(["claimed", typesetNumber(finding.claimed)]);
@@ -68,7 +70,9 @@ export function Derivation({ row, id }: { row: LedgerRowData; id: string }) {
     <div
       id={id}
       className="mt-3 rounded-[4px] border px-3 py-2.5"
-      style={{ borderColor: "var(--chrome-line)", background: "var(--chrome-base)" }}
+      // `--field-deep` sits below `--chrome-base`, so the working reads as a
+      // section cut into the ledger rather than as another panel stacked on it.
+      style={{ borderColor: "var(--chrome-line)", background: "var(--field-deep)" }}
     >
       <p className="t-body" style={{ color: "var(--chrome-dim)" }}>
         {check.description || "This check has no description on file."}

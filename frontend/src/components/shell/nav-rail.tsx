@@ -52,14 +52,18 @@ export function NavRail() {
     <nav
       aria-label="Sections"
       className="flex h-full w-14 shrink-0 flex-col items-center gap-1 border-r py-3"
-      style={{ borderColor: "var(--chrome-line)", background: "var(--chrome-panel)" }}
+      // `--rule-grid-deep` is the construction grid: the hairlines that divide
+      // the layout into columns. Row separators inside a column keep
+      // `--chrome-line`, so the structure of the page and the structure of a
+      // list are told apart by two inks rather than by one doing both jobs.
+      style={{ borderColor: "var(--rule-grid-deep)", background: "var(--chrome-panel)" }}
     >
       {/* Wordmark. Never carries a verdict colour (§3). */}
       <Link
         href="/"
         className="mb-3 flex h-8 w-8 items-center justify-center rounded-[4px] t-num"
         style={{ color: "var(--chrome-text)", fontSize: "13px", fontWeight: 500 }}
-        aria-label="paper-verify, home"
+        aria-label="residual, home"
       >
         pv
       </Link>
@@ -88,7 +92,23 @@ export function NavRail() {
               <Icon />
               <span className="sr-only">{item.label}</span>
             </TooltipTrigger>
-            <TooltipContent side="right">{item.label}</TooltipContent>
+            {/* The rail's own box is a static flex child at `z-index: auto`, so
+                the report's `z-20` bottom sheet already paints over it. Its
+                TOOLTIP does not: `TooltipContent` portals into `<body>` at
+                `z-50`, which outranks the sheet from outside the rail's subtree
+                entirely — no z-index on this <nav> can reach it. That is the
+                floating panel sitting above the sheet at 390px.
+
+                So it is suppressed below `three:`, which is exactly the range
+                where the sheet exists. Nothing is lost there: a tooltip is a
+                pointer-only affordance, there is no hover on a phone, and each
+                item already carries its label in `sr-only` text — which is what
+                a screen reader reads in either case. The media query works from
+                inside the portal because it is a media query, not an
+                ancestor-dependent style. */}
+            <TooltipContent side="right" className="hidden three:flex">
+              {item.label}
+            </TooltipContent>
           </Tooltip>
         );
       })}

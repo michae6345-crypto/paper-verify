@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { VERDICT_LABEL, VERDICT_RANK } from "@/lib/verdict";
 import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
 import { cn } from "@/lib/utils";
+import { SiglumMark } from "./siglum-mark";
 import type { Mark } from "./marks";
 
 /**
@@ -162,6 +163,14 @@ export function GutterMarks({
           const overflow = lane.groups.length - shown.length;
           const single = lane.groups.length === 1;
 
+          // The apparatus mark for this line, when the line cites exactly one
+          // claim. A lane holding several marks has several sigla and 48px for
+          // none of them, and printing one of them beside a stack of glyphs
+          // would cite the wrong claim — so a shared lane carries no mark and
+          // the reader follows the glyph to the ledger row instead.
+          const lone =
+            single && lane.groups[0].marks.length === 1 ? lane.groups[0].marks[0] : null;
+
           return (
             <div
               key={`${lane.top}-${lane.groups[0].verdict}`}
@@ -214,6 +223,8 @@ export function GutterMarks({
                   </button>
                 );
               })}
+
+              {lone && <SiglumMark siglum={lone.siglum} size={11} className="ms-[1px]" />}
 
               {overflow > 0 && (
                 <button

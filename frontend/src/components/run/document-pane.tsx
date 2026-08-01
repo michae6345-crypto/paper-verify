@@ -17,14 +17,17 @@ export function DocumentPane({ report }: { report: RunReport }) {
   return (
     <div className="h-full overflow-y-auto" style={{ background: "var(--paper)" }}>
       <article className="measure-doc mx-auto px-8 py-10 t-doc">
-        <h1 className="text-[26px] leading-[1.25] font-semibold">
+        {/* Same display voice as the report's paper pane: size and the serif's
+            own optical-size contrast, not weight. */}
+        <h1 className="text-[28px] leading-[1.2] font-normal">
           {report.title || "Untitled paper"}
         </h1>
         <p className="mt-3 t-num" style={{ color: "var(--paper-ink)", opacity: 0.55 }}>
           arXiv:{report.arxiv_id}
         </p>
 
-        <hr className="my-8 border-0 border-t" style={{ borderColor: "var(--paper-rule)" }} />
+        {/* Our grid, not the paper's rules. */}
+        <hr className="my-8 border-0 border-t" style={{ borderColor: "var(--rule-grid)" }} />
 
         <div style={{ opacity: 0.72 }}>
           <p>

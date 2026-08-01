@@ -34,7 +34,9 @@ export function RunRail({
   return (
     <div
       className="flex h-full min-h-0 w-full min-w-0 flex-col border-r"
-      style={{ borderColor: "var(--chrome-line)", background: "var(--chrome-panel)" }}
+      // Column seam, so the grid ink. The rules inside this rail stay
+      // `--chrome-line`: they divide a list, not the page.
+      style={{ borderColor: "var(--rule-grid-deep)", background: "var(--chrome-panel)" }}
     >
       {/* Paper header — title, arXiv ID in mono, elapsed time (§5.3) */}
       <header className="border-b px-4 py-3" style={{ borderColor: "var(--chrome-line)" }}>

@@ -144,6 +144,9 @@ export function ReportView({ report }: { report: RunReport }) {
           key={report.arxiv_id}
           {...ledgerProps}
           instance="pane"
+          // The seam between the two panes is construction, so it is drawn in
+          // the grid ink rather than in the ink that separates rows.
+          style={{ borderColor: "var(--rule-grid-deep)" }}
           className="hidden min-h-0 min-w-0 border-l three:flex"
         />
       </div>
@@ -155,7 +158,9 @@ export function ReportView({ report }: { report: RunReport }) {
       <div
         className="fixed inset-x-0 bottom-0 z-20 flex h-[72dvh] flex-col rounded-t-[6px] border-t three:hidden"
         style={{
-          borderColor: "var(--chrome-line)",
+          // The sheet's top edge is the same seam as the pane's left edge, one
+          // column layout down, so it carries the same grid ink.
+          borderColor: "var(--rule-grid-deep)",
           background: "var(--chrome-panel)",
           transform: sheetOpen ? "translateY(0)" : "translateY(calc(100% - 52px))",
           transition: reduced ? "none" : "transform var(--dur-panel) var(--ease-out)",
