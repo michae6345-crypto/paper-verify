@@ -101,6 +101,12 @@ export const REASON: Record<ReasonCode, { label: string; next?: string; retryabl
   no_applicable_claims: {
     label: "Nothing in this paper for this check",
   },
+  // Added with the contract's INVALID_PAPER_ID. Deliberately distinct from
+  // "No LaTeX source on arXiv", which is a real paper that ships no LaTeX.
+  invalid_paper_id: {
+    label: "Not a well-formed arXiv identifier",
+    next: "Check the id and submit it again.",
+  },
 };
 
 export function reasonLabel(code: ReasonCode | null | undefined): string | null {

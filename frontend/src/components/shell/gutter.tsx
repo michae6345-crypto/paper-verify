@@ -24,38 +24,44 @@ import { cn } from "@/lib/utils";
      - `VerdictGlyph` already accepts the `active` prop §6 asks for: a
        stroke-width change over 120ms, no colour change.
 
-   What Agent F fills in:
+   What Agent F filled in, and where it lives:
 
-     1. Render marks as `children`. One `<button>` per mark, absolutely
-        positioned. Use the `GutterMark` shape below — it is the contract this
-        column was sized for, and `id` is deliberately `Anchor.dom_id` so a mark,
-        a document highlight, and a verdict row are all keyed by the same string.
+     1. `components/gutter/marks.ts` derives the marks from a `RunReport`. Not
+        only from findings: the ten validated papers contain zero `diverges`, so
+        a gutter built from findings alone would be empty on every real report.
+        Marks also come from `not_checked` entries that name a table, and from
+        each remaining table's weakest available verdict. The derivation is
+        bounded so it can never synthesise `diverges` or `within tolerance` —
+        those two are only ever carried by a `Finding` with its own evidence.
 
-     2. Compute `top` from the document pane, not from the gutter. The document
-        pane scrolls independently; the alignment that makes this element work is
-        `markTop = anchorEl.offsetTop - documentScrollTop`. Recompute on scroll
-        and on resize (a ResizeObserver on the document pane, not a window
-        listener — the pane resizes when the split moves without the window
-        changing).
+     2. `components/gutter/gutter-marks.tsx` positions them, as `children` of
+        this box. `top` is measured from the anchor element against the mark
+        layer's own rect — rect arithmetic rather than `offsetTop`, because a
+        table cell's `offsetParent` is its table, not the pane — and recomputed
+        on scroll and through a ResizeObserver on the document pane, per the note
+        below.
 
-     3. Clicking a mark does the three things in §5.4 at once: scroll the
-        document pane to the anchor (300ms easeInOut), set the mark active, and
-        select the finding in the verdict pane.
+     3. `app/reports/[id]/report-view.tsx` owns selection and does §5.4's three
+        things at once: scroll (300ms easeInOut), activate the mark, show the
+        evidence.
 
-     4. Below 760px this column is not rendered at all — `two:block` below. §4
-        says gutter marks collapse into inline badges at that width, so the marks
-        need a second presentation inside the verdict rows. That is a real
-        requirement, not a fallback: the product must work to 390px (§12).
+     4. `components/gutter/inline-mark.tsx` is the sub-760px presentation: the
+        same glyph, inside the cell it refers to. Not a fallback — below 760px it
+        is the only place the marks exist.
 
-     5. Two marks can land on the same line. Decide the collision rule before
-        drawing anything — stacking them horizontally inside 48px is the obvious
-        move, and 48px holds three 12px glyphs with 4px gaps.
+     5. Collision rule, in full, in `gutter-marks.tsx`: lanes of 18px; identical
+        verdicts within a lane collapse to one glyph and a count; distinct
+        verdicts never collapse and stack up to three across.
 
    =========================================================================== */
 
 /**
  * One mark in the gutter. `id` is the `dom_id` of the `Anchor` the mark refers
  * to, so it is the same key used by the document highlight and the verdict row.
+ *
+ * Kept as the documented shape of this seam. The live implementation carries the
+ * same `id`/`verdict`/`active` triple plus the check behind it, as
+ * `components/gutter/marks.ts`'s `Mark`.
  */
 export type GutterMark = {
   id: string;
