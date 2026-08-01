@@ -14,7 +14,15 @@ import { VERDICT_RANK } from "@/lib/verdict";
  * down to client components as props.
  */
 
-const REPORTS_DIR = join(process.cwd(), "..", "fixtures", "reports");
+/**
+ * Vendored copies of `fixtures/reports/`, kept in step by
+ * `npm run fixtures:sync` and checked in CI.
+ *
+ * This deliberately does not reach outside the Next.js root. Vercel builds the
+ * app from `frontend/`, so `../fixtures` does not exist there — reading it
+ * failed the first production deploy with ENOENT on `/vercel/fixtures/reports`.
+ */
+const REPORTS_DIR = join(process.cwd(), "src", "fixtures", "reports");
 
 /** The synthetic fixture is a development instrument, not a real paper. */
 export const SYNTHETIC_ID = "0000.00000";

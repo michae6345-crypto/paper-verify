@@ -1,0 +1,603 @@
+{
+  "$defs": {
+    "Anchor": {
+      "properties": {
+        "kind": {
+          "enum": [
+            "table_cell",
+            "table",
+            "sentence",
+            "reference",
+            "link"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "dom_id": {
+          "title": "Dom Id",
+          "type": "string"
+        },
+        "table_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Table Label"
+        },
+        "row": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Row"
+        },
+        "col": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Col"
+        },
+        "char_start": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Char Start"
+        },
+        "char_end": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Char End"
+        },
+        "human_locator": {
+          "default": "",
+          "title": "Human Locator",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "dom_id"
+      ],
+      "title": "Anchor",
+      "type": "object"
+    },
+    "Cell": {
+      "description": "One `tabular` cell after macro expansion and cleanup.\n\n`value` is None when the cell holds no parseable number \u2014 including empty\ncells, which in ML tables mean \"not reported\", never zero.",
+      "properties": {
+        "row": {
+          "title": "Row",
+          "type": "integer"
+        },
+        "col": {
+          "title": "Col",
+          "type": "integer"
+        },
+        "raw_latex": {
+          "title": "Raw Latex",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "values": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Values",
+          "type": "array"
+        },
+        "is_bold": {
+          "default": false,
+          "title": "Is Bold",
+          "type": "boolean"
+        },
+        "bold_source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bold Source"
+        },
+        "colspan": {
+          "default": 1,
+          "title": "Colspan",
+          "type": "integer"
+        },
+        "rowspan": {
+          "default": 1,
+          "title": "Rowspan",
+          "type": "integer"
+        },
+        "block": {
+          "default": 0,
+          "title": "Block",
+          "type": "integer"
+        },
+        "is_header": {
+          "default": false,
+          "title": "Is Header",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "row",
+        "col",
+        "raw_latex",
+        "text"
+      ],
+      "title": "Cell",
+      "type": "object"
+    },
+    "CheckResult": {
+      "description": "One check's terminal result. Append-only \u2014 never mutated.\n\nPending/running are UI states derived from the run manifest, not stored here.",
+      "properties": {
+        "checker": {
+          "title": "Checker",
+          "type": "string"
+        },
+        "checker_version": {
+          "title": "Checker Version",
+          "type": "string"
+        },
+        "policy_version": {
+          "default": "",
+          "title": "Policy Version",
+          "type": "string"
+        },
+        "fingerprint": {
+          "default": "",
+          "title": "Fingerprint",
+          "type": "string"
+        },
+        "verdict": {
+          "$ref": "#/$defs/Verdict"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReasonCode"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/Finding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "display_name": {
+          "default": "",
+          "title": "Display Name",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "duration_ms": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Duration Ms"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        }
+      },
+      "required": [
+        "checker",
+        "checker_version",
+        "verdict"
+      ],
+      "title": "CheckResult",
+      "type": "object"
+    },
+    "Column": {
+      "properties": {
+        "index": {
+          "title": "Index",
+          "type": "integer"
+        },
+        "header": {
+          "default": "",
+          "title": "Header",
+          "type": "string"
+        },
+        "metric": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metric"
+        },
+        "direction": {
+          "$ref": "#/$defs/Direction",
+          "default": "unknown"
+        },
+        "direction_source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Direction Source"
+        },
+        "is_spacer": {
+          "default": false,
+          "title": "Is Spacer",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "index"
+      ],
+      "title": "Column",
+      "type": "object"
+    },
+    "Direction": {
+      "description": "Whether a higher or lower value is better for a metric column.",
+      "enum": [
+        "higher_is_better",
+        "lower_is_better",
+        "unknown"
+      ],
+      "title": "Direction",
+      "type": "string"
+    },
+    "Finding": {
+      "properties": {
+        "severity": {
+          "$ref": "#/$defs/Severity",
+          "default": "medium"
+        },
+        "claimed": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Claimed"
+        },
+        "computed": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Computed"
+        },
+        "delta": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Delta"
+        },
+        "anchor": {
+          "$ref": "#/$defs/Anchor"
+        },
+        "verbatim": {
+          "default": "",
+          "title": "Verbatim",
+          "type": "string"
+        },
+        "explanation": {
+          "default": "",
+          "title": "Explanation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "anchor"
+      ],
+      "title": "Finding",
+      "type": "object"
+    },
+    "NotChecked": {
+      "properties": {
+        "what": {
+          "title": "What",
+          "type": "string"
+        },
+        "reason": {
+          "$ref": "#/$defs/ReasonCode"
+        },
+        "detail": {
+          "default": "",
+          "title": "Detail",
+          "type": "string"
+        }
+      },
+      "required": [
+        "what",
+        "reason"
+      ],
+      "title": "NotChecked",
+      "type": "object"
+    },
+    "ReasonCode": {
+      "description": "Why something could not be checked. Surfaced verbatim in the \u00a75.5\n\"not checked\" section, so every value needs a human-readable label in the UI.",
+      "enum": [
+        "no_code_repository",
+        "dataset_not_public",
+        "table_structure_not_parsed",
+        "no_latex_source",
+        "llm_disabled",
+        "rate_limited",
+        "metric_direction_unknown",
+        "multiple_bold_in_column",
+        "cell_spans_columns",
+        "no_numeric_values",
+        "network_error",
+        "average_denominator_ambiguous",
+        "checker_error",
+        "reference_not_indexed",
+        "cell_has_multiple_values",
+        "no_applicable_claims",
+        "invalid_paper_id"
+      ],
+      "title": "ReasonCode",
+      "type": "string"
+    },
+    "Severity": {
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "Table": {
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "caption": {
+          "default": "",
+          "title": "Caption",
+          "type": "string"
+        },
+        "anchor": {
+          "$ref": "#/$defs/Anchor"
+        },
+        "columns": {
+          "items": {
+            "$ref": "#/$defs/Column"
+          },
+          "title": "Columns",
+          "type": "array"
+        },
+        "cells": {
+          "items": {
+            "$ref": "#/$defs/Cell"
+          },
+          "title": "Cells",
+          "type": "array"
+        },
+        "n_rows": {
+          "default": 0,
+          "title": "N Rows",
+          "type": "integer"
+        },
+        "n_cols": {
+          "default": 0,
+          "title": "N Cols",
+          "type": "integer"
+        },
+        "latex_source": {
+          "default": "",
+          "title": "Latex Source",
+          "type": "string"
+        },
+        "header_source": {
+          "default": "none",
+          "title": "Header Source",
+          "type": "string"
+        },
+        "is_nested": {
+          "default": false,
+          "title": "Is Nested",
+          "type": "boolean"
+        },
+        "parse_warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Parse Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "anchor"
+      ],
+      "title": "Table",
+      "type": "object"
+    },
+    "Verdict": {
+      "enum": [
+        "matches",
+        "within_tolerance",
+        "diverges",
+        "unverifiable",
+        "not_attempted"
+      ],
+      "title": "Verdict",
+      "type": "string"
+    }
+  },
+  "description": "What the headless CLI prints and what the API returns for a run.",
+  "properties": {
+    "arxiv_id": {
+      "title": "Arxiv Id",
+      "type": "string"
+    },
+    "title": {
+      "default": "",
+      "title": "Title",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "checks": {
+      "items": {
+        "$ref": "#/$defs/CheckResult"
+      },
+      "title": "Checks",
+      "type": "array"
+    },
+    "not_checked": {
+      "items": {
+        "$ref": "#/$defs/NotChecked"
+      },
+      "title": "Not Checked",
+      "type": "array"
+    },
+    "tables": {
+      "items": {
+        "$ref": "#/$defs/Table"
+      },
+      "title": "Tables",
+      "type": "array"
+    },
+    "tables_parsed": {
+      "default": 0,
+      "title": "Tables Parsed",
+      "type": "integer"
+    },
+    "started_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Started At"
+    },
+    "finished_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Finished At"
+    }
+  },
+  "required": [
+    "arxiv_id"
+  ],
+  "title": "RunReport",
+  "type": "object"
+}

@@ -1,0 +1,6345 @@
+{
+  "arxiv_id": "1810.04805",
+  "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+  "schema_version": 1,
+  "checks": [
+    {
+      "checker": "bold_extreme",
+      "checker_version": "1.0.0",
+      "policy_version": "",
+      "fingerprint": "",
+      "verdict": "matches",
+      "reason": null,
+      "findings": [],
+      "display_name": "Bolded value is the best in its block",
+      "description": "Checks that each bolded number is the best value in its column, comparing only within the same rule-delimited block of the table.",
+      "duration_ms": 0,
+      "created_at": "2026-08-01T08:52:35.267255Z"
+    },
+    {
+      "checker": "row_arithmetic",
+      "checker_version": "1.0.0",
+      "policy_version": "",
+      "fingerprint": "",
+      "verdict": "within_tolerance",
+      "reason": null,
+      "findings": [
+        {
+          "severity": "low",
+          "claimed": "71.0",
+          "computed": "70.944",
+          "delta": "+0.056",
+          "anchor": {
+            "kind": "table_cell",
+            "dom_id": "tab:glue_official/r3/c9",
+            "table_label": "tab:glue_official",
+            "row": 3,
+            "col": 9,
+            "char_start": null,
+            "char_end": null,
+            "human_locator": "tab:glue_official, row 3, column \"Average -\""
+          },
+          "verbatim": "",
+          "explanation": "The stated average 71.0 is 0.056 from the mean of its row, 70.944 — just outside the rounding implied by the printed precision."
+        }
+      ],
+      "display_name": "Average columns match their row",
+      "description": "Checks that a column labelled average, mean or overall equals the mean of the other numbers in the same row, to the precision they were printed at.",
+      "duration_ms": 0,
+      "created_at": "2026-08-01T08:52:35.267748Z"
+    }
+  ],
+  "not_checked": [],
+  "tables": [
+    {
+      "label": "tab:glue_official",
+      "caption": "GLUE Test results, scored by the evaluation server (https://gluebenchmark.com/leaderboard). The number below each task denotes the number of training examples. The \"Average\" column is slightly different than the official GLUE score, since we exclude the problematic WNLI set. BERT and OpenAI GPT are single-model, single task. F1 scores are reported for QQP and MRPC, Spearman correlations are reported for STS-B, and accuracy scores are reported for the other tasks. We exclude entries that use BERT as one of their components.",
+      "anchor": {
+        "kind": "table",
+        "dom_id": "tab:glue_official",
+        "table_label": "tab:glue_official",
+        "row": null,
+        "col": null,
+        "char_start": null,
+        "char_end": null,
+        "human_locator": "GLUE Test results, scored by the evaluation server (https://gluebenchmark.com/leaderboard). The number below each task d"
+      },
+      "columns": [
+        {
+          "index": 0,
+          "header": "System",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 1,
+          "header": "MNLI-(m/mm) 392k",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 2,
+          "header": "QQP 363k",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 3,
+          "header": "QNLI 108k",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 4,
+          "header": "SST-2 67k",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 5,
+          "header": "CoLA 8.5k",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 6,
+          "header": "STS-B 5.7k",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 7,
+          "header": "MRPC 3.5k",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 8,
+          "header": "RTE 2.5k",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 9,
+          "header": "Average -",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        }
+      ],
+      "cells": [
+        {
+          "row": 0,
+          "col": 0,
+          "raw_latex": "System",
+          "text": "System",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "raw_latex": "MNLI-(m/mm)",
+          "text": "MNLI-(m/mm)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 2,
+          "raw_latex": "QQP",
+          "text": "QQP",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "raw_latex": "QNLI",
+          "text": "QNLI",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 4,
+          "raw_latex": "SST-2",
+          "text": "SST-2",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 5,
+          "raw_latex": "CoLA",
+          "text": "CoLA",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 6,
+          "raw_latex": "STS-B",
+          "text": "STS-B",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 7,
+          "raw_latex": "MRPC",
+          "text": "MRPC",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 8,
+          "raw_latex": "RTE",
+          "text": "RTE",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 9,
+          "raw_latex": "{\\bf Average}",
+          "text": "Average",
+          "value": null,
+          "values": [],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "raw_latex": "",
+          "text": "",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "raw_latex": "392k",
+          "text": "392k",
+          "value": 392000.0,
+          "values": [
+            392000.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 2,
+          "raw_latex": "363k",
+          "text": "363k",
+          "value": 363000.0,
+          "values": [
+            363000.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "raw_latex": "108k",
+          "text": "108k",
+          "value": 108000.0,
+          "values": [
+            108000.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "raw_latex": "67k",
+          "text": "67k",
+          "value": 67000.0,
+          "values": [
+            67000.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 5,
+          "raw_latex": "8.5k",
+          "text": "8.5k",
+          "value": 8500.0,
+          "values": [
+            8500.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 6,
+          "raw_latex": "5.7k",
+          "text": "5.7k",
+          "value": 5700.0,
+          "values": [
+            5700.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 7,
+          "raw_latex": "3.5k",
+          "text": "3.5k",
+          "value": 3500.0,
+          "values": [
+            3500.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 8,
+          "raw_latex": "2.5k",
+          "text": "2.5k",
+          "value": 2500.0,
+          "values": [
+            2500.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 9,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "raw_latex": "Pre-OpenAI SOTA",
+          "text": "Pre-OpenAI SOTA",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "raw_latex": "80.6/80.1",
+          "text": "80.6/80.1",
+          "value": null,
+          "values": [
+            80.6,
+            80.1
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 2,
+          "raw_latex": "66.1",
+          "text": "66.1",
+          "value": 66.1,
+          "values": [
+            66.1
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 3,
+          "raw_latex": "82.3",
+          "text": "82.3",
+          "value": 82.3,
+          "values": [
+            82.3
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 4,
+          "raw_latex": "93.2",
+          "text": "93.2",
+          "value": 93.2,
+          "values": [
+            93.2
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 5,
+          "raw_latex": "35.0",
+          "text": "35.0",
+          "value": 35.0,
+          "values": [
+            35.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 6,
+          "raw_latex": "81.0",
+          "text": "81.0",
+          "value": 81.0,
+          "values": [
+            81.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 7,
+          "raw_latex": "86.0",
+          "text": "86.0",
+          "value": 86.0,
+          "values": [
+            86.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 8,
+          "raw_latex": "61.7",
+          "text": "61.7",
+          "value": 61.7,
+          "values": [
+            61.7
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 9,
+          "raw_latex": "74.0",
+          "text": "74.0",
+          "value": 74.0,
+          "values": [
+            74.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 0,
+          "raw_latex": "BiLSTM+ELMo+Attn",
+          "text": "BiLSTM+ELMo+Attn",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "raw_latex": "76.4/76.1",
+          "text": "76.4/76.1",
+          "value": null,
+          "values": [
+            76.4,
+            76.1
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "raw_latex": "64.8",
+          "text": "64.8",
+          "value": 64.8,
+          "values": [
+            64.8
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 3,
+          "raw_latex": "79.8",
+          "text": "79.8",
+          "value": 79.8,
+          "values": [
+            79.8
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "raw_latex": "90.4",
+          "text": "90.4",
+          "value": 90.4,
+          "values": [
+            90.4
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 5,
+          "raw_latex": "36.0",
+          "text": "36.0",
+          "value": 36.0,
+          "values": [
+            36.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 6,
+          "raw_latex": "73.3",
+          "text": "73.3",
+          "value": 73.3,
+          "values": [
+            73.3
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 7,
+          "raw_latex": "84.9",
+          "text": "84.9",
+          "value": 84.9,
+          "values": [
+            84.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 8,
+          "raw_latex": "56.8",
+          "text": "56.8",
+          "value": 56.8,
+          "values": [
+            56.8
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 9,
+          "raw_latex": "71.0",
+          "text": "71.0",
+          "value": 71.0,
+          "values": [
+            71.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "raw_latex": "OpenAI GPT",
+          "text": "OpenAI GPT",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 1,
+          "raw_latex": "82.1/81.4",
+          "text": "82.1/81.4",
+          "value": null,
+          "values": [
+            82.1,
+            81.4
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "raw_latex": "70.3",
+          "text": "70.3",
+          "value": 70.3,
+          "values": [
+            70.3
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 3,
+          "raw_latex": "87.4",
+          "text": "87.4",
+          "value": 87.4,
+          "values": [
+            87.4
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 4,
+          "raw_latex": "91.3",
+          "text": "91.3",
+          "value": 91.3,
+          "values": [
+            91.3
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 5,
+          "raw_latex": "45.4",
+          "text": "45.4",
+          "value": 45.4,
+          "values": [
+            45.4
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 6,
+          "raw_latex": "80.0",
+          "text": "80.0",
+          "value": 80.0,
+          "values": [
+            80.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 7,
+          "raw_latex": "82.3",
+          "text": "82.3",
+          "value": 82.3,
+          "values": [
+            82.3
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 8,
+          "raw_latex": "56.0",
+          "text": "56.0",
+          "value": 56.0,
+          "values": [
+            56.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 9,
+          "raw_latex": "75.1",
+          "text": "75.1",
+          "value": 75.1,
+          "values": [
+            75.1
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 0,
+          "raw_latex": "\\bertbase",
+          "text": "BERT_BASE",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 1,
+          "raw_latex": "84.6/83.4",
+          "text": "84.6/83.4",
+          "value": null,
+          "values": [
+            84.6,
+            83.4
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 2,
+          "raw_latex": "71.2",
+          "text": "71.2",
+          "value": 71.2,
+          "values": [
+            71.2
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 3,
+          "raw_latex": "90.5",
+          "text": "90.5",
+          "value": 90.5,
+          "values": [
+            90.5
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 4,
+          "raw_latex": "93.5",
+          "text": "93.5",
+          "value": 93.5,
+          "values": [
+            93.5
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 5,
+          "raw_latex": "52.1",
+          "text": "52.1",
+          "value": 52.1,
+          "values": [
+            52.1
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 6,
+          "raw_latex": "85.8",
+          "text": "85.8",
+          "value": 85.8,
+          "values": [
+            85.8
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 7,
+          "raw_latex": "88.9",
+          "text": "88.9",
+          "value": 88.9,
+          "values": [
+            88.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 8,
+          "raw_latex": "66.4",
+          "text": "66.4",
+          "value": 66.4,
+          "values": [
+            66.4
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 9,
+          "raw_latex": "79.6",
+          "text": "79.6",
+          "value": 79.6,
+          "values": [
+            79.6
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 0,
+          "raw_latex": "\\bertlarge",
+          "text": "BERT_LARGE",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 1,
+          "raw_latex": "{\\bf 86.7/85.9}",
+          "text": "86.7/85.9",
+          "value": null,
+          "values": [
+            86.7,
+            85.9
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 2,
+          "raw_latex": "{\\bf 72.1}",
+          "text": "72.1",
+          "value": 72.1,
+          "values": [
+            72.1
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 3,
+          "raw_latex": "{\\bf 92.7}",
+          "text": "92.7",
+          "value": 92.7,
+          "values": [
+            92.7
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 4,
+          "raw_latex": "{\\bf 94.9}",
+          "text": "94.9",
+          "value": 94.9,
+          "values": [
+            94.9
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 5,
+          "raw_latex": "{\\bf 60.5}",
+          "text": "60.5",
+          "value": 60.5,
+          "values": [
+            60.5
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 6,
+          "raw_latex": "{\\bf 86.5}",
+          "text": "86.5",
+          "value": 86.5,
+          "values": [
+            86.5
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 7,
+          "raw_latex": "{\\bf 89.3}",
+          "text": "89.3",
+          "value": 89.3,
+          "values": [
+            89.3
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 8,
+          "raw_latex": "{\\bf 70.1}",
+          "text": "70.1",
+          "value": 70.1,
+          "values": [
+            70.1
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 9,
+          "raw_latex": "{\\bf 82.1}",
+          "text": "82.1",
+          "value": 82.1,
+          "values": [
+            82.1
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        }
+      ],
+      "n_rows": 7,
+      "n_cols": 10,
+      "latex_source": "\\begin{tabular*}{\\textwidth}{l@{\\extracolsep{\\fill}}cccccccc c}\n    \\toprule\nSystem             &  MNLI-(m/mm)    & QQP        & QNLI       & SST-2      & CoLA       & STS-B      & MRPC       & RTE        & {\\bf Average} \\\\\n                  & 392k            & 363k       & 108k       & 67k        & 8.5k       & 5.7k       & 3.5k       & 2.5k       & -          \\\\ \n\\hline\nPre-OpenAI SOTA    & 80.6/80.1       & 66.1       & 82.3       & 93.2       & 35.0       & 81.0       & 86.0       & 61.7       & 74.0       \\\\\nBiLSTM+ELMo+Attn   & 76.4/76.1       & 64.8       & 79.8       & 90.4       & 36.0       & 73.3       & 84.9       & 56.8       & 71.0       \\\\\nOpenAI GPT         & 82.1/81.4       & 70.3       & 87.4       & 91.3       & 45.4       & 80.0       & 82.3       & 56.0       & 75.1       \\\\\n\n\\hline\n\\bertbase          & 84.6/83.4       & 71.2       & 90.5       & 93.5       & 52.1       & 85.8       & 88.9       & 66.4       & 79.6       \\\\\n\\bertlarge         & {\\bf 86.7/85.9} & {\\bf 72.1} & {\\bf 92.7} & {\\bf 94.9} & {\\bf 60.5} & {\\bf 86.5} & {\\bf 89.3} & {\\bf 70.1} & {\\bf 82.1} \\\\\n    \\bottomrule\n   \\end{tabular*}",
+      "header_source": "rule",
+      "is_nested": false,
+      "parse_warnings": []
+    },
+    {
+      "label": "tab:squad_results",
+      "caption": "SQuAD 1.1 results. The BERT ensemble is 7x systems which use different pre-training checkpoints and fine-tuning seeds.",
+      "anchor": {
+        "kind": "table",
+        "dom_id": "tab:squad_results",
+        "table_label": "tab:squad_results",
+        "row": null,
+        "col": null,
+        "char_start": null,
+        "char_end": null,
+        "human_locator": "SQuAD 1.1 results. The BERT ensemble is 7x systems which use different pre-training checkpoints and fine-tuning seeds."
+      },
+      "columns": [
+        {
+          "index": 0,
+          "header": "System",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 1,
+          "header": "Dev EM",
+          "metric": "EM",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        },
+        {
+          "index": 2,
+          "header": "Dev F1",
+          "metric": "F1",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        },
+        {
+          "index": 3,
+          "header": "Test EM",
+          "metric": "EM",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        },
+        {
+          "index": 4,
+          "header": "Test F1",
+          "metric": "F1",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        }
+      ],
+      "cells": [
+        {
+          "row": 0,
+          "col": 0,
+          "raw_latex": "\\multicolumn{1}{c}{System}",
+          "text": "System",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "raw_latex": "\\multicolumn{2}{c}{Dev}",
+          "text": "Dev",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 2,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "raw_latex": "\\multicolumn{2}{c}{Test}",
+          "text": "Test",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 2,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "raw_latex": "",
+          "text": "",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "raw_latex": "EM",
+          "text": "EM",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 2,
+          "raw_latex": "F1",
+          "text": "F1",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "raw_latex": "EM",
+          "text": "EM",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "raw_latex": "F1",
+          "text": "F1",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "raw_latex": "\\multicolumn{5}{c}{Top Leaderboard Systems (Dec 10th, 2018)}",
+          "text": "Top Leaderboard Systems (Dec 10th, 2018)",
+          "value": null,
+          "values": [
+            1.0,
+            2018.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 5,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 0,
+          "raw_latex": "Human",
+          "text": "Human",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 3,
+          "raw_latex": "82.3",
+          "text": "82.3",
+          "value": 82.3,
+          "values": [
+            82.3
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "raw_latex": "91.2",
+          "text": "91.2",
+          "value": 91.2,
+          "values": [
+            91.2
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "raw_latex": "\\#1 Ensemble - nlnet",
+          "text": "#1 Ensemble - nlnet",
+          "value": 1.0,
+          "values": [
+            1.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 1,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 3,
+          "raw_latex": "86.0",
+          "text": "86.0",
+          "value": 86.0,
+          "values": [
+            86.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 4,
+          "raw_latex": "91.7",
+          "text": "91.7",
+          "value": 91.7,
+          "values": [
+            91.7
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 0,
+          "raw_latex": "\\#2 Ensemble - QANet",
+          "text": "#2 Ensemble - QANet",
+          "value": 2.0,
+          "values": [
+            2.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 1,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 2,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 3,
+          "raw_latex": "84.5",
+          "text": "84.5",
+          "value": 84.5,
+          "values": [
+            84.5
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 4,
+          "raw_latex": "90.5",
+          "text": "90.5",
+          "value": 90.5,
+          "values": [
+            90.5
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 0,
+          "raw_latex": "\\multicolumn{5}{c}{Published}",
+          "text": "Published",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 5,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 0,
+          "raw_latex": "BiDAF+ELMo (Single)",
+          "text": "BiDAF+ELMo (Single)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 1,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 2,
+          "raw_latex": "85.6",
+          "text": "85.6",
+          "value": 85.6,
+          "values": [
+            85.6
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 3,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 4,
+          "raw_latex": "85.8",
+          "text": "85.8",
+          "value": 85.8,
+          "values": [
+            85.8
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 0,
+          "raw_latex": "R.M. Reader (Ensemble)",
+          "text": "R.M. Reader (Ensemble)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 1,
+          "raw_latex": "81.2",
+          "text": "81.2",
+          "value": 81.2,
+          "values": [
+            81.2
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 2,
+          "raw_latex": "87.9",
+          "text": "87.9",
+          "value": 87.9,
+          "values": [
+            87.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 3,
+          "raw_latex": "82.3",
+          "text": "82.3",
+          "value": 82.3,
+          "values": [
+            82.3
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 4,
+          "raw_latex": "88.5",
+          "text": "88.5",
+          "value": 88.5,
+          "values": [
+            88.5
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 9,
+          "col": 0,
+          "raw_latex": "\\multicolumn{5}{c}{Ours}",
+          "text": "Ours",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 5,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 10,
+          "col": 0,
+          "raw_latex": "\\bertbase (Single)",
+          "text": "BERT_BASE(Single)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 10,
+          "col": 1,
+          "raw_latex": "80.8",
+          "text": "80.8",
+          "value": 80.8,
+          "values": [
+            80.8
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 10,
+          "col": 2,
+          "raw_latex": "88.5",
+          "text": "88.5",
+          "value": 88.5,
+          "values": [
+            88.5
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 10,
+          "col": 3,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 10,
+          "col": 4,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 11,
+          "col": 0,
+          "raw_latex": "\\bertlarge (Single)",
+          "text": "BERT_LARGE(Single)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 11,
+          "col": 1,
+          "raw_latex": "84.1",
+          "text": "84.1",
+          "value": 84.1,
+          "values": [
+            84.1
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 11,
+          "col": 2,
+          "raw_latex": "90.9",
+          "text": "90.9",
+          "value": 90.9,
+          "values": [
+            90.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 11,
+          "col": 3,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 11,
+          "col": 4,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 12,
+          "col": 0,
+          "raw_latex": "\\bertlarge (Ensemble)",
+          "text": "BERT_LARGE(Ensemble)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 12,
+          "col": 1,
+          "raw_latex": "85.8",
+          "text": "85.8",
+          "value": 85.8,
+          "values": [
+            85.8
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 12,
+          "col": 2,
+          "raw_latex": "91.8",
+          "text": "91.8",
+          "value": 91.8,
+          "values": [
+            91.8
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 12,
+          "col": 3,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 12,
+          "col": 4,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 13,
+          "col": 0,
+          "raw_latex": "\\bertlarge (Sgl.+TriviaQA)",
+          "text": "BERT_LARGE(Sgl.+TriviaQA)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 13,
+          "col": 1,
+          "raw_latex": "{\\bf 84.2}",
+          "text": "84.2",
+          "value": 84.2,
+          "values": [
+            84.2
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 13,
+          "col": 2,
+          "raw_latex": "{\\bf 91.1}",
+          "text": "91.1",
+          "value": 91.1,
+          "values": [
+            91.1
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 13,
+          "col": 3,
+          "raw_latex": "{\\bf 85.1}",
+          "text": "85.1",
+          "value": 85.1,
+          "values": [
+            85.1
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 13,
+          "col": 4,
+          "raw_latex": "{\\bf 91.8}",
+          "text": "91.8",
+          "value": 91.8,
+          "values": [
+            91.8
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 14,
+          "col": 0,
+          "raw_latex": "\\bertlarge (Ens.+TriviaQA)",
+          "text": "BERT_LARGE(Ens.+TriviaQA)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 14,
+          "col": 1,
+          "raw_latex": "{\\bf 86.2}",
+          "text": "86.2",
+          "value": 86.2,
+          "values": [
+            86.2
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 14,
+          "col": 2,
+          "raw_latex": "{\\bf 92.2}",
+          "text": "92.2",
+          "value": 92.2,
+          "values": [
+            92.2
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 14,
+          "col": 3,
+          "raw_latex": "{\\bf 87.4}",
+          "text": "87.4",
+          "value": 87.4,
+          "values": [
+            87.4
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 14,
+          "col": 4,
+          "raw_latex": "{\\bf 93.2}",
+          "text": "93.2",
+          "value": 93.2,
+          "values": [
+            93.2
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        }
+      ],
+      "n_rows": 15,
+      "n_cols": 5,
+      "latex_source": "\\begin{tabular}{@{}lcccc@{}}\n  \\toprule\n  \\multicolumn{1}{c}{System} & \\multicolumn{2}{c}{Dev} & \\multicolumn{2}{c}{Test} \\\\\n  & EM & F1 & EM & F1 \\\\\n  \\midrule\n\n  \\multicolumn{5}{c}{Top Leaderboard Systems (Dec 10th, 2018)} \\\\\n  Human                & - & - & 82.3 & 91.2 \\\\ \n  \\#1 Ensemble - nlnet & - & - & 86.0 & 91.7 \\\\ \n  \\#2 Ensemble - QANet & - & - & 84.5 & 90.5 \\\\ \n  \\midrule\n  \\multicolumn{5}{c}{Published}     \\\\\n BiDAF+ELMo (Single)    & -    & 85.6  & -     & 85.8    \\\\ \n R.M. Reader (Ensemble) & 81.2 & 87.9  & 82.3  & 88.5 \\\\ \n  \\midrule\n  \\multicolumn{5}{c}{Ours} \\\\\n  \\bertbase (Single)     & 80.8 & 88.5 & -   & - \\\\ \n  \\bertlarge (Single)    & 84.1 & 90.9 & -   & - \\\\ \n  \\bertlarge (Ensemble)  & 85.8 & 91.8 & -   & - \\\\ \n  \\bertlarge (Sgl.+TriviaQA) & {\\bf 84.2} & {\\bf 91.1} & {\\bf 85.1} & {\\bf 91.8} \\\\ \n  \\bertlarge (Ens.+TriviaQA) & {\\bf 86.2} & {\\bf 92.2} & {\\bf 87.4} & {\\bf 93.2}\n \\\\ \n\n\\bottomrule\n\\end{tabular}",
+      "header_source": "rule",
+      "is_nested": false,
+      "parse_warnings": []
+    },
+    {
+      "label": "tab:squad2_results",
+      "caption": "SQuAD 2.0 results. We exclude entries that use BERT as one of their components.",
+      "anchor": {
+        "kind": "table",
+        "dom_id": "tab:squad2_results",
+        "table_label": "tab:squad2_results",
+        "row": null,
+        "col": null,
+        "char_start": null,
+        "char_end": null,
+        "human_locator": "SQuAD 2.0 results. We exclude entries that use BERT as one of their components."
+      },
+      "columns": [
+        {
+          "index": 0,
+          "header": "System",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 1,
+          "header": "Dev EM",
+          "metric": "EM",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        },
+        {
+          "index": 2,
+          "header": "Dev F1",
+          "metric": "F1",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        },
+        {
+          "index": 3,
+          "header": "Test EM",
+          "metric": "EM",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        },
+        {
+          "index": 4,
+          "header": "Test F1",
+          "metric": "F1",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        }
+      ],
+      "cells": [
+        {
+          "row": 0,
+          "col": 0,
+          "raw_latex": "\\multicolumn{1}{c}{System}",
+          "text": "System",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "raw_latex": "\\multicolumn{2}{c}{Dev}",
+          "text": "Dev",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 2,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "raw_latex": "\\multicolumn{2}{c}{Test}",
+          "text": "Test",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 2,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "raw_latex": "",
+          "text": "",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "raw_latex": "EM",
+          "text": "EM",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 2,
+          "raw_latex": "F1",
+          "text": "F1",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "raw_latex": "EM",
+          "text": "EM",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "raw_latex": "F1",
+          "text": "F1",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "raw_latex": "\\multicolumn{5}{c}{Top Leaderboard Systems (Dec 10th, 2018)}",
+          "text": "Top Leaderboard Systems (Dec 10th, 2018)",
+          "value": null,
+          "values": [
+            1.0,
+            2018.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 5,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 0,
+          "raw_latex": "Human",
+          "text": "Human",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "raw_latex": "86.3",
+          "text": "86.3",
+          "value": 86.3,
+          "values": [
+            86.3
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "raw_latex": "89.0",
+          "text": "89.0",
+          "value": 89.0,
+          "values": [
+            89.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 3,
+          "raw_latex": "86.9",
+          "text": "86.9",
+          "value": 86.9,
+          "values": [
+            86.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "raw_latex": "89.5",
+          "text": "89.5",
+          "value": 89.5,
+          "values": [
+            89.5
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "raw_latex": "\\#1 Single - MIR-MRC (F-Net)",
+          "text": "#1 Single - MIR-MRC (F-Net)",
+          "value": 1.0,
+          "values": [
+            1.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 1,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 3,
+          "raw_latex": "74.8",
+          "text": "74.8",
+          "value": 74.8,
+          "values": [
+            74.8
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 4,
+          "raw_latex": "78.0",
+          "text": "78.0",
+          "value": 78.0,
+          "values": [
+            78.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 0,
+          "raw_latex": "\\#2 Single - nlnet",
+          "text": "#2 Single - nlnet",
+          "value": 2.0,
+          "values": [
+            2.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 1,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 2,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 3,
+          "raw_latex": "74.2",
+          "text": "74.2",
+          "value": 74.2,
+          "values": [
+            74.2
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 4,
+          "raw_latex": "77.1",
+          "text": "77.1",
+          "value": 77.1,
+          "values": [
+            77.1
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 0,
+          "raw_latex": "\\multicolumn{5}{c}{Published}",
+          "text": "Published",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 5,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 0,
+          "raw_latex": "unet (Ensemble)",
+          "text": "unet (Ensemble)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 1,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 2,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 3,
+          "raw_latex": "71.4",
+          "text": "71.4",
+          "value": 71.4,
+          "values": [
+            71.4
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 4,
+          "raw_latex": "74.9",
+          "text": "74.9",
+          "value": 74.9,
+          "values": [
+            74.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 0,
+          "raw_latex": "SLQA+ (Single)",
+          "text": "SLQA+ (Single)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 1,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 2,
+          "raw_latex": "",
+          "text": "",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 3,
+          "raw_latex": "71.4",
+          "text": "71.4",
+          "value": 71.4,
+          "values": [
+            71.4
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 4,
+          "raw_latex": "74.4",
+          "text": "74.4",
+          "value": 74.4,
+          "values": [
+            74.4
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 9,
+          "col": 0,
+          "raw_latex": "\\multicolumn{5}{c}{Ours}",
+          "text": "Ours",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 5,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 10,
+          "col": 0,
+          "raw_latex": "\\bertlarge (Single)",
+          "text": "BERT_LARGE(Single)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 10,
+          "col": 1,
+          "raw_latex": "78.7",
+          "text": "78.7",
+          "value": 78.7,
+          "values": [
+            78.7
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 10,
+          "col": 2,
+          "raw_latex": "81.9",
+          "text": "81.9",
+          "value": 81.9,
+          "values": [
+            81.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 10,
+          "col": 3,
+          "raw_latex": "80.0",
+          "text": "80.0",
+          "value": 80.0,
+          "values": [
+            80.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 10,
+          "col": 4,
+          "raw_latex": "83.1",
+          "text": "83.1",
+          "value": 83.1,
+          "values": [
+            83.1
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        }
+      ],
+      "n_rows": 11,
+      "n_cols": 5,
+      "latex_source": "\\begin{tabular}{@{}lcccc@{}}\n  \\toprule\n  \\multicolumn{1}{c}{System} & \\multicolumn{2}{c}{Dev} & \\multicolumn{2}{c}{Test} \\\\\n  & EM & F1 & EM & F1 \\\\\n  \\midrule\n\n\\multicolumn{5}{c}{Top Leaderboard Systems (Dec 10th, 2018)} \\\\\n  Human                & 86.3 & 89.0 & 86.9& 89.5 \\\\ \n  \\#1 Single - MIR-MRC (F-Net)   & - & - & 74.8 & 78.0 \\\\ \n  \\#2 Single - nlnet   & - & - & 74.2 & 77.1 \\\\ \n  \\midrule\n  \\multicolumn{5}{c}{Published}     \\\\\n unet (Ensemble) & - & -  & 71.4  & 74.9 \\\\ \n SLQA+ (Single) & - & & 71.4 & 74.4\\\\\n  \\midrule\n  \\multicolumn{5}{c}{Ours} \\\\\n  \\bertlarge (Single)    & 78.7 & 81.9 & 80.0   &  83.1\n \\\\ \n\n\\bottomrule\n\\end{tabular}",
+      "header_source": "rule",
+      "is_nested": false,
+      "parse_warnings": []
+    },
+    {
+      "label": "tab:swag_official",
+      "caption": "SWAG Dev and Test accuracies. ^Human performance is measured with 100 samples, as reported in the SWAG paper.",
+      "anchor": {
+        "kind": "table",
+        "dom_id": "tab:swag_official",
+        "table_label": "tab:swag_official",
+        "row": null,
+        "col": null,
+        "char_start": null,
+        "char_end": null,
+        "human_locator": "SWAG Dev and Test accuracies. ^Human performance is measured with 100 samples, as reported in the SWAG paper."
+      },
+      "columns": [
+        {
+          "index": 0,
+          "header": "System",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 1,
+          "header": "Dev",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 2,
+          "header": "Test",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        }
+      ],
+      "cells": [
+        {
+          "row": 0,
+          "col": 0,
+          "raw_latex": "System",
+          "text": "System",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "raw_latex": "Dev",
+          "text": "Dev",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 2,
+          "raw_latex": "Test",
+          "text": "Test",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "raw_latex": "ESIM+GloVe",
+          "text": "ESIM+GloVe",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "raw_latex": "51.9",
+          "text": "51.9",
+          "value": 51.9,
+          "values": [
+            51.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 1,
+          "col": 2,
+          "raw_latex": "52.7",
+          "text": "52.7",
+          "value": 52.7,
+          "values": [
+            52.7
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "raw_latex": "ESIM+ELMo",
+          "text": "ESIM+ELMo",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "raw_latex": "59.1",
+          "text": "59.1",
+          "value": 59.1,
+          "values": [
+            59.1
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 2,
+          "raw_latex": "59.2",
+          "text": "59.2",
+          "value": 59.2,
+          "values": [
+            59.2
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 0,
+          "raw_latex": "OpenAI GPT",
+          "text": "OpenAI GPT",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "raw_latex": "78.0",
+          "text": "78.0",
+          "value": 78.0,
+          "values": [
+            78.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "raw_latex": "\\bertbase",
+          "text": "BERT_BASE",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 1,
+          "raw_latex": "81.6",
+          "text": "81.6",
+          "value": 81.6,
+          "values": [
+            81.6
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 0,
+          "raw_latex": "\\bertlarge",
+          "text": "BERT_LARGE",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 1,
+          "raw_latex": "{\\bf 86.6}",
+          "text": "86.6",
+          "value": 86.6,
+          "values": [
+            86.6
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 2,
+          "raw_latex": "{\\bf 86.3}",
+          "text": "86.3",
+          "value": 86.3,
+          "values": [
+            86.3
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 0,
+          "raw_latex": "Human (expert)$^\\dagger$",
+          "text": "Human (expert)^",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 1,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 2,
+          "raw_latex": "85.0",
+          "text": "85.0",
+          "value": 85.0,
+          "values": [
+            85.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 0,
+          "raw_latex": "Human (5 annotations)$^\\dagger$",
+          "text": "Human (5 annotations)^",
+          "value": 5.0,
+          "values": [
+            5.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 1,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 2,
+          "raw_latex": "88.0",
+          "text": "88.0",
+          "value": 88.0,
+          "values": [
+            88.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        }
+      ],
+      "n_rows": 8,
+      "n_cols": 3,
+      "latex_source": "\\begin{tabular}{lcc}\n    \\toprule\nSystem             &  Dev    & Test\\\\ \n\\midrule\nESIM+GloVe   & 51.9       & 52.7 \\\\\nESIM+ELMo    & 59.1       & 59.2 \\\\\nOpenAI GPT    & -       & 78.0 \\\\\n\\midrule\n\\bertbase    & 81.6       &  - \\\\\n\\bertlarge   & {\\bf 86.6} & {\\bf 86.3} \\\\\n\\midrule\nHuman (expert)$^\\dagger$ & - & 85.0 \\\\\nHuman (5 annotations)$^\\dagger$        & -          & 88.0 \\\\\n\\bottomrule\n\\end{tabular}",
+      "header_source": "rule",
+      "is_nested": false,
+      "parse_warnings": []
+    },
+    {
+      "label": "tab:task_ablation",
+      "caption": "Ablation over the pre-training tasks using the BERT_BASEarchitecture. \"No NSP\" is trained without the next sentence prediction task. \"LTR & No NSP\" is trained as a left-to-right LM without the next sentence prediction, like OpenAI GPT. \"+ BiLSTM\" adds a randomly initialized BiLSTM on top of the \"LTR + No NSP\" model during fine-tuning.",
+      "anchor": {
+        "kind": "table",
+        "dom_id": "tab:task_ablation",
+        "table_label": "tab:task_ablation",
+        "row": null,
+        "col": null,
+        "char_start": null,
+        "char_end": null,
+        "human_locator": "Ablation over the pre-training tasks using the BERT_BASEarchitecture. \"No NSP\" is trained without the next sentence pred"
+      },
+      "columns": [
+        {
+          "index": 0,
+          "header": "Tasks",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 1,
+          "header": "Dev Set MNLI-m (Acc)",
+          "metric": "ACC",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        },
+        {
+          "index": 2,
+          "header": "Dev Set QNLI (Acc)",
+          "metric": "ACC",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        },
+        {
+          "index": 3,
+          "header": "Dev Set MRPC (Acc)",
+          "metric": "ACC",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        },
+        {
+          "index": 4,
+          "header": "Dev Set SST-2 (Acc)",
+          "metric": "ACC",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        },
+        {
+          "index": 5,
+          "header": "Dev Set SQuAD (F1)",
+          "metric": "F1",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        }
+      ],
+      "cells": [
+        {
+          "row": 0,
+          "col": 0,
+          "raw_latex": "",
+          "text": "",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "raw_latex": "\\multicolumn{5}{c}{Dev Set}",
+          "text": "Dev Set",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 5,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "raw_latex": "Tasks",
+          "text": "Tasks",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "raw_latex": "MNLI-m",
+          "text": "MNLI-m",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 2,
+          "raw_latex": "QNLI",
+          "text": "QNLI",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "raw_latex": "MRPC",
+          "text": "MRPC",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "raw_latex": "SST-2",
+          "text": "SST-2",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 5,
+          "raw_latex": "SQuAD",
+          "text": "SQuAD",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "raw_latex": "",
+          "text": "",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "raw_latex": "(Acc)",
+          "text": "(Acc)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 2,
+          "col": 2,
+          "raw_latex": "(Acc)",
+          "text": "(Acc)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 2,
+          "col": 3,
+          "raw_latex": "(Acc)",
+          "text": "(Acc)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 2,
+          "col": 4,
+          "raw_latex": "(Acc)",
+          "text": "(Acc)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 2,
+          "col": 5,
+          "raw_latex": "(F1)",
+          "text": "(F1)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 3,
+          "col": 0,
+          "raw_latex": "\\bertbase",
+          "text": "BERT_BASE",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "raw_latex": "84.4",
+          "text": "84.4",
+          "value": 84.4,
+          "values": [
+            84.4
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "raw_latex": "88.4",
+          "text": "88.4",
+          "value": 88.4,
+          "values": [
+            88.4
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 3,
+          "raw_latex": "86.7",
+          "text": "86.7",
+          "value": 86.7,
+          "values": [
+            86.7
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "raw_latex": "92.7",
+          "text": "92.7",
+          "value": 92.7,
+          "values": [
+            92.7
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 5,
+          "raw_latex": "88.5",
+          "text": "88.5",
+          "value": 88.5,
+          "values": [
+            88.5
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "raw_latex": "No NSP",
+          "text": "No NSP",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 1,
+          "raw_latex": "83.9",
+          "text": "83.9",
+          "value": 83.9,
+          "values": [
+            83.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "raw_latex": "84.9",
+          "text": "84.9",
+          "value": 84.9,
+          "values": [
+            84.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 3,
+          "raw_latex": "86.5",
+          "text": "86.5",
+          "value": 86.5,
+          "values": [
+            86.5
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 4,
+          "raw_latex": "92.6",
+          "text": "92.6",
+          "value": 92.6,
+          "values": [
+            92.6
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 5,
+          "raw_latex": "87.9",
+          "text": "87.9",
+          "value": 87.9,
+          "values": [
+            87.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 0,
+          "raw_latex": "LTR \\& No NSP",
+          "text": "LTR & No NSP",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 1,
+          "raw_latex": "82.1",
+          "text": "82.1",
+          "value": 82.1,
+          "values": [
+            82.1
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 2,
+          "raw_latex": "84.3",
+          "text": "84.3",
+          "value": 84.3,
+          "values": [
+            84.3
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 3,
+          "raw_latex": "77.5",
+          "text": "77.5",
+          "value": 77.5,
+          "values": [
+            77.5
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 4,
+          "raw_latex": "92.1",
+          "text": "92.1",
+          "value": 92.1,
+          "values": [
+            92.1
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 5,
+          "raw_latex": "77.8",
+          "text": "77.8",
+          "value": 77.8,
+          "values": [
+            77.8
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 0,
+          "raw_latex": "\\quad + BiLSTM",
+          "text": "+ BiLSTM",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 1,
+          "raw_latex": "82.1",
+          "text": "82.1",
+          "value": 82.1,
+          "values": [
+            82.1
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 2,
+          "raw_latex": "84.1",
+          "text": "84.1",
+          "value": 84.1,
+          "values": [
+            84.1
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 3,
+          "raw_latex": "75.7",
+          "text": "75.7",
+          "value": 75.7,
+          "values": [
+            75.7
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 4,
+          "raw_latex": "91.6",
+          "text": "91.6",
+          "value": 91.6,
+          "values": [
+            91.6
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 5,
+          "raw_latex": "84.9",
+          "text": "84.9",
+          "value": 84.9,
+          "values": [
+            84.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        }
+      ],
+      "n_rows": 7,
+      "n_cols": 6,
+      "latex_source": "\\begin{tabular}{@{}lccccc@{}}\n    \\toprule\n              & \\multicolumn{5}{c}{Dev Set} \\\\\n   Tasks & MNLI-m & QNLI & MRPC & SST-2 & SQuAD     \\\\\n         & (Acc) & (Acc) & (Acc) & (Acc) & (F1)     \\\\\n     \\midrule\n\\bertbase       & 84.4 & 88.4 & 86.7 & 92.7 & 88.5 \\\\\nNo NSP          & 83.9 & 84.9 & 86.5 & 92.6 & 87.9 \\\\\nLTR \\& No NSP   & 82.1 & 84.3 & 77.5 & 92.1 & 77.8 \\\\\n\\quad + BiLSTM  & 82.1 & 84.1 & 75.7 & 91.6 & 84.9 \\\\\n     \\bottomrule\n   \\end{tabular}",
+      "header_source": "rule",
+      "is_nested": false,
+      "parse_warnings": []
+    },
+    {
+      "label": "tab:size_ablation",
+      "caption": "Ablation over BERT model size. #L = the number of layers; #H = hidden size; #A = number of attention heads. \"LM (ppl)\" is the masked LM perplexity of held-out training data.",
+      "anchor": {
+        "kind": "table",
+        "dom_id": "tab:size_ablation",
+        "table_label": "tab:size_ablation",
+        "row": null,
+        "col": null,
+        "char_start": null,
+        "char_end": null,
+        "human_locator": "Ablation over BERT model size. #L = the number of layers; #H = hidden size; #A = number of attention heads. \"LM (ppl)\" i"
+      },
+      "columns": [
+        {
+          "index": 0,
+          "header": "Hyperparams",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 1,
+          "header": "Hyperparams",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 2,
+          "header": "Hyperparams",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 3,
+          "header": "",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 4,
+          "header": "Dev Set Accuracy",
+          "metric": "ACCURACY",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        },
+        {
+          "index": 5,
+          "header": "Dev Set Accuracy",
+          "metric": "ACCURACY",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        },
+        {
+          "index": 6,
+          "header": "Dev Set Accuracy",
+          "metric": "ACCURACY",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        }
+      ],
+      "cells": [
+        {
+          "row": 0,
+          "col": 0,
+          "raw_latex": "\\multicolumn{3}{c}{Hyperparams}",
+          "text": "Hyperparams",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 3,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "raw_latex": "",
+          "text": "",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 4,
+          "raw_latex": "\\multicolumn{3}{c}{Dev Set Accuracy}",
+          "text": "Dev Set Accuracy",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 3,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "raw_latex": "\\#L",
+          "text": "#L",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "raw_latex": "\\#H",
+          "text": "#H",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 1,
+          "col": 2,
+          "raw_latex": "\\#A",
+          "text": "#A",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "raw_latex": "LM (ppl)",
+          "text": "LM (ppl)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "raw_latex": "MNLI-m",
+          "text": "MNLI-m",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 1,
+          "col": 5,
+          "raw_latex": "MRPC",
+          "text": "MRPC",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 1,
+          "col": 6,
+          "raw_latex": "SST-2",
+          "text": "SST-2",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "raw_latex": "\\\n   3",
+          "text": "3",
+          "value": 3.0,
+          "values": [
+            3.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "raw_latex": "768",
+          "text": "768",
+          "value": 768.0,
+          "values": [
+            768.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 2,
+          "raw_latex": "12",
+          "text": "12",
+          "value": 12.0,
+          "values": [
+            12.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 3,
+          "raw_latex": "5.84",
+          "text": "5.84",
+          "value": 5.84,
+          "values": [
+            5.84
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 4,
+          "raw_latex": "77.9",
+          "text": "77.9",
+          "value": 77.9,
+          "values": [
+            77.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 5,
+          "raw_latex": "79.8",
+          "text": "79.8",
+          "value": 79.8,
+          "values": [
+            79.8
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 6,
+          "raw_latex": "88.4",
+          "text": "88.4",
+          "value": 88.4,
+          "values": [
+            88.4
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 0,
+          "raw_latex": "6",
+          "text": "6",
+          "value": 6.0,
+          "values": [
+            6.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "raw_latex": "768",
+          "text": "768",
+          "value": 768.0,
+          "values": [
+            768.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "raw_latex": "3",
+          "text": "3",
+          "value": 3.0,
+          "values": [
+            3.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 3,
+          "raw_latex": "5.24",
+          "text": "5.24",
+          "value": 5.24,
+          "values": [
+            5.24
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "raw_latex": "80.6",
+          "text": "80.6",
+          "value": 80.6,
+          "values": [
+            80.6
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 5,
+          "raw_latex": "82.2",
+          "text": "82.2",
+          "value": 82.2,
+          "values": [
+            82.2
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 6,
+          "raw_latex": "90.7",
+          "text": "90.7",
+          "value": 90.7,
+          "values": [
+            90.7
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "raw_latex": "6",
+          "text": "6",
+          "value": 6.0,
+          "values": [
+            6.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 1,
+          "raw_latex": "768",
+          "text": "768",
+          "value": 768.0,
+          "values": [
+            768.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "raw_latex": "12",
+          "text": "12",
+          "value": 12.0,
+          "values": [
+            12.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 3,
+          "raw_latex": "4.68",
+          "text": "4.68",
+          "value": 4.68,
+          "values": [
+            4.68
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 4,
+          "raw_latex": "81.9",
+          "text": "81.9",
+          "value": 81.9,
+          "values": [
+            81.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 5,
+          "raw_latex": "84.8",
+          "text": "84.8",
+          "value": 84.8,
+          "values": [
+            84.8
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 6,
+          "raw_latex": "91.3",
+          "text": "91.3",
+          "value": 91.3,
+          "values": [
+            91.3
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 0,
+          "raw_latex": "12",
+          "text": "12",
+          "value": 12.0,
+          "values": [
+            12.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 1,
+          "raw_latex": "768",
+          "text": "768",
+          "value": 768.0,
+          "values": [
+            768.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 2,
+          "raw_latex": "12",
+          "text": "12",
+          "value": 12.0,
+          "values": [
+            12.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 3,
+          "raw_latex": "3.99",
+          "text": "3.99",
+          "value": 3.99,
+          "values": [
+            3.99
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 4,
+          "raw_latex": "84.4",
+          "text": "84.4",
+          "value": 84.4,
+          "values": [
+            84.4
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 5,
+          "raw_latex": "86.7",
+          "text": "86.7",
+          "value": 86.7,
+          "values": [
+            86.7
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 6,
+          "raw_latex": "92.9",
+          "text": "92.9",
+          "value": 92.9,
+          "values": [
+            92.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 0,
+          "raw_latex": "12",
+          "text": "12",
+          "value": 12.0,
+          "values": [
+            12.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 1,
+          "raw_latex": "1024",
+          "text": "1024",
+          "value": 1024.0,
+          "values": [
+            1024.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 2,
+          "raw_latex": "16",
+          "text": "16",
+          "value": 16.0,
+          "values": [
+            16.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 3,
+          "raw_latex": "3.54",
+          "text": "3.54",
+          "value": 3.54,
+          "values": [
+            3.54
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 4,
+          "raw_latex": "85.7",
+          "text": "85.7",
+          "value": 85.7,
+          "values": [
+            85.7
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 5,
+          "raw_latex": "86.9",
+          "text": "86.9",
+          "value": 86.9,
+          "values": [
+            86.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 6,
+          "raw_latex": "93.3",
+          "text": "93.3",
+          "value": 93.3,
+          "values": [
+            93.3
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 0,
+          "raw_latex": "24",
+          "text": "24",
+          "value": 24.0,
+          "values": [
+            24.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 1,
+          "raw_latex": "1024",
+          "text": "1024",
+          "value": 1024.0,
+          "values": [
+            1024.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 2,
+          "raw_latex": "16",
+          "text": "16",
+          "value": 16.0,
+          "values": [
+            16.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 3,
+          "raw_latex": "3.23",
+          "text": "3.23",
+          "value": 3.23,
+          "values": [
+            3.23
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 4,
+          "raw_latex": "86.6",
+          "text": "86.6",
+          "value": 86.6,
+          "values": [
+            86.6
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 5,
+          "raw_latex": "87.8",
+          "text": "87.8",
+          "value": 87.8,
+          "values": [
+            87.8
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 6,
+          "raw_latex": "93.7",
+          "text": "93.7",
+          "value": 93.7,
+          "values": [
+            93.7
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        }
+      ],
+      "n_rows": 8,
+      "n_cols": 7,
+      "latex_source": "\\begin{tabular}{@{}rrrcccc@{}}\n  \\toprule\n  \\multicolumn{3}{c}{Hyperparams}      &      & \\multicolumn{3}{c}{Dev Set Accuracy} \\\\\n  \\midrule\n  \\#L & \\#H &\\#A & LM (ppl) & MNLI-m & MRPC &SST-2               \\\\\n  \\midrule\n  \\\n   3 &  768 & 12 & 5.84 & 77.9 & 79.8 & 88.4 \\\\\n   6 &  768 &  3 & 5.24 & 80.6 & 82.2 & 90.7 \\\\\n   6 &  768 & 12 & 4.68 & 81.9 & 84.8 & 91.3 \\\\\n  12 &  768 & 12 & 3.99 & 84.4 & 86.7 & 92.9 \\\\\n  12 & 1024 & 16 & 3.54 & 85.7 & 86.9 & 93.3 \\\\\n  24 & 1024 & 16 & 3.23 & 86.6 & 87.8 & 93.7 \\\\\n\\bottomrule\n\\end{tabular}",
+      "header_source": "rule",
+      "is_nested": false,
+      "parse_warnings": []
+    },
+    {
+      "label": "tab:ner_results",
+      "caption": "CoNLL-2003 Named Entity Recognition results. Hyperparameters were selected using the Dev set. The reported Dev and Test scores are averaged over 5 random restarts using those hyperparameters.",
+      "anchor": {
+        "kind": "table",
+        "dom_id": "tab:ner_results",
+        "table_label": "tab:ner_results",
+        "row": null,
+        "col": null,
+        "char_start": null,
+        "char_end": null,
+        "human_locator": "CoNLL-2003 Named Entity Recognition results. Hyperparameters were selected using the Dev set. The reported Dev and Test "
+      },
+      "columns": [
+        {
+          "index": 0,
+          "header": "System",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 1,
+          "header": "Dev F1",
+          "metric": "F1",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        },
+        {
+          "index": 2,
+          "header": "Test F1",
+          "metric": "F1",
+          "direction": "higher_is_better",
+          "direction_source": "lookup",
+          "is_spacer": false
+        }
+      ],
+      "cells": [
+        {
+          "row": 0,
+          "col": 0,
+          "raw_latex": "System",
+          "text": "System",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "raw_latex": "Dev F1",
+          "text": "Dev F1",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 2,
+          "raw_latex": "Test F1",
+          "text": "Test F1",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "raw_latex": "ELMo~\\cite{peters-etal:2018:_deep}",
+          "text": "ELMo",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "raw_latex": "95.7",
+          "text": "95.7",
+          "value": 95.7,
+          "values": [
+            95.7
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 1,
+          "col": 2,
+          "raw_latex": "92.2",
+          "text": "92.2",
+          "value": 92.2,
+          "values": [
+            92.2
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "raw_latex": "CVT~\\cite{clark2018semi}",
+          "text": "CVT",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 2,
+          "raw_latex": "92.6",
+          "text": "92.6",
+          "value": 92.6,
+          "values": [
+            92.6
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 0,
+          "raw_latex": "CSE~\\cite{akbik2018contextual}",
+          "text": "CSE",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "raw_latex": "{\\bf 93.1}",
+          "text": "93.1",
+          "value": 93.1,
+          "values": [
+            93.1
+          ],
+          "is_bold": true,
+          "bold_source": "bf",
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 1,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "raw_latex": "Fine-tuning approach",
+          "text": "Fine-tuning approach",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 1,
+          "raw_latex": "",
+          "text": "",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "raw_latex": "",
+          "text": "",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 0,
+          "raw_latex": "\\;\\;\\;\\bertlarge",
+          "text": "BERT_LARGE",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 1,
+          "raw_latex": "96.6",
+          "text": "96.6",
+          "value": 96.6,
+          "values": [
+            96.6
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 2,
+          "raw_latex": "92.8",
+          "text": "92.8",
+          "value": 92.8,
+          "values": [
+            92.8
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 0,
+          "raw_latex": "\\;\\;\\;\\bertbase",
+          "text": "BERT_BASE",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 1,
+          "raw_latex": "96.4",
+          "text": "96.4",
+          "value": 96.4,
+          "values": [
+            96.4
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 2,
+          "raw_latex": "92.4",
+          "text": "92.4",
+          "value": 92.4,
+          "values": [
+            92.4
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 2,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 0,
+          "raw_latex": "Feature-based approach (\\bertbase)",
+          "text": "Feature-based approach (BERT_BASE)",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 1,
+          "raw_latex": "",
+          "text": "",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 2,
+          "raw_latex": "",
+          "text": "",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 0,
+          "raw_latex": "\\;\\;\\;Embeddings",
+          "text": "Embeddings",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 1,
+          "raw_latex": "91.0",
+          "text": "91.0",
+          "value": 91.0,
+          "values": [
+            91.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 2,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 9,
+          "col": 0,
+          "raw_latex": "\\;\\;\\;Second-to-Last Hidden",
+          "text": "Second-to-Last Hidden",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 9,
+          "col": 1,
+          "raw_latex": "95.6",
+          "text": "95.6",
+          "value": 95.6,
+          "values": [
+            95.6
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 9,
+          "col": 2,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 10,
+          "col": 0,
+          "raw_latex": "\\;\\;\\;Last Hidden",
+          "text": "Last Hidden",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 10,
+          "col": 1,
+          "raw_latex": "94.9",
+          "text": "94.9",
+          "value": 94.9,
+          "values": [
+            94.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 10,
+          "col": 2,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 11,
+          "col": 0,
+          "raw_latex": "\\;\\;\\;Weighted Sum Last Four Hidden",
+          "text": "Weighted Sum Last Four Hidden",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 11,
+          "col": 1,
+          "raw_latex": "95.9",
+          "text": "95.9",
+          "value": 95.9,
+          "values": [
+            95.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 11,
+          "col": 2,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 12,
+          "col": 0,
+          "raw_latex": "\\;\\;\\;Concat Last Four Hidden",
+          "text": "Concat Last Four Hidden",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 12,
+          "col": 1,
+          "raw_latex": "96.1",
+          "text": "96.1",
+          "value": 96.1,
+          "values": [
+            96.1
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 12,
+          "col": 2,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 13,
+          "col": 0,
+          "raw_latex": "\\;\\;\\;Weighted Sum All 12 Layers",
+          "text": "Weighted Sum All 12 Layers",
+          "value": 12.0,
+          "values": [
+            12.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 13,
+          "col": 1,
+          "raw_latex": "95.5",
+          "text": "95.5",
+          "value": 95.5,
+          "values": [
+            95.5
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        },
+        {
+          "row": 13,
+          "col": 2,
+          "raw_latex": "-",
+          "text": "-",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 3,
+          "is_header": false
+        }
+      ],
+      "n_rows": 14,
+      "n_cols": 3,
+      "latex_source": "\\begin{tabular}{@{}lcc@{}}\n\\toprule\nSystem & Dev F1 & Test F1 \\\\\n\\midrule\nELMo~\\cite{peters-etal:2018:_deep}& 95.7 & 92.2 \\\\\nCVT~\\cite{clark2018semi} & - & 92.6 \\\\\nCSE~\\cite{akbik2018contextual} & - & {\\bf 93.1} \\\\\n\\midrule\nFine-tuning approach & & \\\\\n\\;\\;\\;\\bertlarge  & 96.6 & 92.8 \\\\\n\\;\\;\\;\\bertbase& 96.4 & 92.4 \\\\\n\\midrule\nFeature-based approach (\\bertbase) &  &  \\\\\n\\;\\;\\;Embeddings & 91.0 &- \\\\\n\\;\\;\\;Second-to-Last Hidden   & 95.6&- \\\\\n\\;\\;\\;Last Hidden            & 94.9&- \\\\\n\\;\\;\\;Weighted Sum Last Four Hidden        & 95.9&- \\\\\n\\;\\;\\;Concat Last Four Hidden        & 96.1&- \\\\\n\\;\\;\\;Weighted Sum All 12 Layers        & 95.5&- \\\\\n\\bottomrule\n\\end{tabular}",
+      "header_source": "rule",
+      "is_nested": false,
+      "parse_warnings": []
+    },
+    {
+      "label": "tab:mask_ablation",
+      "caption": "Ablation over different masking strategies.",
+      "anchor": {
+        "kind": "table",
+        "dom_id": "tab:mask_ablation",
+        "table_label": "tab:mask_ablation",
+        "row": null,
+        "col": null,
+        "char_start": null,
+        "char_end": null,
+        "human_locator": "Ablation over different masking strategies."
+      },
+      "columns": [
+        {
+          "index": 0,
+          "header": "Masking Rates Mask",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 1,
+          "header": "Masking Rates Same",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 2,
+          "header": "Masking Rates Rnd",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 3,
+          "header": "Dev Set Results MNLI",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 4,
+          "header": "Dev Set Results NER",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        },
+        {
+          "index": 5,
+          "header": "Dev Set Results NER",
+          "metric": null,
+          "direction": "unknown",
+          "direction_source": null,
+          "is_spacer": false
+        }
+      ],
+      "cells": [
+        {
+          "row": 0,
+          "col": 0,
+          "raw_latex": "\\multicolumn{3}{c}{Masking Rates}",
+          "text": "Masking Rates",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 3,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "raw_latex": "\\multicolumn{3}{c}{Dev Set Results}",
+          "text": "Dev Set Results",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 3,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 0,
+          "raw_latex": "\\textsc{Mask}",
+          "text": "Mask",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 1,
+          "raw_latex": "\\textsc{Same}",
+          "text": "Same",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 2,
+          "raw_latex": "\\textsc{Rnd}",
+          "text": "Rnd",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 3,
+          "raw_latex": "{MNLI}",
+          "text": "MNLI",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 1,
+          "col": 4,
+          "raw_latex": "\\multicolumn{2}{c}{NER}",
+          "text": "NER",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 2,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": true
+        },
+        {
+          "row": 2,
+          "col": 0,
+          "raw_latex": "",
+          "text": "",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 1,
+          "raw_latex": "",
+          "text": "",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 2,
+          "raw_latex": "",
+          "text": "",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 3,
+          "raw_latex": "{\\footnotesize Fine-tune}",
+          "text": "Fine-tune",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 4,
+          "raw_latex": "{\\footnotesize Fine-tune}",
+          "text": "Fine-tune",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 2,
+          "col": 5,
+          "raw_latex": "{\\footnotesize Feature-based}",
+          "text": "Feature-based",
+          "value": null,
+          "values": [],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 0,
+          "raw_latex": "80\\%",
+          "text": "80%",
+          "value": 80.0,
+          "values": [
+            80.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 1,
+          "raw_latex": "10\\%",
+          "text": "10%",
+          "value": 10.0,
+          "values": [
+            10.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 2,
+          "raw_latex": "10\\%",
+          "text": "10%",
+          "value": 10.0,
+          "values": [
+            10.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 3,
+          "raw_latex": "84.2",
+          "text": "84.2",
+          "value": 84.2,
+          "values": [
+            84.2
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 4,
+          "raw_latex": "95.4",
+          "text": "95.4",
+          "value": 95.4,
+          "values": [
+            95.4
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 3,
+          "col": 5,
+          "raw_latex": "94.9",
+          "text": "94.9",
+          "value": 94.9,
+          "values": [
+            94.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 0,
+          "raw_latex": "100\\%",
+          "text": "100%",
+          "value": 100.0,
+          "values": [
+            100.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 1,
+          "raw_latex": "0\\%",
+          "text": "0%",
+          "value": 0.0,
+          "values": [
+            0.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 2,
+          "raw_latex": "0\\%",
+          "text": "0%",
+          "value": 0.0,
+          "values": [
+            0.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 3,
+          "raw_latex": "84.3",
+          "text": "84.3",
+          "value": 84.3,
+          "values": [
+            84.3
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 4,
+          "raw_latex": "94.9",
+          "text": "94.9",
+          "value": 94.9,
+          "values": [
+            94.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 4,
+          "col": 5,
+          "raw_latex": "94.0",
+          "text": "94.0",
+          "value": 94.0,
+          "values": [
+            94.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 0,
+          "raw_latex": "80\\%",
+          "text": "80%",
+          "value": 80.0,
+          "values": [
+            80.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 1,
+          "raw_latex": "0\\%",
+          "text": "0%",
+          "value": 0.0,
+          "values": [
+            0.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 2,
+          "raw_latex": "20\\%",
+          "text": "20%",
+          "value": 20.0,
+          "values": [
+            20.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 3,
+          "raw_latex": "84.1",
+          "text": "84.1",
+          "value": 84.1,
+          "values": [
+            84.1
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 4,
+          "raw_latex": "95.2",
+          "text": "95.2",
+          "value": 95.2,
+          "values": [
+            95.2
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 5,
+          "col": 5,
+          "raw_latex": "94.6",
+          "text": "94.6",
+          "value": 94.6,
+          "values": [
+            94.6
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 0,
+          "raw_latex": "80\\%",
+          "text": "80%",
+          "value": 80.0,
+          "values": [
+            80.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 1,
+          "raw_latex": "20\\%",
+          "text": "20%",
+          "value": 20.0,
+          "values": [
+            20.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 2,
+          "raw_latex": "0\\%",
+          "text": "0%",
+          "value": 0.0,
+          "values": [
+            0.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 3,
+          "raw_latex": "84.4",
+          "text": "84.4",
+          "value": 84.4,
+          "values": [
+            84.4
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 4,
+          "raw_latex": "95.2",
+          "text": "95.2",
+          "value": 95.2,
+          "values": [
+            95.2
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 6,
+          "col": 5,
+          "raw_latex": "94.7",
+          "text": "94.7",
+          "value": 94.7,
+          "values": [
+            94.7
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 0,
+          "raw_latex": "0\\%",
+          "text": "0%",
+          "value": 0.0,
+          "values": [
+            0.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 1,
+          "raw_latex": "20\\%",
+          "text": "20%",
+          "value": 20.0,
+          "values": [
+            20.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 2,
+          "raw_latex": "80\\%",
+          "text": "80%",
+          "value": 80.0,
+          "values": [
+            80.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 3,
+          "raw_latex": "83.7",
+          "text": "83.7",
+          "value": 83.7,
+          "values": [
+            83.7
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 4,
+          "raw_latex": "94.8",
+          "text": "94.8",
+          "value": 94.8,
+          "values": [
+            94.8
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 7,
+          "col": 5,
+          "raw_latex": "94.6",
+          "text": "94.6",
+          "value": 94.6,
+          "values": [
+            94.6
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 0,
+          "raw_latex": "0\\%",
+          "text": "0%",
+          "value": 0.0,
+          "values": [
+            0.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 1,
+          "raw_latex": "0\\%",
+          "text": "0%",
+          "value": 0.0,
+          "values": [
+            0.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 2,
+          "raw_latex": "100\\%",
+          "text": "100%",
+          "value": 100.0,
+          "values": [
+            100.0
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 3,
+          "raw_latex": "83.6",
+          "text": "83.6",
+          "value": 83.6,
+          "values": [
+            83.6
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 4,
+          "raw_latex": "94.9",
+          "text": "94.9",
+          "value": 94.9,
+          "values": [
+            94.9
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        },
+        {
+          "row": 8,
+          "col": 5,
+          "raw_latex": "94.6",
+          "text": "94.6",
+          "value": 94.6,
+          "values": [
+            94.6
+          ],
+          "is_bold": false,
+          "bold_source": null,
+          "colspan": 1,
+          "rowspan": 1,
+          "block": 0,
+          "is_header": false
+        }
+      ],
+      "n_rows": 9,
+      "n_cols": 6,
+      "latex_source": "\\begin{tabular}{@{}rrrccc@{}}\n  \\toprule\n  \\multicolumn{3}{c}{Masking Rates} & \\multicolumn{3}{c}{Dev Set Results} \\\\\n  \\cmidrule(r{0.2cm}){1-3}\n  \\cmidrule(l{0.2cm}){4-6}\n  \\textsc{Mask} &\t\\textsc{Same}&\t\\textsc{Rnd}\t& {MNLI} &\t\\multicolumn{2}{c}{NER}\\\\\n   &  & & {\\footnotesize Fine-tune} &   {\\footnotesize Fine-tune}\t& {\\footnotesize Feature-based}\\\\\n    \\cmidrule(r{0.2cm}){1-3}\n  \\cmidrule(l{0.1cm}r{0.1cm}){4-4}\n  \\cmidrule(l{0.2cm}){5-6}\n  \n  80\\%\t&10\\%\t&10\\%\t&84.2\t&95.4\t&94.9\\\\\n100\\%\t&0\\%\t&0\\%\t&84.3\t&94.9\t&94.0\\\\\n80\\%\t&0\\%\t&20\\%\t&84.1\t&95.2\t&94.6\\\\\n80\\%\t&20\\%\t&0\\%\t&84.4\t&95.2\t&94.7\\\\\n0\\%\t&20\\%\t&80\\%\t&83.7\t&94.8\t&94.6 \\\\\n0\\%\t&0\\%\t&100\\%\t&83.6\t&94.9\t&94.6\\\\\n\\bottomrule\n\\end{tabular}",
+      "header_source": "inferred",
+      "is_nested": false,
+      "parse_warnings": []
+    }
+  ],
+  "tables_parsed": 8,
+  "started_at": "2026-08-01T08:52:34.300598Z",
+  "finished_at": "2026-08-01T08:52:35.267756Z"
+}
