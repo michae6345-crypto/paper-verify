@@ -6,20 +6,20 @@
     {
       "checker": "bold_extreme",
       "checker_version": "1.0.0",
-      "policy_version": "",
-      "fingerprint": "",
+      "policy_version": "1",
+      "fingerprint": "9335113369e3b24015646ee78281516dc2cb670e820764b6635e209cae2c9316",
       "verdict": "matches",
       "reason": null,
       "findings": [],
       "display_name": "Bolded value is the best in its block",
       "description": "Checks that each bolded number is the best value in its column, comparing only within the same rule-delimited block of the table.",
-      "duration_ms": 0,
-      "created_at": "2026-08-01T08:52:36.545500Z"
+      "duration_ms": 1,
+      "created_at": "2026-08-01T11:48:08.299987Z"
     },
     {
       "checker": "row_arithmetic",
       "checker_version": "1.0.0",
-      "policy_version": "",
+      "policy_version": "1",
       "fingerprint": "",
       "verdict": "unverifiable",
       "reason": "table_structure_not_parsed",
@@ -27,7 +27,7 @@
       "display_name": "Average columns match their row",
       "description": "Checks that a column labelled average, mean or overall equals the mean of the other numbers in the same row, to the precision they were printed at.",
       "duration_ms": 0,
-      "created_at": "2026-08-01T08:52:36.545850Z"
+      "created_at": "2026-08-01T11:48:08.301094Z"
     }
   ],
   "not_checked": [
@@ -138,7 +138,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "layer name",
           "text": "layer name",
           "value": null,
           "values": [],
@@ -152,7 +151,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "output size",
           "text": "output size",
           "value": null,
           "values": [],
@@ -166,7 +164,6 @@
         {
           "row": 0,
           "col": 2,
-          "raw_latex": "18-layer",
           "text": "18-layer",
           "value": 18.0,
           "values": [
@@ -182,7 +179,6 @@
         {
           "row": 0,
           "col": 3,
-          "raw_latex": "34-layer",
           "text": "34-layer",
           "value": 34.0,
           "values": [
@@ -198,7 +194,6 @@
         {
           "row": 0,
           "col": 4,
-          "raw_latex": "50-layer",
           "text": "50-layer",
           "value": 50.0,
           "values": [
@@ -214,7 +209,6 @@
         {
           "row": 0,
           "col": 5,
-          "raw_latex": "101-layer",
           "text": "101-layer",
           "value": 101.0,
           "values": [
@@ -230,7 +224,6 @@
         {
           "row": 0,
           "col": 6,
-          "raw_latex": "152-layer",
           "text": "152-layer",
           "value": 152.0,
           "values": [
@@ -246,7 +239,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "conv1",
           "text": "conv1",
           "value": null,
           "values": [],
@@ -260,7 +252,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "112$\\times$112",
           "text": "112×112",
           "value": null,
           "values": [
@@ -277,7 +268,6 @@
         {
           "row": 1,
           "col": 2,
-          "raw_latex": "\\multicolumn{5}{c}{7$\\times$7, 64, stride 2}",
           "text": "7×7, 64, stride 2",
           "value": null,
           "values": [
@@ -296,7 +286,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "\\multirow{4}{*}{conv2\\_x}",
           "text": "conv2_x",
           "value": null,
           "values": [],
@@ -310,7 +299,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "\\multirow{4}{*}{56$\\times$56}",
           "text": "56×56",
           "value": null,
           "values": [
@@ -327,7 +315,6 @@
         {
           "row": 2,
           "col": 2,
-          "raw_latex": "\\multicolumn{5}{c}{3$\\times$3 max pool, stride 2}",
           "text": "3×3 max pool, stride 2",
           "value": null,
           "values": [
@@ -345,7 +332,6 @@
         {
           "row": 3,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -359,7 +345,6 @@
         {
           "row": 3,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -373,7 +358,6 @@
         {
           "row": 3,
           "col": 2,
-          "raw_latex": "\\blocka{64}{2}",
           "text": "[c3×3, 64[-.1em] 3×3, 64 ]×2",
           "value": null,
           "values": [
@@ -394,7 +378,6 @@
         {
           "row": 3,
           "col": 3,
-          "raw_latex": "\\blocka{64}{3}",
           "text": "[c3×3, 64[-.1em] 3×3, 64 ]×3",
           "value": null,
           "values": [
@@ -415,7 +398,6 @@
         {
           "row": 3,
           "col": 4,
-          "raw_latex": "\\blockb{256}{64}{3}",
           "text": "[c1×1, 64[-.1em] 3×3, 64[-.1em] 1×1, 256]×3",
           "value": null,
           "values": [
@@ -439,7 +421,6 @@
         {
           "row": 3,
           "col": 5,
-          "raw_latex": "\\blockb{256}{64}{3}",
           "text": "[c1×1, 64[-.1em] 3×3, 64[-.1em] 1×1, 256]×3",
           "value": null,
           "values": [
@@ -463,7 +444,6 @@
         {
           "row": 3,
           "col": 6,
-          "raw_latex": "\\blockb{256}{64}{3}",
           "text": "[c1×1, 64[-.1em] 3×3, 64[-.1em] 1×1, 256]×3",
           "value": null,
           "values": [
@@ -487,7 +467,6 @@
         {
           "row": 4,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -501,7 +480,6 @@
         {
           "row": 4,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -515,7 +493,6 @@
         {
           "row": 4,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -529,7 +506,6 @@
         {
           "row": 4,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -543,7 +519,6 @@
         {
           "row": 4,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -557,7 +532,6 @@
         {
           "row": 4,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -571,7 +545,6 @@
         {
           "row": 4,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -585,7 +558,6 @@
         {
           "row": 5,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -599,7 +571,6 @@
         {
           "row": 5,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -613,7 +584,6 @@
         {
           "row": 5,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -627,7 +597,6 @@
         {
           "row": 5,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -641,7 +610,6 @@
         {
           "row": 5,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -655,7 +623,6 @@
         {
           "row": 5,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -669,7 +636,6 @@
         {
           "row": 5,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -683,7 +649,6 @@
         {
           "row": 6,
           "col": 0,
-          "raw_latex": "\\multirow{3}{*}{conv3\\_x}",
           "text": "conv3_x",
           "value": null,
           "values": [],
@@ -697,7 +662,6 @@
         {
           "row": 6,
           "col": 1,
-          "raw_latex": "\\multirow{3}{*}{28$\\times$28}",
           "text": "28×28",
           "value": null,
           "values": [
@@ -714,7 +678,6 @@
         {
           "row": 6,
           "col": 2,
-          "raw_latex": "\\blocka{128}{2}",
           "text": "[c3×3, 128[-.1em] 3×3, 128 ]×2",
           "value": null,
           "values": [
@@ -735,7 +698,6 @@
         {
           "row": 6,
           "col": 3,
-          "raw_latex": "\\blocka{128}{4}",
           "text": "[c3×3, 128[-.1em] 3×3, 128 ]×4",
           "value": null,
           "values": [
@@ -756,7 +718,6 @@
         {
           "row": 6,
           "col": 4,
-          "raw_latex": "\\blockb{512}{128}{4}",
           "text": "[c1×1, 128[-.1em] 3×3, 128[-.1em] 1×1, 512]×4",
           "value": null,
           "values": [
@@ -780,7 +741,6 @@
         {
           "row": 6,
           "col": 5,
-          "raw_latex": "\\blockb{512}{128}{4}",
           "text": "[c1×1, 128[-.1em] 3×3, 128[-.1em] 1×1, 512]×4",
           "value": null,
           "values": [
@@ -804,7 +764,6 @@
         {
           "row": 6,
           "col": 6,
-          "raw_latex": "\\blockb{512}{128}{8}",
           "text": "[c1×1, 128[-.1em] 3×3, 128[-.1em] 1×1, 512]×8",
           "value": null,
           "values": [
@@ -828,7 +787,6 @@
         {
           "row": 7,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -842,7 +800,6 @@
         {
           "row": 7,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -856,7 +813,6 @@
         {
           "row": 7,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -870,7 +826,6 @@
         {
           "row": 7,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -884,7 +839,6 @@
         {
           "row": 7,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -898,7 +852,6 @@
         {
           "row": 7,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -912,7 +865,6 @@
         {
           "row": 7,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -926,7 +878,6 @@
         {
           "row": 8,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -940,7 +891,6 @@
         {
           "row": 8,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -954,7 +904,6 @@
         {
           "row": 8,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -968,7 +917,6 @@
         {
           "row": 8,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -982,7 +930,6 @@
         {
           "row": 8,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -996,7 +943,6 @@
         {
           "row": 8,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1010,7 +956,6 @@
         {
           "row": 8,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1024,7 +969,6 @@
         {
           "row": 9,
           "col": 0,
-          "raw_latex": "\\multirow{3}{*}{conv4\\_x}",
           "text": "conv4_x",
           "value": null,
           "values": [],
@@ -1038,7 +982,6 @@
         {
           "row": 9,
           "col": 1,
-          "raw_latex": "\\multirow{3}{*}{14$\\times$14}",
           "text": "14×14",
           "value": null,
           "values": [
@@ -1055,7 +998,6 @@
         {
           "row": 9,
           "col": 2,
-          "raw_latex": "\\blocka{256}{2}",
           "text": "[c3×3, 256[-.1em] 3×3, 256 ]×2",
           "value": null,
           "values": [
@@ -1076,7 +1018,6 @@
         {
           "row": 9,
           "col": 3,
-          "raw_latex": "\\blocka{256}{6}",
           "text": "[c3×3, 256[-.1em] 3×3, 256 ]×6",
           "value": null,
           "values": [
@@ -1097,7 +1038,6 @@
         {
           "row": 9,
           "col": 4,
-          "raw_latex": "\\blockb{1024}{256}{6}",
           "text": "[c1×1, 256[-.1em] 3×3, 256[-.1em] 1×1, 1024]×6",
           "value": null,
           "values": [
@@ -1121,7 +1061,6 @@
         {
           "row": 9,
           "col": 5,
-          "raw_latex": "\\blockb{1024}{256}{23}",
           "text": "[c1×1, 256[-.1em] 3×3, 256[-.1em] 1×1, 1024]×23",
           "value": null,
           "values": [
@@ -1145,7 +1084,6 @@
         {
           "row": 9,
           "col": 6,
-          "raw_latex": "\\blockb{1024}{256}{36}",
           "text": "[c1×1, 256[-.1em] 3×3, 256[-.1em] 1×1, 1024]×36",
           "value": null,
           "values": [
@@ -1169,7 +1107,6 @@
         {
           "row": 10,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1183,7 +1120,6 @@
         {
           "row": 10,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1197,7 +1133,6 @@
         {
           "row": 10,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1211,7 +1146,6 @@
         {
           "row": 10,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1225,7 +1159,6 @@
         {
           "row": 10,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1239,7 +1172,6 @@
         {
           "row": 10,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1253,7 +1185,6 @@
         {
           "row": 11,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1267,7 +1198,6 @@
         {
           "row": 11,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1281,7 +1211,6 @@
         {
           "row": 11,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1295,7 +1224,6 @@
         {
           "row": 11,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1309,7 +1237,6 @@
         {
           "row": 11,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1323,7 +1250,6 @@
         {
           "row": 11,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1337,7 +1263,6 @@
         {
           "row": 12,
           "col": 0,
-          "raw_latex": "\\multirow{3}{*}{conv5\\_x}",
           "text": "conv5_x",
           "value": null,
           "values": [],
@@ -1351,7 +1276,6 @@
         {
           "row": 12,
           "col": 1,
-          "raw_latex": "\\multirow{3}{*}{7$\\times$7}",
           "text": "7×7",
           "value": null,
           "values": [
@@ -1368,7 +1292,6 @@
         {
           "row": 12,
           "col": 2,
-          "raw_latex": "\\blocka{512}{2}",
           "text": "[c3×3, 512[-.1em] 3×3, 512 ]×2",
           "value": null,
           "values": [
@@ -1389,7 +1312,6 @@
         {
           "row": 12,
           "col": 3,
-          "raw_latex": "\\blocka{512}{3}",
           "text": "[c3×3, 512[-.1em] 3×3, 512 ]×3",
           "value": null,
           "values": [
@@ -1410,7 +1332,6 @@
         {
           "row": 12,
           "col": 4,
-          "raw_latex": "\\blockb{2048}{512}{3}",
           "text": "[c1×1, 512[-.1em] 3×3, 512[-.1em] 1×1, 2048]×3",
           "value": null,
           "values": [
@@ -1434,7 +1355,6 @@
         {
           "row": 12,
           "col": 5,
-          "raw_latex": "\\blockb{2048}{512}{3}",
           "text": "[c1×1, 512[-.1em] 3×3, 512[-.1em] 1×1, 2048]×3",
           "value": null,
           "values": [
@@ -1458,7 +1378,6 @@
         {
           "row": 12,
           "col": 6,
-          "raw_latex": "\\blockb{2048}{512}{3}",
           "text": "[c1×1, 512[-.1em] 3×3, 512[-.1em] 1×1, 2048]×3",
           "value": null,
           "values": [
@@ -1482,7 +1401,6 @@
         {
           "row": 13,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1496,7 +1414,6 @@
         {
           "row": 13,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1510,7 +1427,6 @@
         {
           "row": 13,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1524,7 +1440,6 @@
         {
           "row": 13,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1538,7 +1453,6 @@
         {
           "row": 13,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1552,7 +1466,6 @@
         {
           "row": 13,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1566,7 +1479,6 @@
         {
           "row": 13,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1580,7 +1492,6 @@
         {
           "row": 14,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1594,7 +1505,6 @@
         {
           "row": 14,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1608,7 +1518,6 @@
         {
           "row": 14,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1622,7 +1531,6 @@
         {
           "row": 14,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1636,7 +1544,6 @@
         {
           "row": 14,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1650,7 +1557,6 @@
         {
           "row": 14,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1664,7 +1570,6 @@
         {
           "row": 14,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1678,7 +1583,6 @@
         {
           "row": 15,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1692,7 +1596,6 @@
         {
           "row": 15,
           "col": 1,
-          "raw_latex": "1$\\times$1",
           "text": "1×1",
           "value": null,
           "values": [
@@ -1709,7 +1612,6 @@
         {
           "row": 15,
           "col": 2,
-          "raw_latex": "\\multicolumn{5}{c}{average pool, 1000-d fc, softmax}",
           "text": "average pool, 1000-d fc, softmax",
           "value": 1000.0,
           "values": [
@@ -1725,7 +1627,6 @@
         {
           "row": 16,
           "col": 0,
-          "raw_latex": "\\multicolumn{2}{c|}{FLOPs}",
           "text": "FLOPs",
           "value": null,
           "values": [],
@@ -1739,7 +1640,6 @@
         {
           "row": 16,
           "col": 2,
-          "raw_latex": "1.8$\\times10^9$",
           "text": "1.8×10^9",
           "value": 1800000000.0,
           "values": [
@@ -1755,7 +1655,6 @@
         {
           "row": 16,
           "col": 3,
-          "raw_latex": "3.6$\\times10^9$",
           "text": "3.6×10^9",
           "value": 3600000000.0,
           "values": [
@@ -1771,7 +1670,6 @@
         {
           "row": 16,
           "col": 4,
-          "raw_latex": "3.8$\\times10^9$",
           "text": "3.8×10^9",
           "value": 3800000000.0,
           "values": [
@@ -1787,7 +1685,6 @@
         {
           "row": 16,
           "col": 5,
-          "raw_latex": "7.6$\\times10^9$",
           "text": "7.6×10^9",
           "value": 7600000000.0,
           "values": [
@@ -1803,7 +1700,6 @@
         {
           "row": 16,
           "col": 6,
-          "raw_latex": "11.3$\\times10^9$",
           "text": "11.3×10^9",
           "value": 11300000000.0,
           "values": [
@@ -1819,7 +1715,6 @@
       ],
       "n_rows": 17,
       "n_cols": 7,
-      "latex_source": "\\begin{tabular}{c|c|c|c|c|c|c}\n\\hline\nlayer name & output size & 18-layer & 34-layer & 50-layer & 101-layer & 152-layer \\\\\n\\hline\nconv1 & 112$\\times$112 & \\multicolumn{5}{c}{7$\\times$7, 64, stride 2}\\\\\n\\hline\n\\multirow{4}{*}{conv2\\_x} & \\multirow{4}{*}{56$\\times$56} & \\multicolumn{5}{c}{3$\\times$3 max pool, stride 2} \\\\\\cline{3-7}\n  &  & \\blocka{64}{2}  & \\blocka{64}{3} & \\blockb{256}{64}{3} & \\blockb{256}{64}{3} & \\blockb{256}{64}{3}\\\\\n  &  &  &  &  &  &\\\\\n  &  &  &  &  &  &\\\\\n\\hline\n\\multirow{3}{*}{conv3\\_x} &  \\multirow{3}{*}{28$\\times$28}  & \\blocka{128}{2}  & \\blocka{128}{4}  & \\blockb{512}{128}{4}  & \\blockb{512}{128}{4}  &\n                              \\blockb{512}{128}{8}\\\\\n  &  &  &  &  &  & \\\\\n  &  &  &  &  &  & \\\\\n\\hline\n\\multirow{3}{*}{conv4\\_x} & \\multirow{3}{*}{14$\\times$14}  & \\blocka{256}{2}  & \\blocka{256}{6}  & \\blockb{1024}{256}{6}  & \\blockb{1024}{256}{23} & \\blockb{1024}{256}{36}\\\\\n  &  &  &  &  & \\\\\n  &  &  &  &  & \\\\\n\\hline\n\\multirow{3}{*}{conv5\\_x} & \\multirow{3}{*}{7$\\times$7}  & \\blocka{512}{2}  & \\blocka{512}{3}  & \\blockb{2048}{512}{3}  & \\blockb{2048}{512}{3}\n& \\blockb{2048}{512}{3}\\\\\n  &  &  &  &  &  & \\\\\n  &  &  &  &  &  & \\\\\n\\hline\n& 1$\\times$1  & \\multicolumn{5}{c}{average pool, 1000-d fc, softmax} \\\\\n\\hline\n\\multicolumn{2}{c|}{FLOPs} & 1.8$\\times10^9$  & 3.6$\\times10^9$  & 3.8$\\times10^9$  & 7.6$\\times10^9$  & 11.3$\\times10^9$ \\\\\n\\hline\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": [
@@ -1870,7 +1765,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1884,7 +1778,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "plain",
           "text": "plain",
           "value": null,
           "values": [],
@@ -1898,7 +1791,6 @@
         {
           "row": 0,
           "col": 2,
-          "raw_latex": "ResNet",
           "text": "ResNet",
           "value": null,
           "values": [],
@@ -1912,7 +1804,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "18 layers",
           "text": "18 layers",
           "value": 18.0,
           "values": [
@@ -1928,7 +1819,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "27.94",
           "text": "27.94",
           "value": 27.94,
           "values": [
@@ -1944,7 +1834,6 @@
         {
           "row": 1,
           "col": 2,
-          "raw_latex": "27.88",
           "text": "27.88",
           "value": 27.88,
           "values": [
@@ -1960,7 +1849,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "34 layers",
           "text": "34 layers",
           "value": 34.0,
           "values": [
@@ -1976,7 +1864,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "28.54",
           "text": "28.54",
           "value": 28.54,
           "values": [
@@ -1992,7 +1879,6 @@
         {
           "row": 2,
           "col": 2,
-          "raw_latex": "\\textbf{25.03}",
           "text": "25.03",
           "value": 25.03,
           "values": [
@@ -2008,7 +1894,6 @@
       ],
       "n_rows": 3,
       "n_cols": 3,
-      "latex_source": "\\begin{tabular}{l|x{42}|c}\n\\hline\n            & plain & ResNet \\\\\n\\hline\n18 layers & 27.94 & 27.88 \\\\\n34 layers & 28.54  & \\textbf{25.03}  \\\\\n\\hline\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": []
@@ -2056,7 +1941,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "\\footnotesize model",
           "text": "model",
           "value": null,
           "values": [],
@@ -2070,7 +1954,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "\\footnotesize top-1 err.",
           "text": "top-1 err.",
           "value": null,
           "values": [],
@@ -2084,7 +1967,6 @@
         {
           "row": 0,
           "col": 2,
-          "raw_latex": "\\footnotesize top-5 err.",
           "text": "top-5 err.",
           "value": null,
           "values": [],
@@ -2098,7 +1980,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "\\footnotesize VGG-16 \\cite{Simonyan2015}",
           "text": "VGG-16",
           "value": null,
           "values": [],
@@ -2112,7 +1993,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "28.07",
           "text": "28.07",
           "value": 28.07,
           "values": [
@@ -2128,7 +2008,6 @@
         {
           "row": 1,
           "col": 2,
-          "raw_latex": "9.33",
           "text": "9.33",
           "value": 9.33,
           "values": [
@@ -2144,7 +2023,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "\\footnotesize GoogLeNet \\cite{Szegedy2015}",
           "text": "GoogLeNet",
           "value": null,
           "values": [],
@@ -2158,7 +2036,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "-",
           "text": "-",
           "value": null,
           "values": [],
@@ -2172,7 +2049,6 @@
         {
           "row": 2,
           "col": 2,
-          "raw_latex": "9.15",
           "text": "9.15",
           "value": 9.15,
           "values": [
@@ -2188,7 +2064,6 @@
         {
           "row": 3,
           "col": 0,
-          "raw_latex": "\\footnotesize PReLU-net \\cite{He2015}",
           "text": "PReLU-net",
           "value": null,
           "values": [],
@@ -2202,7 +2077,6 @@
         {
           "row": 3,
           "col": 1,
-          "raw_latex": "24.27",
           "text": "24.27",
           "value": 24.27,
           "values": [
@@ -2218,7 +2092,6 @@
         {
           "row": 3,
           "col": 2,
-          "raw_latex": "7.38",
           "text": "7.38",
           "value": 7.38,
           "values": [
@@ -2234,7 +2107,6 @@
         {
           "row": 4,
           "col": 0,
-          "raw_latex": "\\footnotesize plain-34",
           "text": "plain-34",
           "value": null,
           "values": [],
@@ -2248,7 +2120,6 @@
         {
           "row": 4,
           "col": 1,
-          "raw_latex": "28.54",
           "text": "28.54",
           "value": 28.54,
           "values": [
@@ -2264,7 +2135,6 @@
         {
           "row": 4,
           "col": 2,
-          "raw_latex": "10.02",
           "text": "10.02",
           "value": 10.02,
           "values": [
@@ -2280,7 +2150,6 @@
         {
           "row": 5,
           "col": 0,
-          "raw_latex": "\\footnotesize ResNet-34 A",
           "text": "ResNet-34 A",
           "value": null,
           "values": [],
@@ -2294,7 +2163,6 @@
         {
           "row": 5,
           "col": 1,
-          "raw_latex": "25.03",
           "text": "25.03",
           "value": 25.03,
           "values": [
@@ -2310,7 +2178,6 @@
         {
           "row": 5,
           "col": 2,
-          "raw_latex": "7.76",
           "text": "7.76",
           "value": 7.76,
           "values": [
@@ -2326,7 +2193,6 @@
         {
           "row": 6,
           "col": 0,
-          "raw_latex": "\\footnotesize ResNet-34 B",
           "text": "ResNet-34 B",
           "value": 34000000000.0,
           "values": [
@@ -2342,7 +2208,6 @@
         {
           "row": 6,
           "col": 1,
-          "raw_latex": "24.52",
           "text": "24.52",
           "value": 24.52,
           "values": [
@@ -2358,7 +2223,6 @@
         {
           "row": 6,
           "col": 2,
-          "raw_latex": "7.46",
           "text": "7.46",
           "value": 7.46,
           "values": [
@@ -2374,7 +2238,6 @@
         {
           "row": 7,
           "col": 0,
-          "raw_latex": "\\footnotesize ResNet-34 C",
           "text": "ResNet-34 C",
           "value": null,
           "values": [],
@@ -2388,7 +2251,6 @@
         {
           "row": 7,
           "col": 1,
-          "raw_latex": "24.19",
           "text": "24.19",
           "value": 24.19,
           "values": [
@@ -2404,7 +2266,6 @@
         {
           "row": 7,
           "col": 2,
-          "raw_latex": "7.40",
           "text": "7.40",
           "value": 7.4,
           "values": [
@@ -2420,7 +2281,6 @@
         {
           "row": 8,
           "col": 0,
-          "raw_latex": "\\footnotesize ResNet-50",
           "text": "ResNet-50",
           "value": null,
           "values": [],
@@ -2434,7 +2294,6 @@
         {
           "row": 8,
           "col": 1,
-          "raw_latex": "22.85",
           "text": "22.85",
           "value": 22.85,
           "values": [
@@ -2450,7 +2309,6 @@
         {
           "row": 8,
           "col": 2,
-          "raw_latex": "6.71",
           "text": "6.71",
           "value": 6.71,
           "values": [
@@ -2466,7 +2324,6 @@
         {
           "row": 9,
           "col": 0,
-          "raw_latex": "\\footnotesize ResNet-101",
           "text": "ResNet-101",
           "value": null,
           "values": [],
@@ -2480,7 +2337,6 @@
         {
           "row": 9,
           "col": 1,
-          "raw_latex": "21.75",
           "text": "21.75",
           "value": 21.75,
           "values": [
@@ -2496,7 +2352,6 @@
         {
           "row": 9,
           "col": 2,
-          "raw_latex": "6.05",
           "text": "6.05",
           "value": 6.05,
           "values": [
@@ -2512,7 +2367,6 @@
         {
           "row": 10,
           "col": 0,
-          "raw_latex": "\\footnotesize ResNet-152",
           "text": "ResNet-152",
           "value": null,
           "values": [],
@@ -2526,7 +2380,6 @@
         {
           "row": 10,
           "col": 1,
-          "raw_latex": "\\textbf{21.43}",
           "text": "21.43",
           "value": 21.43,
           "values": [
@@ -2542,7 +2395,6 @@
         {
           "row": 10,
           "col": 2,
-          "raw_latex": "\\textbf{5.71}",
           "text": "5.71",
           "value": 5.71,
           "values": [
@@ -2558,7 +2410,6 @@
       ],
       "n_rows": 11,
       "n_cols": 3,
-      "latex_source": "\\begin{tabular}{l|cc}\n\\hline\n  \\footnotesize model          & \\footnotesize top-1 err. & \\footnotesize top-5 err. \\\\\n\\hline\n                                                       \n\\footnotesize VGG-16 \\cite{Simonyan2015} & 28.07 & 9.33\\\\\n\\footnotesize GoogLeNet \\cite{Szegedy2015} & - & 9.15 \\\\\n\\footnotesize PReLU-net \\cite{He2015}  & 24.27 & 7.38 \\\\\n                                                                                 \n\\hline\n\\hline\n\\footnotesize plain-34 & 28.54 & 10.02 \\\\\n       \n\\footnotesize ResNet-34 A & 25.03 & 7.76 \\\\\n\\footnotesize ResNet-34 B & 24.52 & 7.46 \\\\\n\\footnotesize ResNet-34 C & 24.19 & 7.40 \\\\\n\\hline\n\\footnotesize ResNet-50 & 22.85 & 6.71 \\\\\n\\footnotesize ResNet-101 & 21.75 & 6.05 \\\\\n\\footnotesize ResNet-152 & \\textbf{21.43} & \\textbf{5.71} \\\\\n\\hline\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": []
@@ -2606,7 +2457,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "\\footnotesize method",
           "text": "method",
           "value": null,
           "values": [],
@@ -2620,7 +2470,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "\\footnotesize top-1 err.",
           "text": "top-1 err.",
           "value": null,
           "values": [],
@@ -2634,7 +2483,6 @@
         {
           "row": 0,
           "col": 2,
-          "raw_latex": "\\footnotesize top-5 err.",
           "text": "top-5 err.",
           "value": null,
           "values": [],
@@ -2648,7 +2496,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "VGG \\cite{Simonyan2015} (ILSVRC'14)",
           "text": "VGG (ILSVRC'14)",
           "value": 14.0,
           "values": [
@@ -2664,7 +2511,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "-",
           "text": "-",
           "value": null,
           "values": [],
@@ -2678,7 +2524,6 @@
         {
           "row": 1,
           "col": 2,
-          "raw_latex": "8.43$^{\\dag}$",
           "text": "8.43^",
           "value": 8.43,
           "values": [
@@ -2694,7 +2539,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "GoogLeNet \\cite{Szegedy2015} (ILSVRC'14)",
           "text": "GoogLeNet (ILSVRC'14)",
           "value": 14.0,
           "values": [
@@ -2710,7 +2554,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "-",
           "text": "-",
           "value": null,
           "values": [],
@@ -2724,7 +2567,6 @@
         {
           "row": 2,
           "col": 2,
-          "raw_latex": "7.89",
           "text": "7.89",
           "value": 7.89,
           "values": [
@@ -2740,7 +2582,6 @@
         {
           "row": 3,
           "col": 0,
-          "raw_latex": "VGG \\cite{Simonyan2015} \\footnotesize (v5)",
           "text": "VGG (v5)",
           "value": null,
           "values": [],
@@ -2754,7 +2595,6 @@
         {
           "row": 3,
           "col": 1,
-          "raw_latex": "24.4",
           "text": "24.4",
           "value": 24.4,
           "values": [
@@ -2770,7 +2610,6 @@
         {
           "row": 3,
           "col": 2,
-          "raw_latex": "7.1",
           "text": "7.1",
           "value": 7.1,
           "values": [
@@ -2786,7 +2625,6 @@
         {
           "row": 4,
           "col": 0,
-          "raw_latex": "PReLU-net \\cite{He2015}",
           "text": "PReLU-net",
           "value": null,
           "values": [],
@@ -2800,7 +2638,6 @@
         {
           "row": 4,
           "col": 1,
-          "raw_latex": "21.59",
           "text": "21.59",
           "value": 21.59,
           "values": [
@@ -2816,7 +2653,6 @@
         {
           "row": 4,
           "col": 2,
-          "raw_latex": "5.71",
           "text": "5.71",
           "value": 5.71,
           "values": [
@@ -2832,7 +2668,6 @@
         {
           "row": 5,
           "col": 0,
-          "raw_latex": "BN-inception \\cite{Ioffe2015}",
           "text": "BN-inception",
           "value": null,
           "values": [],
@@ -2846,7 +2681,6 @@
         {
           "row": 5,
           "col": 1,
-          "raw_latex": "21.99",
           "text": "21.99",
           "value": 21.99,
           "values": [
@@ -2862,7 +2696,6 @@
         {
           "row": 5,
           "col": 2,
-          "raw_latex": "5.81",
           "text": "5.81",
           "value": 5.81,
           "values": [
@@ -2878,7 +2711,6 @@
         {
           "row": 6,
           "col": 0,
-          "raw_latex": "ResNet-34 B",
           "text": "ResNet-34 B",
           "value": 34000000000.0,
           "values": [
@@ -2894,7 +2726,6 @@
         {
           "row": 6,
           "col": 1,
-          "raw_latex": "21.84",
           "text": "21.84",
           "value": 21.84,
           "values": [
@@ -2910,7 +2741,6 @@
         {
           "row": 6,
           "col": 2,
-          "raw_latex": "5.71",
           "text": "5.71",
           "value": 5.71,
           "values": [
@@ -2926,7 +2756,6 @@
         {
           "row": 7,
           "col": 0,
-          "raw_latex": "ResNet-34 C",
           "text": "ResNet-34 C",
           "value": null,
           "values": [],
@@ -2940,7 +2769,6 @@
         {
           "row": 7,
           "col": 1,
-          "raw_latex": "21.53",
           "text": "21.53",
           "value": 21.53,
           "values": [
@@ -2956,7 +2784,6 @@
         {
           "row": 7,
           "col": 2,
-          "raw_latex": "5.60",
           "text": "5.60",
           "value": 5.6,
           "values": [
@@ -2972,7 +2799,6 @@
         {
           "row": 8,
           "col": 0,
-          "raw_latex": "ResNet-50",
           "text": "ResNet-50",
           "value": null,
           "values": [],
@@ -2986,7 +2812,6 @@
         {
           "row": 8,
           "col": 1,
-          "raw_latex": "20.74",
           "text": "20.74",
           "value": 20.74,
           "values": [
@@ -3002,7 +2827,6 @@
         {
           "row": 8,
           "col": 2,
-          "raw_latex": "5.25",
           "text": "5.25",
           "value": 5.25,
           "values": [
@@ -3018,7 +2842,6 @@
         {
           "row": 9,
           "col": 0,
-          "raw_latex": "ResNet-101",
           "text": "ResNet-101",
           "value": null,
           "values": [],
@@ -3032,7 +2855,6 @@
         {
           "row": 9,
           "col": 1,
-          "raw_latex": "19.87",
           "text": "19.87",
           "value": 19.87,
           "values": [
@@ -3048,7 +2870,6 @@
         {
           "row": 9,
           "col": 2,
-          "raw_latex": "4.60",
           "text": "4.60",
           "value": 4.6,
           "values": [
@@ -3064,7 +2885,6 @@
         {
           "row": 10,
           "col": 0,
-          "raw_latex": "ResNet-152",
           "text": "ResNet-152",
           "value": null,
           "values": [],
@@ -3078,7 +2898,6 @@
         {
           "row": 10,
           "col": 1,
-          "raw_latex": "\\textbf{19.38}",
           "text": "19.38",
           "value": 19.38,
           "values": [
@@ -3094,7 +2913,6 @@
         {
           "row": 10,
           "col": 2,
-          "raw_latex": "\\textbf{4.49}",
           "text": "4.49",
           "value": 4.49,
           "values": [
@@ -3110,7 +2928,6 @@
       ],
       "n_rows": 11,
       "n_cols": 3,
-      "latex_source": "\\begin{tabular}{l|c c}\n\\hline\n\\footnotesize method & \\footnotesize top-1 err. & \\footnotesize top-5 err.\\\\\n\\hline\nVGG \\cite{Simonyan2015} (ILSVRC'14) & - & 8.43$^{\\dag}$\\\\\nGoogLeNet \\cite{Szegedy2015} (ILSVRC'14) & - & 7.89\\\\\n\\hline\nVGG \\cite{Simonyan2015} \\footnotesize (v5) & 24.4 & 7.1\\\\\nPReLU-net \\cite{He2015} & 21.59 & 5.71 \\\\\nBN-inception \\cite{Ioffe2015} & 21.99 & 5.81 \\\\\\hline\nResNet-34 B & 21.84 & 5.71 \\\\\nResNet-34 C & 21.53 & 5.60 \\\\\nResNet-50 & 20.74 & 5.25 \\\\\nResNet-101 & 19.87 & 4.60 \\\\\nResNet-152 & \\textbf{19.38} & \\textbf{4.49} \\\\\n\\hline\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": []
@@ -3150,7 +2967,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "\\footnotesize method",
           "text": "method",
           "value": null,
           "values": [],
@@ -3164,7 +2980,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "top-5 err. (\\textbf{test})",
           "text": "top-5 err. (test)",
           "value": null,
           "values": [],
@@ -3178,7 +2993,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "VGG \\cite{Simonyan2015} (ILSVRC'14)",
           "text": "VGG (ILSVRC'14)",
           "value": 14.0,
           "values": [
@@ -3194,7 +3008,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "7.32",
           "text": "7.32",
           "value": 7.32,
           "values": [
@@ -3210,7 +3023,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "GoogLeNet \\cite{Szegedy2015} (ILSVRC'14)",
           "text": "GoogLeNet (ILSVRC'14)",
           "value": 14.0,
           "values": [
@@ -3226,7 +3038,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "6.66",
           "text": "6.66",
           "value": 6.66,
           "values": [
@@ -3242,7 +3053,6 @@
         {
           "row": 3,
           "col": 0,
-          "raw_latex": "VGG \\cite{Simonyan2015} \\footnotesize (v5)",
           "text": "VGG (v5)",
           "value": null,
           "values": [],
@@ -3256,7 +3066,6 @@
         {
           "row": 3,
           "col": 1,
-          "raw_latex": "6.8",
           "text": "6.8",
           "value": 6.8,
           "values": [
@@ -3272,7 +3081,6 @@
         {
           "row": 4,
           "col": 0,
-          "raw_latex": "PReLU-net \\cite{He2015}",
           "text": "PReLU-net",
           "value": null,
           "values": [],
@@ -3286,7 +3094,6 @@
         {
           "row": 4,
           "col": 1,
-          "raw_latex": "4.94",
           "text": "4.94",
           "value": 4.94,
           "values": [
@@ -3302,7 +3109,6 @@
         {
           "row": 5,
           "col": 0,
-          "raw_latex": "BN-inception \\cite{Ioffe2015}",
           "text": "BN-inception",
           "value": null,
           "values": [],
@@ -3316,7 +3122,6 @@
         {
           "row": 5,
           "col": 1,
-          "raw_latex": "4.82",
           "text": "4.82",
           "value": 4.82,
           "values": [
@@ -3332,7 +3137,6 @@
         {
           "row": 6,
           "col": 0,
-          "raw_latex": "\\textbf{ResNet (ILSVRC'15)}",
           "text": "ResNet (ILSVRC'15)",
           "value": 15.0,
           "values": [
@@ -3348,7 +3152,6 @@
         {
           "row": 6,
           "col": 1,
-          "raw_latex": "\\textbf{3.57}",
           "text": "3.57",
           "value": 3.57,
           "values": [
@@ -3364,7 +3167,6 @@
       ],
       "n_rows": 7,
       "n_cols": 2,
-      "latex_source": "\\begin{tabular}{l|c}\n\\hline\n\\footnotesize method & top-5 err. (\\textbf{test}) \\\\\n\\hline\nVGG \\cite{Simonyan2015} (ILSVRC'14) & 7.32\\\\\nGoogLeNet \\cite{Szegedy2015} (ILSVRC'14) & 6.66\\\\\n\\hline\nVGG \\cite{Simonyan2015} \\footnotesize (v5) & 6.8 \\\\\nPReLU-net \\cite{He2015} & 4.94 \\\\\nBN-inception \\cite{Ioffe2015} & 4.82 \\\\\\hline\n\\textbf{ResNet (ILSVRC'15)} & \\textbf{3.57} \\\\\n\\hline\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": [
@@ -3422,7 +3224,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "output map size",
           "text": "output map size",
           "value": null,
           "values": [],
@@ -3436,7 +3237,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "32$\\times$32",
           "text": "32×32",
           "value": null,
           "values": [
@@ -3453,7 +3253,6 @@
         {
           "row": 0,
           "col": 2,
-          "raw_latex": "16$\\times$16",
           "text": "16×16",
           "value": null,
           "values": [
@@ -3470,7 +3269,6 @@
         {
           "row": 0,
           "col": 3,
-          "raw_latex": "8$\\times$8",
           "text": "8×8",
           "value": null,
           "values": [
@@ -3487,7 +3285,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "\\# layers",
           "text": "# layers",
           "value": null,
           "values": [],
@@ -3501,7 +3298,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "1+2$n$",
           "text": "1+2n",
           "value": 1.0,
           "values": [
@@ -3517,7 +3313,6 @@
         {
           "row": 1,
           "col": 2,
-          "raw_latex": "2$n$",
           "text": "2n",
           "value": null,
           "values": [],
@@ -3531,7 +3326,6 @@
         {
           "row": 1,
           "col": 3,
-          "raw_latex": "2$n$",
           "text": "2n",
           "value": null,
           "values": [],
@@ -3545,7 +3339,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "\\# filters",
           "text": "# filters",
           "value": null,
           "values": [],
@@ -3559,7 +3352,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "16",
           "text": "16",
           "value": 16.0,
           "values": [
@@ -3575,7 +3367,6 @@
         {
           "row": 2,
           "col": 2,
-          "raw_latex": "32",
           "text": "32",
           "value": 32.0,
           "values": [
@@ -3591,7 +3382,6 @@
         {
           "row": 2,
           "col": 3,
-          "raw_latex": "64",
           "text": "64",
           "value": 64.0,
           "values": [
@@ -3607,7 +3397,6 @@
       ],
       "n_rows": 3,
       "n_cols": 4,
-      "latex_source": "\\begin{tabular}{c|c|c|c}\n\\hline\noutput map size & 32$\\times$32 & 16$\\times$16 & 8$\\times$8 \\\\\n\\hline\n\\# layers & 1+2$n$ & 2$n$ & 2$n$\\\\\n\\# filters & 16 & 32 & 64\\\\\n\\hline\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": []
@@ -3663,7 +3452,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "\\multicolumn{3}{c|}{method}",
           "text": "method",
           "value": null,
           "values": [],
@@ -3677,7 +3465,6 @@
         {
           "row": 0,
           "col": 3,
-          "raw_latex": "error (\\%)",
           "text": "error (%)",
           "value": null,
           "values": [],
@@ -3691,7 +3478,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "\\multicolumn{3}{c|}{Maxout \\cite{Goodfellow2013}}",
           "text": "Maxout",
           "value": null,
           "values": [],
@@ -3705,7 +3491,6 @@
         {
           "row": 1,
           "col": 3,
-          "raw_latex": "9.38",
           "text": "9.38",
           "value": 9.38,
           "values": [
@@ -3721,7 +3506,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "\\multicolumn{3}{c|}{NIN \\cite{Lin2013}}",
           "text": "NIN",
           "value": null,
           "values": [],
@@ -3735,7 +3519,6 @@
         {
           "row": 2,
           "col": 3,
-          "raw_latex": "8.81",
           "text": "8.81",
           "value": 8.81,
           "values": [
@@ -3751,7 +3534,6 @@
         {
           "row": 3,
           "col": 0,
-          "raw_latex": "\\multicolumn{3}{c|}{DSN \\cite{Lee2014}}",
           "text": "DSN",
           "value": null,
           "values": [],
@@ -3765,7 +3547,6 @@
         {
           "row": 3,
           "col": 3,
-          "raw_latex": "8.22",
           "text": "8.22",
           "value": 8.22,
           "values": [
@@ -3781,7 +3562,6 @@
         {
           "row": 4,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3795,7 +3575,6 @@
         {
           "row": 4,
           "col": 1,
-          "raw_latex": "\\# layers",
           "text": "# layers",
           "value": null,
           "values": [],
@@ -3809,7 +3588,6 @@
         {
           "row": 4,
           "col": 2,
-          "raw_latex": "\\# params",
           "text": "# params",
           "value": null,
           "values": [],
@@ -3823,7 +3601,6 @@
         {
           "row": 4,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3837,7 +3614,6 @@
         {
           "row": 5,
           "col": 0,
-          "raw_latex": "FitNet \\cite{Romero2015}",
           "text": "FitNet",
           "value": null,
           "values": [],
@@ -3851,7 +3627,6 @@
         {
           "row": 5,
           "col": 1,
-          "raw_latex": "19",
           "text": "19",
           "value": 19.0,
           "values": [
@@ -3867,7 +3642,6 @@
         {
           "row": 5,
           "col": 2,
-          "raw_latex": "2.5M",
           "text": "2.5M",
           "value": 2500000.0,
           "values": [
@@ -3883,7 +3657,6 @@
         {
           "row": 5,
           "col": 3,
-          "raw_latex": "8.39",
           "text": "8.39",
           "value": 8.39,
           "values": [
@@ -3899,7 +3672,6 @@
         {
           "row": 6,
           "col": 0,
-          "raw_latex": "Highway \\cite{Srivastava2015,Srivastava2015a}",
           "text": "Highway",
           "value": null,
           "values": [],
@@ -3913,7 +3685,6 @@
         {
           "row": 6,
           "col": 1,
-          "raw_latex": "19",
           "text": "19",
           "value": 19.0,
           "values": [
@@ -3929,7 +3700,6 @@
         {
           "row": 6,
           "col": 2,
-          "raw_latex": "2.3M",
           "text": "2.3M",
           "value": 2300000.0,
           "values": [
@@ -3945,7 +3715,6 @@
         {
           "row": 6,
           "col": 3,
-          "raw_latex": "7.54 \\footnotesize (7.72$\\pm$0.16)",
           "text": "7.54 (7.72±0.16)",
           "value": null,
           "values": [
@@ -3962,7 +3731,6 @@
         {
           "row": 7,
           "col": 0,
-          "raw_latex": "Highway \\cite{Srivastava2015,Srivastava2015a}",
           "text": "Highway",
           "value": null,
           "values": [],
@@ -3976,7 +3744,6 @@
         {
           "row": 7,
           "col": 1,
-          "raw_latex": "32",
           "text": "32",
           "value": 32.0,
           "values": [
@@ -3992,7 +3759,6 @@
         {
           "row": 7,
           "col": 2,
-          "raw_latex": "1.25M",
           "text": "1.25M",
           "value": 1250000.0,
           "values": [
@@ -4008,7 +3774,6 @@
         {
           "row": 7,
           "col": 3,
-          "raw_latex": "8.80",
           "text": "8.80",
           "value": 8.8,
           "values": [
@@ -4024,7 +3789,6 @@
         {
           "row": 8,
           "col": 0,
-          "raw_latex": "ResNet",
           "text": "ResNet",
           "value": null,
           "values": [],
@@ -4038,7 +3802,6 @@
         {
           "row": 8,
           "col": 1,
-          "raw_latex": "20",
           "text": "20",
           "value": 20.0,
           "values": [
@@ -4054,7 +3817,6 @@
         {
           "row": 8,
           "col": 2,
-          "raw_latex": "0.27M",
           "text": "0.27M",
           "value": 270000.0,
           "values": [
@@ -4070,7 +3832,6 @@
         {
           "row": 8,
           "col": 3,
-          "raw_latex": "8.75",
           "text": "8.75",
           "value": 8.75,
           "values": [
@@ -4086,7 +3847,6 @@
         {
           "row": 9,
           "col": 0,
-          "raw_latex": "ResNet",
           "text": "ResNet",
           "value": null,
           "values": [],
@@ -4100,7 +3860,6 @@
         {
           "row": 9,
           "col": 1,
-          "raw_latex": "32",
           "text": "32",
           "value": 32.0,
           "values": [
@@ -4116,7 +3875,6 @@
         {
           "row": 9,
           "col": 2,
-          "raw_latex": "0.46M",
           "text": "0.46M",
           "value": 460000.0,
           "values": [
@@ -4132,7 +3890,6 @@
         {
           "row": 9,
           "col": 3,
-          "raw_latex": "7.51",
           "text": "7.51",
           "value": 7.51,
           "values": [
@@ -4148,7 +3905,6 @@
         {
           "row": 10,
           "col": 0,
-          "raw_latex": "ResNet",
           "text": "ResNet",
           "value": null,
           "values": [],
@@ -4162,7 +3918,6 @@
         {
           "row": 10,
           "col": 1,
-          "raw_latex": "44",
           "text": "44",
           "value": 44.0,
           "values": [
@@ -4178,7 +3933,6 @@
         {
           "row": 10,
           "col": 2,
-          "raw_latex": "0.66M",
           "text": "0.66M",
           "value": 660000.0,
           "values": [
@@ -4194,7 +3948,6 @@
         {
           "row": 10,
           "col": 3,
-          "raw_latex": "7.17",
           "text": "7.17",
           "value": 7.17,
           "values": [
@@ -4210,7 +3963,6 @@
         {
           "row": 11,
           "col": 0,
-          "raw_latex": "ResNet",
           "text": "ResNet",
           "value": null,
           "values": [],
@@ -4224,7 +3976,6 @@
         {
           "row": 11,
           "col": 1,
-          "raw_latex": "56",
           "text": "56",
           "value": 56.0,
           "values": [
@@ -4240,7 +3991,6 @@
         {
           "row": 11,
           "col": 2,
-          "raw_latex": "0.85M",
           "text": "0.85M",
           "value": 850000.0,
           "values": [
@@ -4256,7 +4006,6 @@
         {
           "row": 11,
           "col": 3,
-          "raw_latex": "6.97",
           "text": "6.97",
           "value": 6.97,
           "values": [
@@ -4272,7 +4021,6 @@
         {
           "row": 12,
           "col": 0,
-          "raw_latex": "ResNet",
           "text": "ResNet",
           "value": null,
           "values": [],
@@ -4286,7 +4034,6 @@
         {
           "row": 12,
           "col": 1,
-          "raw_latex": "110",
           "text": "110",
           "value": 110.0,
           "values": [
@@ -4302,7 +4049,6 @@
         {
           "row": 12,
           "col": 2,
-          "raw_latex": "1.7M",
           "text": "1.7M",
           "value": 1700000.0,
           "values": [
@@ -4318,7 +4064,6 @@
         {
           "row": 12,
           "col": 3,
-          "raw_latex": "\\textbf{6.43} \\footnotesize (6.61$\\pm$0.16)",
           "text": "6.43 (6.61±0.16)",
           "value": null,
           "values": [
@@ -4335,7 +4080,6 @@
         {
           "row": 13,
           "col": 0,
-          "raw_latex": "ResNet",
           "text": "ResNet",
           "value": null,
           "values": [],
@@ -4349,7 +4093,6 @@
         {
           "row": 13,
           "col": 1,
-          "raw_latex": "1202",
           "text": "1202",
           "value": 1202.0,
           "values": [
@@ -4365,7 +4108,6 @@
         {
           "row": 13,
           "col": 2,
-          "raw_latex": "19.4M",
           "text": "19.4M",
           "value": 19400000.0,
           "values": [
@@ -4381,7 +4123,6 @@
         {
           "row": 13,
           "col": 3,
-          "raw_latex": "7.93",
           "text": "7.93",
           "value": 7.93,
           "values": [
@@ -4397,7 +4138,6 @@
       ],
       "n_rows": 14,
       "n_cols": 4,
-      "latex_source": "\\begin{tabular}{c|c|c|l}\n\\hline\n  \\multicolumn{3}{c|}{method}   & error (\\%) \\\\\n\\hline\n\\multicolumn{3}{c|}{Maxout \\cite{Goodfellow2013}} & 9.38 \\\\\n\\multicolumn{3}{c|}{NIN \\cite{Lin2013}} & 8.81 \\\\\n\\multicolumn{3}{c|}{DSN \\cite{Lee2014}} & 8.22 \\\\\n\\hline\n & \\# layers & \\# params &  \\\\\n\\hline\nFitNet \\cite{Romero2015} & 19 & 2.5M  & 8.39 \\\\\nHighway \\cite{Srivastava2015,Srivastava2015a} & 19 & 2.3M  & 7.54 \\footnotesize (7.72$\\pm$0.16) \\\\\nHighway \\cite{Srivastava2015,Srivastava2015a} & 32 & 1.25M  & 8.80 \\\\\n\\hline\nResNet & 20 & 0.27M & 8.75 \\\\\nResNet & 32 & 0.46M & 7.51 \\\\\nResNet & 44 & 0.66M & 7.17 \\\\\nResNet & 56 & 0.85M & 6.97 \\\\\nResNet & 110 & 1.7M & \\textbf{6.43} \\footnotesize (6.61$\\pm$0.16) \\\\                               \nResNet & 1202 & 19.4M & 7.93 \\\\\n\\hline\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": []
@@ -4445,7 +4185,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "training data",
           "text": "training data",
           "value": null,
           "values": [],
@@ -4459,7 +4198,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "07+12",
           "text": "07+12",
           "value": null,
           "values": [
@@ -4476,7 +4214,6 @@
         {
           "row": 0,
           "col": 2,
-          "raw_latex": "07++12",
           "text": "07++12",
           "value": null,
           "values": [
@@ -4493,7 +4230,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "test data",
           "text": "test data",
           "value": null,
           "values": [],
@@ -4507,7 +4243,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "VOC 07 test",
           "text": "VOC 07 test",
           "value": 7.0,
           "values": [
@@ -4523,7 +4258,6 @@
         {
           "row": 1,
           "col": 2,
-          "raw_latex": "VOC 12 test",
           "text": "VOC 12 test",
           "value": 12.0,
           "values": [
@@ -4539,7 +4273,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "VGG-16",
           "text": "VGG-16",
           "value": null,
           "values": [],
@@ -4553,7 +4286,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "73.2",
           "text": "73.2",
           "value": 73.2,
           "values": [
@@ -4569,7 +4301,6 @@
         {
           "row": 2,
           "col": 2,
-          "raw_latex": "70.4",
           "text": "70.4",
           "value": 70.4,
           "values": [
@@ -4585,7 +4316,6 @@
         {
           "row": 3,
           "col": 0,
-          "raw_latex": "ResNet-101",
           "text": "ResNet-101",
           "value": null,
           "values": [],
@@ -4599,7 +4329,6 @@
         {
           "row": 3,
           "col": 1,
-          "raw_latex": "\\textbf{76.4}",
           "text": "76.4",
           "value": 76.4,
           "values": [
@@ -4615,7 +4344,6 @@
         {
           "row": 3,
           "col": 2,
-          "raw_latex": "\\textbf{73.8}",
           "text": "73.8",
           "value": 73.8,
           "values": [
@@ -4631,7 +4359,6 @@
       ],
       "n_rows": 4,
       "n_cols": 3,
-      "latex_source": "\\begin{tabular}{c|c|c}\n\\hline\ntraining data & 07+12 & 07++12 \\\\\n\\hline\ntest data & VOC 07 test & VOC 12 test \\\\\n\\hline\nVGG-16 & 73.2 & 70.4 \\\\\nResNet-101 & \\textbf{76.4} & \\textbf{73.8} \\\\\n\\hline\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": []
@@ -4679,7 +4406,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "metric",
           "text": "metric",
           "value": null,
           "values": [],
@@ -4693,7 +4419,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "~~~mAP@.5~~~",
           "text": "mAP@.5",
           "value": null,
           "values": [],
@@ -4707,7 +4432,6 @@
         {
           "row": 0,
           "col": 2,
-          "raw_latex": "mAP@[.5, .95]",
           "text": "mAP@[.5, .95]",
           "value": null,
           "values": [],
@@ -4721,7 +4445,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "VGG-16",
           "text": "VGG-16",
           "value": null,
           "values": [],
@@ -4735,7 +4458,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "41.5",
           "text": "41.5",
           "value": 41.5,
           "values": [
@@ -4751,7 +4473,6 @@
         {
           "row": 1,
           "col": 2,
-          "raw_latex": "21.2",
           "text": "21.2",
           "value": 21.2,
           "values": [
@@ -4767,7 +4488,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "ResNet-101",
           "text": "ResNet-101",
           "value": null,
           "values": [],
@@ -4781,7 +4501,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "\\textbf{48.4}",
           "text": "48.4",
           "value": 48.4,
           "values": [
@@ -4797,7 +4516,6 @@
         {
           "row": 2,
           "col": 2,
-          "raw_latex": "\\textbf{27.2}",
           "text": "27.2",
           "value": 27.2,
           "values": [
@@ -4813,7 +4531,6 @@
       ],
       "n_rows": 3,
       "n_cols": 3,
-      "latex_source": "\\begin{tabular}{c|c|c}\n\\hline\nmetric & ~~~mAP@.5~~~ & mAP@[.5, .95] \\\\\n\\hline\nVGG-16 & 41.5 & 21.2 \\\\\nResNet-101 & \\textbf{48.4} & \\textbf{27.2} \\\\\n\\hline\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": [
@@ -4879,7 +4596,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "training data",
           "text": "training data",
           "value": null,
           "values": [],
@@ -4893,7 +4609,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "\\multicolumn{2}{c|}{COCO train}",
           "text": "COCO train",
           "value": null,
           "values": [],
@@ -4907,7 +4622,6 @@
         {
           "row": 0,
           "col": 3,
-          "raw_latex": "\\multicolumn{2}{c}{COCO trainval}",
           "text": "COCO trainval",
           "value": null,
           "values": [],
@@ -4921,7 +4635,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "test data",
           "text": "test data",
           "value": null,
           "values": [],
@@ -4935,7 +4648,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "\\multicolumn{2}{c|}{COCO val}",
           "text": "COCO val",
           "value": null,
           "values": [],
@@ -4949,7 +4661,6 @@
         {
           "row": 1,
           "col": 3,
-          "raw_latex": "\\multicolumn{2}{c}{COCO test-dev}",
           "text": "COCO test-dev",
           "value": null,
           "values": [],
@@ -4963,7 +4674,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "mAP",
           "text": "mAP",
           "value": null,
           "values": [],
@@ -4977,7 +4687,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "~~~~@.5~~~~",
           "text": "@.5",
           "value": null,
           "values": [],
@@ -4991,7 +4700,6 @@
         {
           "row": 2,
           "col": 2,
-          "raw_latex": "@[.5, .95]",
           "text": "@[.5, .95]",
           "value": null,
           "values": [],
@@ -5005,7 +4713,6 @@
         {
           "row": 2,
           "col": 3,
-          "raw_latex": "~~~~@.5~~~~",
           "text": "@.5",
           "value": null,
           "values": [],
@@ -5019,7 +4726,6 @@
         {
           "row": 2,
           "col": 4,
-          "raw_latex": "@[.5, .95]",
           "text": "@[.5, .95]",
           "value": null,
           "values": [],
@@ -5033,7 +4739,6 @@
         {
           "row": 3,
           "col": 0,
-          "raw_latex": "baseline Faster R-CNN (VGG-16)",
           "text": "baseline Faster R-CNN (VGG-16)",
           "value": null,
           "values": [],
@@ -5047,7 +4752,6 @@
         {
           "row": 3,
           "col": 1,
-          "raw_latex": "41.5",
           "text": "41.5",
           "value": 41.5,
           "values": [
@@ -5063,7 +4767,6 @@
         {
           "row": 3,
           "col": 2,
-          "raw_latex": "21.2",
           "text": "21.2",
           "value": 21.2,
           "values": [
@@ -5079,7 +4782,6 @@
         {
           "row": 3,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5093,7 +4795,6 @@
         {
           "row": 4,
           "col": 0,
-          "raw_latex": "baseline Faster R-CNN (ResNet-101)",
           "text": "baseline Faster R-CNN (ResNet-101)",
           "value": null,
           "values": [],
@@ -5107,7 +4808,6 @@
         {
           "row": 4,
           "col": 1,
-          "raw_latex": "48.4",
           "text": "48.4",
           "value": 48.4,
           "values": [
@@ -5123,7 +4823,6 @@
         {
           "row": 4,
           "col": 2,
-          "raw_latex": "27.2",
           "text": "27.2",
           "value": 27.2,
           "values": [
@@ -5139,7 +4838,6 @@
         {
           "row": 4,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5153,7 +4851,6 @@
         {
           "row": 5,
           "col": 0,
-          "raw_latex": "~+box refinement",
           "text": "+box refinement",
           "value": null,
           "values": [],
@@ -5167,7 +4864,6 @@
         {
           "row": 5,
           "col": 1,
-          "raw_latex": "49.9",
           "text": "49.9",
           "value": 49.9,
           "values": [
@@ -5183,7 +4879,6 @@
         {
           "row": 5,
           "col": 2,
-          "raw_latex": "29.9",
           "text": "29.9",
           "value": 29.9,
           "values": [
@@ -5199,7 +4894,6 @@
         {
           "row": 5,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5213,7 +4907,6 @@
         {
           "row": 6,
           "col": 0,
-          "raw_latex": "~+context",
           "text": "+context",
           "value": null,
           "values": [],
@@ -5227,7 +4920,6 @@
         {
           "row": 6,
           "col": 1,
-          "raw_latex": "51.1",
           "text": "51.1",
           "value": 51.1,
           "values": [
@@ -5243,7 +4935,6 @@
         {
           "row": 6,
           "col": 2,
-          "raw_latex": "30.0",
           "text": "30.0",
           "value": 30.0,
           "values": [
@@ -5259,7 +4950,6 @@
         {
           "row": 6,
           "col": 3,
-          "raw_latex": "53.3",
           "text": "53.3",
           "value": 53.3,
           "values": [
@@ -5275,7 +4965,6 @@
         {
           "row": 6,
           "col": 4,
-          "raw_latex": "32.2",
           "text": "32.2",
           "value": 32.2,
           "values": [
@@ -5291,7 +4980,6 @@
         {
           "row": 7,
           "col": 0,
-          "raw_latex": "~+multi-scale testing",
           "text": "+multi-scale testing",
           "value": null,
           "values": [],
@@ -5305,7 +4993,6 @@
         {
           "row": 7,
           "col": 1,
-          "raw_latex": "53.8",
           "text": "53.8",
           "value": 53.8,
           "values": [
@@ -5321,7 +5008,6 @@
         {
           "row": 7,
           "col": 2,
-          "raw_latex": "32.5",
           "text": "32.5",
           "value": 32.5,
           "values": [
@@ -5337,7 +5023,6 @@
         {
           "row": 7,
           "col": 3,
-          "raw_latex": "\\textbf{55.7}",
           "text": "55.7",
           "value": 55.7,
           "values": [
@@ -5353,7 +5038,6 @@
         {
           "row": 7,
           "col": 4,
-          "raw_latex": "\\textbf{34.9}",
           "text": "34.9",
           "value": 34.9,
           "values": [
@@ -5369,7 +5053,6 @@
         {
           "row": 8,
           "col": 0,
-          "raw_latex": "ensemble",
           "text": "ensemble",
           "value": null,
           "values": [],
@@ -5383,7 +5066,6 @@
         {
           "row": 8,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5397,7 +5079,6 @@
         {
           "row": 8,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5411,7 +5092,6 @@
         {
           "row": 8,
           "col": 3,
-          "raw_latex": "\\textbf{59.0}",
           "text": "59.0",
           "value": 59.0,
           "values": [
@@ -5427,7 +5107,6 @@
         {
           "row": 8,
           "col": 4,
-          "raw_latex": "\\textbf{37.4}",
           "text": "37.4",
           "value": 37.4,
           "values": [
@@ -5443,7 +5122,6 @@
       ],
       "n_rows": 9,
       "n_cols": 5,
-      "latex_source": "\\begin{tabular}{l|c|c|c|c}\n\\hline\ntraining data & \\multicolumn{2}{c|}{COCO train} & \\multicolumn{2}{c}{COCO trainval} \\\\\n\\hline\ntest data & \\multicolumn{2}{c|}{COCO val} & \\multicolumn{2}{c}{COCO test-dev}\\\\\n\\hline\nmAP & ~~~~@.5~~~~ & @[.5, .95] & ~~~~@.5~~~~ & @[.5, .95]\\\\\n\\hline\nbaseline Faster R-CNN (VGG-16)    & 41.5 & 21.2 & \\\\\nbaseline Faster R-CNN (ResNet-101)    & 48.4 & 27.2 & \\\\\n~+box refinement &  49.9 & 29.9 & \\\\\n~+context &  51.1 & 30.0 & 53.3 & 32.2 \\\\\n~+multi-scale testing & 53.8 & 32.5 & \\textbf{55.7} & \\textbf{34.9} \\\\\n\\hline\nensemble & & & \\textbf{59.0} & \\textbf{37.4} \\\\\n\\hline\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": [
@@ -5663,7 +5341,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "\\ct{system}",
           "text": "system",
           "value": null,
           "values": [],
@@ -5677,7 +5354,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "net",
           "text": "net",
           "value": null,
           "values": [],
@@ -5691,7 +5367,6 @@
         {
           "row": 0,
           "col": 2,
-          "raw_latex": "data",
           "text": "data",
           "value": null,
           "values": [],
@@ -5705,7 +5380,6 @@
         {
           "row": 0,
           "col": 3,
-          "raw_latex": "mAP",
           "text": "mAP",
           "value": null,
           "values": [],
@@ -5719,7 +5393,6 @@
         {
           "row": 0,
           "col": 4,
-          "raw_latex": "\\ct{areo}",
           "text": "areo",
           "value": null,
           "values": [],
@@ -5733,7 +5406,6 @@
         {
           "row": 0,
           "col": 5,
-          "raw_latex": "\\ct{bike}",
           "text": "bike",
           "value": null,
           "values": [],
@@ -5747,7 +5419,6 @@
         {
           "row": 0,
           "col": 6,
-          "raw_latex": "\\ct{bird}",
           "text": "bird",
           "value": null,
           "values": [],
@@ -5761,7 +5432,6 @@
         {
           "row": 0,
           "col": 7,
-          "raw_latex": "\\ct{boat}",
           "text": "boat",
           "value": null,
           "values": [],
@@ -5775,7 +5445,6 @@
         {
           "row": 0,
           "col": 8,
-          "raw_latex": "\\ct{bottle}",
           "text": "bottle",
           "value": null,
           "values": [],
@@ -5789,7 +5458,6 @@
         {
           "row": 0,
           "col": 9,
-          "raw_latex": "\\ct{bus}",
           "text": "bus",
           "value": null,
           "values": [],
@@ -5803,7 +5471,6 @@
         {
           "row": 0,
           "col": 10,
-          "raw_latex": "\\ct{car}",
           "text": "car",
           "value": null,
           "values": [],
@@ -5817,7 +5484,6 @@
         {
           "row": 0,
           "col": 11,
-          "raw_latex": "\\ct{cat}",
           "text": "cat",
           "value": null,
           "values": [],
@@ -5831,7 +5497,6 @@
         {
           "row": 0,
           "col": 12,
-          "raw_latex": "\\ct{chair}",
           "text": "chair",
           "value": null,
           "values": [],
@@ -5845,7 +5510,6 @@
         {
           "row": 0,
           "col": 13,
-          "raw_latex": "\\ct{cow}",
           "text": "cow",
           "value": null,
           "values": [],
@@ -5859,7 +5523,6 @@
         {
           "row": 0,
           "col": 14,
-          "raw_latex": "\\ct{table}",
           "text": "table",
           "value": null,
           "values": [],
@@ -5873,7 +5536,6 @@
         {
           "row": 0,
           "col": 15,
-          "raw_latex": "\\ct{dog}",
           "text": "dog",
           "value": null,
           "values": [],
@@ -5887,7 +5549,6 @@
         {
           "row": 0,
           "col": 16,
-          "raw_latex": "\\ct{horse}",
           "text": "horse",
           "value": null,
           "values": [],
@@ -5901,7 +5562,6 @@
         {
           "row": 0,
           "col": 17,
-          "raw_latex": "\\ct{mbike}",
           "text": "mbike",
           "value": null,
           "values": [],
@@ -5915,7 +5575,6 @@
         {
           "row": 0,
           "col": 18,
-          "raw_latex": "\\ct{person}",
           "text": "person",
           "value": null,
           "values": [],
@@ -5929,7 +5588,6 @@
         {
           "row": 0,
           "col": 19,
-          "raw_latex": "\\ct{plant}",
           "text": "plant",
           "value": null,
           "values": [],
@@ -5943,7 +5601,6 @@
         {
           "row": 0,
           "col": 20,
-          "raw_latex": "\\ct{sheep}",
           "text": "sheep",
           "value": null,
           "values": [],
@@ -5957,7 +5614,6 @@
         {
           "row": 0,
           "col": 21,
-          "raw_latex": "\\ct{sofa}",
           "text": "sofa",
           "value": null,
           "values": [],
@@ -5971,7 +5627,6 @@
         {
           "row": 0,
           "col": 22,
-          "raw_latex": "\\ct{train}",
           "text": "train",
           "value": null,
           "values": [],
@@ -5985,7 +5640,6 @@
         {
           "row": 0,
           "col": 23,
-          "raw_latex": "\\ct{tv}",
           "text": "tv",
           "value": null,
           "values": [],
@@ -5999,7 +5653,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "\\footnotesize baseline",
           "text": "baseline",
           "value": null,
           "values": [],
@@ -6013,7 +5666,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "\\footnotesize VGG-16",
           "text": "VGG-16",
           "value": null,
           "values": [],
@@ -6027,7 +5679,6 @@
         {
           "row": 1,
           "col": 2,
-          "raw_latex": "07+12",
           "text": "07+12",
           "value": null,
           "values": [
@@ -6044,7 +5695,6 @@
         {
           "row": 1,
           "col": 3,
-          "raw_latex": "{73.2}",
           "text": "73.2",
           "value": 73.2,
           "values": [
@@ -6060,7 +5710,6 @@
         {
           "row": 1,
           "col": 4,
-          "raw_latex": "76.5",
           "text": "76.5",
           "value": 76.5,
           "values": [
@@ -6076,7 +5725,6 @@
         {
           "row": 1,
           "col": 5,
-          "raw_latex": "79.0",
           "text": "79.0",
           "value": 79.0,
           "values": [
@@ -6092,7 +5740,6 @@
         {
           "row": 1,
           "col": 6,
-          "raw_latex": "{70.9}",
           "text": "70.9",
           "value": 70.9,
           "values": [
@@ -6108,7 +5755,6 @@
         {
           "row": 1,
           "col": 7,
-          "raw_latex": "{65.5}",
           "text": "65.5",
           "value": 65.5,
           "values": [
@@ -6124,7 +5770,6 @@
         {
           "row": 1,
           "col": 8,
-          "raw_latex": "{52.1}",
           "text": "52.1",
           "value": 52.1,
           "values": [
@@ -6140,7 +5785,6 @@
         {
           "row": 1,
           "col": 9,
-          "raw_latex": "{83.1}",
           "text": "83.1",
           "value": 83.1,
           "values": [
@@ -6156,7 +5800,6 @@
         {
           "row": 1,
           "col": 10,
-          "raw_latex": "{84.7}",
           "text": "84.7",
           "value": 84.7,
           "values": [
@@ -6172,7 +5815,6 @@
         {
           "row": 1,
           "col": 11,
-          "raw_latex": "86.4",
           "text": "86.4",
           "value": 86.4,
           "values": [
@@ -6188,7 +5830,6 @@
         {
           "row": 1,
           "col": 12,
-          "raw_latex": "52.0",
           "text": "52.0",
           "value": 52.0,
           "values": [
@@ -6204,7 +5845,6 @@
         {
           "row": 1,
           "col": 13,
-          "raw_latex": "{81.9}",
           "text": "81.9",
           "value": 81.9,
           "values": [
@@ -6220,7 +5860,6 @@
         {
           "row": 1,
           "col": 14,
-          "raw_latex": "65.7",
           "text": "65.7",
           "value": 65.7,
           "values": [
@@ -6236,7 +5875,6 @@
         {
           "row": 1,
           "col": 15,
-          "raw_latex": "{84.8}",
           "text": "84.8",
           "value": 84.8,
           "values": [
@@ -6252,7 +5890,6 @@
         {
           "row": 1,
           "col": 16,
-          "raw_latex": "{84.6}",
           "text": "84.6",
           "value": 84.6,
           "values": [
@@ -6268,7 +5905,6 @@
         {
           "row": 1,
           "col": 17,
-          "raw_latex": "{77.5}",
           "text": "77.5",
           "value": 77.5,
           "values": [
@@ -6284,7 +5920,6 @@
         {
           "row": 1,
           "col": 18,
-          "raw_latex": "{76.7}",
           "text": "76.7",
           "value": 76.7,
           "values": [
@@ -6300,7 +5935,6 @@
         {
           "row": 1,
           "col": 19,
-          "raw_latex": "38.8",
           "text": "38.8",
           "value": 38.8,
           "values": [
@@ -6316,7 +5950,6 @@
         {
           "row": 1,
           "col": 20,
-          "raw_latex": "{73.6}",
           "text": "73.6",
           "value": 73.6,
           "values": [
@@ -6332,7 +5965,6 @@
         {
           "row": 1,
           "col": 21,
-          "raw_latex": "73.9",
           "text": "73.9",
           "value": 73.9,
           "values": [
@@ -6348,7 +5980,6 @@
         {
           "row": 1,
           "col": 22,
-          "raw_latex": "{83.0}",
           "text": "83.0",
           "value": 83.0,
           "values": [
@@ -6364,7 +5995,6 @@
         {
           "row": 1,
           "col": 23,
-          "raw_latex": "{72.6}",
           "text": "72.6",
           "value": 72.6,
           "values": [
@@ -6380,7 +6010,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "\\footnotesize baseline",
           "text": "baseline",
           "value": null,
           "values": [],
@@ -6394,7 +6023,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "\\footnotesize ResNet-101",
           "text": "ResNet-101",
           "value": null,
           "values": [],
@@ -6408,7 +6036,6 @@
         {
           "row": 2,
           "col": 2,
-          "raw_latex": "07+12",
           "text": "07+12",
           "value": null,
           "values": [
@@ -6425,7 +6052,6 @@
         {
           "row": 2,
           "col": 3,
-          "raw_latex": "76.4",
           "text": "76.4",
           "value": 76.4,
           "values": [
@@ -6441,7 +6067,6 @@
         {
           "row": 2,
           "col": 4,
-          "raw_latex": "79.8",
           "text": "79.8",
           "value": 79.8,
           "values": [
@@ -6457,7 +6082,6 @@
         {
           "row": 2,
           "col": 5,
-          "raw_latex": "80.7",
           "text": "80.7",
           "value": 80.7,
           "values": [
@@ -6473,7 +6097,6 @@
         {
           "row": 2,
           "col": 6,
-          "raw_latex": "76.2",
           "text": "76.2",
           "value": 76.2,
           "values": [
@@ -6489,7 +6112,6 @@
         {
           "row": 2,
           "col": 7,
-          "raw_latex": "68.3",
           "text": "68.3",
           "value": 68.3,
           "values": [
@@ -6505,7 +6127,6 @@
         {
           "row": 2,
           "col": 8,
-          "raw_latex": "55.9",
           "text": "55.9",
           "value": 55.9,
           "values": [
@@ -6521,7 +6142,6 @@
         {
           "row": 2,
           "col": 9,
-          "raw_latex": "85.1",
           "text": "85.1",
           "value": 85.1,
           "values": [
@@ -6537,7 +6157,6 @@
         {
           "row": 2,
           "col": 10,
-          "raw_latex": "85.3",
           "text": "85.3",
           "value": 85.3,
           "values": [
@@ -6553,7 +6172,6 @@
         {
           "row": 2,
           "col": 11,
-          "raw_latex": "\\hl{89.8}",
           "text": "89.8",
           "value": 89.8,
           "values": [
@@ -6569,7 +6187,6 @@
         {
           "row": 2,
           "col": 12,
-          "raw_latex": "56.7",
           "text": "56.7",
           "value": 56.7,
           "values": [
@@ -6585,7 +6202,6 @@
         {
           "row": 2,
           "col": 13,
-          "raw_latex": "87.8",
           "text": "87.8",
           "value": 87.8,
           "values": [
@@ -6601,7 +6217,6 @@
         {
           "row": 2,
           "col": 14,
-          "raw_latex": "69.4",
           "text": "69.4",
           "value": 69.4,
           "values": [
@@ -6617,7 +6232,6 @@
         {
           "row": 2,
           "col": 15,
-          "raw_latex": "88.3",
           "text": "88.3",
           "value": 88.3,
           "values": [
@@ -6633,7 +6247,6 @@
         {
           "row": 2,
           "col": 16,
-          "raw_latex": "88.9",
           "text": "88.9",
           "value": 88.9,
           "values": [
@@ -6649,7 +6262,6 @@
         {
           "row": 2,
           "col": 17,
-          "raw_latex": "80.9",
           "text": "80.9",
           "value": 80.9,
           "values": [
@@ -6665,7 +6277,6 @@
         {
           "row": 2,
           "col": 18,
-          "raw_latex": "78.4",
           "text": "78.4",
           "value": 78.4,
           "values": [
@@ -6681,7 +6292,6 @@
         {
           "row": 2,
           "col": 19,
-          "raw_latex": "41.7",
           "text": "41.7",
           "value": 41.7,
           "values": [
@@ -6697,7 +6307,6 @@
         {
           "row": 2,
           "col": 20,
-          "raw_latex": "78.6",
           "text": "78.6",
           "value": 78.6,
           "values": [
@@ -6713,7 +6322,6 @@
         {
           "row": 2,
           "col": 21,
-          "raw_latex": "79.8",
           "text": "79.8",
           "value": 79.8,
           "values": [
@@ -6729,7 +6337,6 @@
         {
           "row": 2,
           "col": 22,
-          "raw_latex": "85.3",
           "text": "85.3",
           "value": 85.3,
           "values": [
@@ -6745,7 +6352,6 @@
         {
           "row": 2,
           "col": 23,
-          "raw_latex": "72.0",
           "text": "72.0",
           "value": 72.0,
           "values": [
@@ -6761,7 +6367,6 @@
         {
           "row": 3,
           "col": 0,
-          "raw_latex": "\\footnotesize baseline+++",
           "text": "baseline+++",
           "value": null,
           "values": [],
@@ -6775,7 +6380,6 @@
         {
           "row": 3,
           "col": 1,
-          "raw_latex": "\\footnotesize ResNet-101",
           "text": "ResNet-101",
           "value": null,
           "values": [],
@@ -6789,7 +6393,6 @@
         {
           "row": 3,
           "col": 2,
-          "raw_latex": "COCO+07+12",
           "text": "COCO+07+12",
           "value": 12.0,
           "values": [
@@ -6805,7 +6408,6 @@
         {
           "row": 3,
           "col": 3,
-          "raw_latex": "\\hl{85.6}",
           "text": "85.6",
           "value": 85.6,
           "values": [
@@ -6821,7 +6423,6 @@
         {
           "row": 3,
           "col": 4,
-          "raw_latex": "\\hl{90.0}",
           "text": "90.0",
           "value": 90.0,
           "values": [
@@ -6837,7 +6438,6 @@
         {
           "row": 3,
           "col": 5,
-          "raw_latex": "\\hl{89.6}",
           "text": "89.6",
           "value": 89.6,
           "values": [
@@ -6853,7 +6453,6 @@
         {
           "row": 3,
           "col": 6,
-          "raw_latex": "\\hl{87.8}",
           "text": "87.8",
           "value": 87.8,
           "values": [
@@ -6869,7 +6468,6 @@
         {
           "row": 3,
           "col": 7,
-          "raw_latex": "\\hl{80.8}",
           "text": "80.8",
           "value": 80.8,
           "values": [
@@ -6885,7 +6483,6 @@
         {
           "row": 3,
           "col": 8,
-          "raw_latex": "\\hl{76.1}",
           "text": "76.1",
           "value": 76.1,
           "values": [
@@ -6901,7 +6498,6 @@
         {
           "row": 3,
           "col": 9,
-          "raw_latex": "\\hl{89.9}",
           "text": "89.9",
           "value": 89.9,
           "values": [
@@ -6917,7 +6513,6 @@
         {
           "row": 3,
           "col": 10,
-          "raw_latex": "\\hl{89.9}",
           "text": "89.9",
           "value": 89.9,
           "values": [
@@ -6933,7 +6528,6 @@
         {
           "row": 3,
           "col": 11,
-          "raw_latex": "{89.6}",
           "text": "89.6",
           "value": 89.6,
           "values": [
@@ -6949,7 +6543,6 @@
         {
           "row": 3,
           "col": 12,
-          "raw_latex": "\\hl{75.5}",
           "text": "75.5",
           "value": 75.5,
           "values": [
@@ -6965,7 +6558,6 @@
         {
           "row": 3,
           "col": 13,
-          "raw_latex": "\\hl{90.0}",
           "text": "90.0",
           "value": 90.0,
           "values": [
@@ -6981,7 +6573,6 @@
         {
           "row": 3,
           "col": 14,
-          "raw_latex": "\\hl{80.7}",
           "text": "80.7",
           "value": 80.7,
           "values": [
@@ -6997,7 +6588,6 @@
         {
           "row": 3,
           "col": 15,
-          "raw_latex": "\\hl{89.6}",
           "text": "89.6",
           "value": 89.6,
           "values": [
@@ -7013,7 +6603,6 @@
         {
           "row": 3,
           "col": 16,
-          "raw_latex": "\\hl{90.3}",
           "text": "90.3",
           "value": 90.3,
           "values": [
@@ -7029,7 +6618,6 @@
         {
           "row": 3,
           "col": 17,
-          "raw_latex": "\\hl{89.1}",
           "text": "89.1",
           "value": 89.1,
           "values": [
@@ -7045,7 +6633,6 @@
         {
           "row": 3,
           "col": 18,
-          "raw_latex": "\\hl{88.7}",
           "text": "88.7",
           "value": 88.7,
           "values": [
@@ -7061,7 +6648,6 @@
         {
           "row": 3,
           "col": 19,
-          "raw_latex": "\\hl{65.4}",
           "text": "65.4",
           "value": 65.4,
           "values": [
@@ -7077,7 +6663,6 @@
         {
           "row": 3,
           "col": 20,
-          "raw_latex": "\\hl{88.1}",
           "text": "88.1",
           "value": 88.1,
           "values": [
@@ -7093,7 +6678,6 @@
         {
           "row": 3,
           "col": 21,
-          "raw_latex": "\\hl{85.6}",
           "text": "85.6",
           "value": 85.6,
           "values": [
@@ -7109,7 +6693,6 @@
         {
           "row": 3,
           "col": 22,
-          "raw_latex": "\\hl{89.0}",
           "text": "89.0",
           "value": 89.0,
           "values": [
@@ -7125,7 +6708,6 @@
         {
           "row": 3,
           "col": 23,
-          "raw_latex": "\\hl{86.8}",
           "text": "86.8",
           "value": 86.8,
           "values": [
@@ -7141,7 +6723,6 @@
       ],
       "n_rows": 4,
       "n_cols": 24,
-      "latex_source": "\\begin{tabular}{l|x{40}|x{54}|x{20}|yyyyyyyyyyyyyyyyyyyc}\n\\hline\n\\ct{system} & net & data & mAP & \\ct{areo} & \\ct{bike} & \\ct{bird} & \\ct{boat} & \\ct{bottle} & \\ct{bus} & \\ct{car} & \\ct{cat} & \\ct{chair} & \\ct{cow} & \\ct{table} & \\ct{dog} & \\ct{horse} & \\ct{mbike} & \\ct{person} & \\ct{plant} & \\ct{sheep} & \\ct{sofa} & \\ct{train} & \\ct{tv} \\\\\n\\hline\n\\footnotesize baseline & \\footnotesize VGG-16 & 07+12 & {73.2} & 76.5 & 79.0 & {70.9} & {65.5} & {52.1} & {83.1} & {84.7} & 86.4 & 52.0 & {81.9} & 65.7 & {84.8} & {84.6} & {77.5} & {76.7} & 38.8 & {73.6} & 73.9 & {83.0} & {72.6}\\\\\n\\footnotesize baseline & \\footnotesize ResNet-101 & 07+12 & 76.4 & 79.8 & 80.7 & 76.2 & 68.3 & 55.9 & 85.1 & 85.3 & \\hl{89.8} & 56.7 & 87.8 & 69.4 & 88.3 & 88.9 & 80.9 & 78.4 & 41.7 & 78.6 & 79.8 & 85.3 & 72.0 \\\\\n\\footnotesize baseline+++ & \\footnotesize ResNet-101 & COCO+07+12 & \\hl{85.6} & \\hl{90.0} & \\hl{89.6} & \\hl{87.8} & \\hl{80.8} & \\hl{76.1} & \\hl{89.9} & \\hl{89.9} & {89.6} & \\hl{75.5} & \\hl{90.0} & \\hl{80.7} & \\hl{89.6} & \\hl{90.3} & \\hl{89.1} & \\hl{88.7} & \\hl{65.4} & \\hl{88.1} & \\hl{85.6} & \\hl{89.0} & \\hl{86.8} \\\\\n\\hline\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": []
@@ -7357,7 +6938,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "\\ct{system}",
           "text": "system",
           "value": null,
           "values": [],
@@ -7371,7 +6951,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "net",
           "text": "net",
           "value": null,
           "values": [],
@@ -7385,7 +6964,6 @@
         {
           "row": 0,
           "col": 2,
-          "raw_latex": "data",
           "text": "data",
           "value": null,
           "values": [],
@@ -7399,7 +6977,6 @@
         {
           "row": 0,
           "col": 3,
-          "raw_latex": "mAP",
           "text": "mAP",
           "value": null,
           "values": [],
@@ -7413,7 +6990,6 @@
         {
           "row": 0,
           "col": 4,
-          "raw_latex": "\\ct{areo}",
           "text": "areo",
           "value": null,
           "values": [],
@@ -7427,7 +7003,6 @@
         {
           "row": 0,
           "col": 5,
-          "raw_latex": "\\ct{bike}",
           "text": "bike",
           "value": null,
           "values": [],
@@ -7441,7 +7016,6 @@
         {
           "row": 0,
           "col": 6,
-          "raw_latex": "\\ct{bird}",
           "text": "bird",
           "value": null,
           "values": [],
@@ -7455,7 +7029,6 @@
         {
           "row": 0,
           "col": 7,
-          "raw_latex": "\\ct{boat}",
           "text": "boat",
           "value": null,
           "values": [],
@@ -7469,7 +7042,6 @@
         {
           "row": 0,
           "col": 8,
-          "raw_latex": "\\ct{bottle}",
           "text": "bottle",
           "value": null,
           "values": [],
@@ -7483,7 +7055,6 @@
         {
           "row": 0,
           "col": 9,
-          "raw_latex": "\\ct{bus}",
           "text": "bus",
           "value": null,
           "values": [],
@@ -7497,7 +7068,6 @@
         {
           "row": 0,
           "col": 10,
-          "raw_latex": "\\ct{car}",
           "text": "car",
           "value": null,
           "values": [],
@@ -7511,7 +7081,6 @@
         {
           "row": 0,
           "col": 11,
-          "raw_latex": "\\ct{cat}",
           "text": "cat",
           "value": null,
           "values": [],
@@ -7525,7 +7094,6 @@
         {
           "row": 0,
           "col": 12,
-          "raw_latex": "\\ct{chair}",
           "text": "chair",
           "value": null,
           "values": [],
@@ -7539,7 +7107,6 @@
         {
           "row": 0,
           "col": 13,
-          "raw_latex": "\\ct{cow}",
           "text": "cow",
           "value": null,
           "values": [],
@@ -7553,7 +7120,6 @@
         {
           "row": 0,
           "col": 14,
-          "raw_latex": "\\ct{table}",
           "text": "table",
           "value": null,
           "values": [],
@@ -7567,7 +7133,6 @@
         {
           "row": 0,
           "col": 15,
-          "raw_latex": "\\ct{dog}",
           "text": "dog",
           "value": null,
           "values": [],
@@ -7581,7 +7146,6 @@
         {
           "row": 0,
           "col": 16,
-          "raw_latex": "\\ct{horse}",
           "text": "horse",
           "value": null,
           "values": [],
@@ -7595,7 +7159,6 @@
         {
           "row": 0,
           "col": 17,
-          "raw_latex": "\\ct{mbike}",
           "text": "mbike",
           "value": null,
           "values": [],
@@ -7609,7 +7172,6 @@
         {
           "row": 0,
           "col": 18,
-          "raw_latex": "\\ct{person}",
           "text": "person",
           "value": null,
           "values": [],
@@ -7623,7 +7185,6 @@
         {
           "row": 0,
           "col": 19,
-          "raw_latex": "\\ct{plant}",
           "text": "plant",
           "value": null,
           "values": [],
@@ -7637,7 +7198,6 @@
         {
           "row": 0,
           "col": 20,
-          "raw_latex": "\\ct{sheep}",
           "text": "sheep",
           "value": null,
           "values": [],
@@ -7651,7 +7211,6 @@
         {
           "row": 0,
           "col": 21,
-          "raw_latex": "\\ct{sofa}",
           "text": "sofa",
           "value": null,
           "values": [],
@@ -7665,7 +7224,6 @@
         {
           "row": 0,
           "col": 22,
-          "raw_latex": "\\ct{train}",
           "text": "train",
           "value": null,
           "values": [],
@@ -7679,7 +7237,6 @@
         {
           "row": 0,
           "col": 23,
-          "raw_latex": "\\ct{tv}",
           "text": "tv",
           "value": null,
           "values": [],
@@ -7693,7 +7250,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "\\footnotesize baseline",
           "text": "baseline",
           "value": null,
           "values": [],
@@ -7707,7 +7263,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "\\footnotesize VGG-16",
           "text": "VGG-16",
           "value": null,
           "values": [],
@@ -7721,7 +7276,6 @@
         {
           "row": 1,
           "col": 2,
-          "raw_latex": "07++12",
           "text": "07++12",
           "value": null,
           "values": [
@@ -7738,7 +7292,6 @@
         {
           "row": 1,
           "col": 3,
-          "raw_latex": "{70.4}",
           "text": "70.4",
           "value": 70.4,
           "values": [
@@ -7754,7 +7307,6 @@
         {
           "row": 1,
           "col": 4,
-          "raw_latex": "{84.9}",
           "text": "84.9",
           "value": 84.9,
           "values": [
@@ -7770,7 +7322,6 @@
         {
           "row": 1,
           "col": 5,
-          "raw_latex": "{79.8}",
           "text": "79.8",
           "value": 79.8,
           "values": [
@@ -7786,7 +7337,6 @@
         {
           "row": 1,
           "col": 6,
-          "raw_latex": "{74.3}",
           "text": "74.3",
           "value": 74.3,
           "values": [
@@ -7802,7 +7352,6 @@
         {
           "row": 1,
           "col": 7,
-          "raw_latex": "{53.9}",
           "text": "53.9",
           "value": 53.9,
           "values": [
@@ -7818,7 +7367,6 @@
         {
           "row": 1,
           "col": 8,
-          "raw_latex": "{49.8}",
           "text": "49.8",
           "value": 49.8,
           "values": [
@@ -7834,7 +7382,6 @@
         {
           "row": 1,
           "col": 9,
-          "raw_latex": "77.5",
           "text": "77.5",
           "value": 77.5,
           "values": [
@@ -7850,7 +7397,6 @@
         {
           "row": 1,
           "col": 10,
-          "raw_latex": "{75.9}",
           "text": "75.9",
           "value": 75.9,
           "values": [
@@ -7866,7 +7412,6 @@
         {
           "row": 1,
           "col": 11,
-          "raw_latex": "88.5",
           "text": "88.5",
           "value": 88.5,
           "values": [
@@ -7882,7 +7427,6 @@
         {
           "row": 1,
           "col": 12,
-          "raw_latex": "{45.6}",
           "text": "45.6",
           "value": 45.6,
           "values": [
@@ -7898,7 +7442,6 @@
         {
           "row": 1,
           "col": 13,
-          "raw_latex": "{77.1}",
           "text": "77.1",
           "value": 77.1,
           "values": [
@@ -7914,7 +7457,6 @@
         {
           "row": 1,
           "col": 14,
-          "raw_latex": "{55.3}",
           "text": "55.3",
           "value": 55.3,
           "values": [
@@ -7930,7 +7472,6 @@
         {
           "row": 1,
           "col": 15,
-          "raw_latex": "86.9",
           "text": "86.9",
           "value": 86.9,
           "values": [
@@ -7946,7 +7487,6 @@
         {
           "row": 1,
           "col": 16,
-          "raw_latex": "{81.7}",
           "text": "81.7",
           "value": 81.7,
           "values": [
@@ -7962,7 +7502,6 @@
         {
           "row": 1,
           "col": 17,
-          "raw_latex": "{80.9}",
           "text": "80.9",
           "value": 80.9,
           "values": [
@@ -7978,7 +7517,6 @@
         {
           "row": 1,
           "col": 18,
-          "raw_latex": "{79.6}",
           "text": "79.6",
           "value": 79.6,
           "values": [
@@ -7994,7 +7532,6 @@
         {
           "row": 1,
           "col": 19,
-          "raw_latex": "{40.1}",
           "text": "40.1",
           "value": 40.1,
           "values": [
@@ -8010,7 +7547,6 @@
         {
           "row": 1,
           "col": 20,
-          "raw_latex": "{72.6}",
           "text": "72.6",
           "value": 72.6,
           "values": [
@@ -8026,7 +7562,6 @@
         {
           "row": 1,
           "col": 21,
-          "raw_latex": "60.9",
           "text": "60.9",
           "value": 60.9,
           "values": [
@@ -8042,7 +7577,6 @@
         {
           "row": 1,
           "col": 22,
-          "raw_latex": "{81.2}",
           "text": "81.2",
           "value": 81.2,
           "values": [
@@ -8058,7 +7592,6 @@
         {
           "row": 1,
           "col": 23,
-          "raw_latex": "61.5",
           "text": "61.5",
           "value": 61.5,
           "values": [
@@ -8074,7 +7607,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "\\footnotesize baseline",
           "text": "baseline",
           "value": null,
           "values": [],
@@ -8088,7 +7620,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "\\footnotesize ResNet-101",
           "text": "ResNet-101",
           "value": null,
           "values": [],
@@ -8102,7 +7633,6 @@
         {
           "row": 2,
           "col": 2,
-          "raw_latex": "07++12",
           "text": "07++12",
           "value": null,
           "values": [
@@ -8119,7 +7649,6 @@
         {
           "row": 2,
           "col": 3,
-          "raw_latex": "73.8",
           "text": "73.8",
           "value": 73.8,
           "values": [
@@ -8135,7 +7664,6 @@
         {
           "row": 2,
           "col": 4,
-          "raw_latex": "86.5",
           "text": "86.5",
           "value": 86.5,
           "values": [
@@ -8151,7 +7679,6 @@
         {
           "row": 2,
           "col": 5,
-          "raw_latex": "81.6",
           "text": "81.6",
           "value": 81.6,
           "values": [
@@ -8167,7 +7694,6 @@
         {
           "row": 2,
           "col": 6,
-          "raw_latex": "77.2",
           "text": "77.2",
           "value": 77.2,
           "values": [
@@ -8183,7 +7709,6 @@
         {
           "row": 2,
           "col": 7,
-          "raw_latex": "58.0",
           "text": "58.0",
           "value": 58.0,
           "values": [
@@ -8199,7 +7724,6 @@
         {
           "row": 2,
           "col": 8,
-          "raw_latex": "51.0",
           "text": "51.0",
           "value": 51.0,
           "values": [
@@ -8215,7 +7739,6 @@
         {
           "row": 2,
           "col": 9,
-          "raw_latex": "78.6",
           "text": "78.6",
           "value": 78.6,
           "values": [
@@ -8231,7 +7754,6 @@
         {
           "row": 2,
           "col": 10,
-          "raw_latex": "76.6",
           "text": "76.6",
           "value": 76.6,
           "values": [
@@ -8247,7 +7769,6 @@
         {
           "row": 2,
           "col": 11,
-          "raw_latex": "93.2",
           "text": "93.2",
           "value": 93.2,
           "values": [
@@ -8263,7 +7784,6 @@
         {
           "row": 2,
           "col": 12,
-          "raw_latex": "48.6",
           "text": "48.6",
           "value": 48.6,
           "values": [
@@ -8279,7 +7799,6 @@
         {
           "row": 2,
           "col": 13,
-          "raw_latex": "80.4",
           "text": "80.4",
           "value": 80.4,
           "values": [
@@ -8295,7 +7814,6 @@
         {
           "row": 2,
           "col": 14,
-          "raw_latex": "59.0",
           "text": "59.0",
           "value": 59.0,
           "values": [
@@ -8311,7 +7829,6 @@
         {
           "row": 2,
           "col": 15,
-          "raw_latex": "92.1",
           "text": "92.1",
           "value": 92.1,
           "values": [
@@ -8327,7 +7844,6 @@
         {
           "row": 2,
           "col": 16,
-          "raw_latex": "85.3",
           "text": "85.3",
           "value": 85.3,
           "values": [
@@ -8343,7 +7859,6 @@
         {
           "row": 2,
           "col": 17,
-          "raw_latex": "84.8",
           "text": "84.8",
           "value": 84.8,
           "values": [
@@ -8359,7 +7874,6 @@
         {
           "row": 2,
           "col": 18,
-          "raw_latex": "80.7",
           "text": "80.7",
           "value": 80.7,
           "values": [
@@ -8375,7 +7889,6 @@
         {
           "row": 2,
           "col": 19,
-          "raw_latex": "48.1",
           "text": "48.1",
           "value": 48.1,
           "values": [
@@ -8391,7 +7904,6 @@
         {
           "row": 2,
           "col": 20,
-          "raw_latex": "77.3",
           "text": "77.3",
           "value": 77.3,
           "values": [
@@ -8407,7 +7919,6 @@
         {
           "row": 2,
           "col": 21,
-          "raw_latex": "66.5",
           "text": "66.5",
           "value": 66.5,
           "values": [
@@ -8423,7 +7934,6 @@
         {
           "row": 2,
           "col": 22,
-          "raw_latex": "84.7",
           "text": "84.7",
           "value": 84.7,
           "values": [
@@ -8439,7 +7949,6 @@
         {
           "row": 2,
           "col": 23,
-          "raw_latex": "65.6",
           "text": "65.6",
           "value": 65.6,
           "values": [
@@ -8455,7 +7964,6 @@
         {
           "row": 3,
           "col": 0,
-          "raw_latex": "\\footnotesize baseline+++",
           "text": "baseline+++",
           "value": null,
           "values": [],
@@ -8469,7 +7977,6 @@
         {
           "row": 3,
           "col": 1,
-          "raw_latex": "\\footnotesize ResNet-101",
           "text": "ResNet-101",
           "value": null,
           "values": [],
@@ -8483,7 +7990,6 @@
         {
           "row": 3,
           "col": 2,
-          "raw_latex": "COCO+07++12",
           "text": "COCO+07++12",
           "value": 12.0,
           "values": [
@@ -8499,7 +8005,6 @@
         {
           "row": 3,
           "col": 3,
-          "raw_latex": "\\hl{83.8}",
           "text": "83.8",
           "value": 83.8,
           "values": [
@@ -8515,7 +8020,6 @@
         {
           "row": 3,
           "col": 4,
-          "raw_latex": "\\hl{92.1}",
           "text": "92.1",
           "value": 92.1,
           "values": [
@@ -8531,7 +8035,6 @@
         {
           "row": 3,
           "col": 5,
-          "raw_latex": "\\hl{88.4}",
           "text": "88.4",
           "value": 88.4,
           "values": [
@@ -8547,7 +8050,6 @@
         {
           "row": 3,
           "col": 6,
-          "raw_latex": "\\hl{84.8}",
           "text": "84.8",
           "value": 84.8,
           "values": [
@@ -8563,7 +8065,6 @@
         {
           "row": 3,
           "col": 7,
-          "raw_latex": "\\hl{75.9}",
           "text": "75.9",
           "value": 75.9,
           "values": [
@@ -8579,7 +8080,6 @@
         {
           "row": 3,
           "col": 8,
-          "raw_latex": "\\hl{71.4}",
           "text": "71.4",
           "value": 71.4,
           "values": [
@@ -8595,7 +8095,6 @@
         {
           "row": 3,
           "col": 9,
-          "raw_latex": "\\hl{86.3}",
           "text": "86.3",
           "value": 86.3,
           "values": [
@@ -8611,7 +8110,6 @@
         {
           "row": 3,
           "col": 10,
-          "raw_latex": "\\hl{87.8}",
           "text": "87.8",
           "value": 87.8,
           "values": [
@@ -8627,7 +8125,6 @@
         {
           "row": 3,
           "col": 11,
-          "raw_latex": "\\hl{94.2}",
           "text": "94.2",
           "value": 94.2,
           "values": [
@@ -8643,7 +8140,6 @@
         {
           "row": 3,
           "col": 12,
-          "raw_latex": "\\hl{66.8}",
           "text": "66.8",
           "value": 66.8,
           "values": [
@@ -8659,7 +8155,6 @@
         {
           "row": 3,
           "col": 13,
-          "raw_latex": "\\hl{89.4}",
           "text": "89.4",
           "value": 89.4,
           "values": [
@@ -8675,7 +8170,6 @@
         {
           "row": 3,
           "col": 14,
-          "raw_latex": "\\hl{69.2}",
           "text": "69.2",
           "value": 69.2,
           "values": [
@@ -8691,7 +8185,6 @@
         {
           "row": 3,
           "col": 15,
-          "raw_latex": "\\hl{93.9}",
           "text": "93.9",
           "value": 93.9,
           "values": [
@@ -8707,7 +8200,6 @@
         {
           "row": 3,
           "col": 16,
-          "raw_latex": "\\hl{91.9}",
           "text": "91.9",
           "value": 91.9,
           "values": [
@@ -8723,7 +8215,6 @@
         {
           "row": 3,
           "col": 17,
-          "raw_latex": "\\hl{90.9}",
           "text": "90.9",
           "value": 90.9,
           "values": [
@@ -8739,7 +8230,6 @@
         {
           "row": 3,
           "col": 18,
-          "raw_latex": "\\hl{ 89.6}",
           "text": "89.6",
           "value": 89.6,
           "values": [
@@ -8755,7 +8245,6 @@
         {
           "row": 3,
           "col": 19,
-          "raw_latex": "\\hl{67.9}",
           "text": "67.9",
           "value": 67.9,
           "values": [
@@ -8771,7 +8260,6 @@
         {
           "row": 3,
           "col": 20,
-          "raw_latex": "\\hl{88.2}",
           "text": "88.2",
           "value": 88.2,
           "values": [
@@ -8787,7 +8275,6 @@
         {
           "row": 3,
           "col": 21,
-          "raw_latex": "\\hl{76.8}",
           "text": "76.8",
           "value": 76.8,
           "values": [
@@ -8803,7 +8290,6 @@
         {
           "row": 3,
           "col": 22,
-          "raw_latex": "\\hl{90.3}",
           "text": "90.3",
           "value": 90.3,
           "values": [
@@ -8819,7 +8305,6 @@
         {
           "row": 3,
           "col": 23,
-          "raw_latex": "\\hl{80.0}",
           "text": "80.0",
           "value": 80.0,
           "values": [
@@ -8835,7 +8320,6 @@
       ],
       "n_rows": 4,
       "n_cols": 24,
-      "latex_source": "\\begin{tabular}{l|x{40}|x{54}|x{20}|yyyyyyyyyyyyyyyyyyyc}\n\\hline\n\\ct{system} & net & data & mAP & \\ct{areo} & \\ct{bike} & \\ct{bird} & \\ct{boat} & \\ct{bottle} & \\ct{bus} & \\ct{car} & \\ct{cat} & \\ct{chair} & \\ct{cow} & \\ct{table} & \\ct{dog} & \\ct{horse} & \\ct{mbike} & \\ct{person} & \\ct{plant} & \\ct{sheep} & \\ct{sofa} & \\ct{train} & \\ct{tv} \\\\\n\\hline\n\\footnotesize baseline & \\footnotesize VGG-16 & 07++12 & {70.4} & {84.9} & {79.8} & {74.3} & {53.9} & {49.8} & 77.5 & {75.9} & 88.5 & {45.6} & {77.1} & {55.3} & 86.9 & {81.7} & {80.9} & {79.6} & {40.1} & {72.6} & 60.9 & {81.2} & 61.5\\\\\n\\footnotesize baseline & \\footnotesize ResNet-101 & 07++12 & 73.8 & 86.5 & 81.6 & 77.2 & 58.0 & 51.0 & 78.6 & 76.6 & 93.2 & 48.6 & 80.4 & 59.0 & 92.1 & 85.3 & 84.8 & 80.7 & 48.1 & 77.3 & 66.5 & 84.7 & 65.6 \\\\\n\\footnotesize baseline+++ & \\footnotesize ResNet-101 & COCO+07++12 & \\hl{83.8} & \\hl{92.1} & \\hl{88.4} & \\hl{84.8} & \\hl{75.9} & \\hl{71.4} & \\hl{86.3} & \\hl{87.8} & \\hl{94.2} & \\hl{66.8} & \\hl{89.4} & \\hl{69.2} & \\hl{93.9} & \\hl{91.9} & \\hl{90.9} & \\hl{ 89.6} & \\hl{67.9} & \\hl{88.2} & \\hl{76.8} & \\hl{90.3} & \\hl{80.0} \\\\\n\\hline\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": [
@@ -8885,7 +8369,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -8899,7 +8382,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "val2",
           "text": "val2",
           "value": null,
           "values": [],
@@ -8913,7 +8395,6 @@
         {
           "row": 0,
           "col": 2,
-          "raw_latex": "test",
           "text": "test",
           "value": null,
           "values": [],
@@ -8927,7 +8408,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "GoogLeNet \\cite{Szegedy2015} (ILSVRC'14)",
           "text": "GoogLeNet (ILSVRC'14)",
           "value": 14.0,
           "values": [
@@ -8943,7 +8423,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "-",
           "text": "-",
           "value": null,
           "values": [],
@@ -8957,7 +8436,6 @@
         {
           "row": 1,
           "col": 2,
-          "raw_latex": "43.9",
           "text": "43.9",
           "value": 43.9,
           "values": [
@@ -8973,7 +8451,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "our single model (ILSVRC'15)",
           "text": "our single model (ILSVRC'15)",
           "value": 15.0,
           "values": [
@@ -8989,7 +8466,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "60.5",
           "text": "60.5",
           "value": 60.5,
           "values": [
@@ -9005,7 +8481,6 @@
         {
           "row": 2,
           "col": 2,
-          "raw_latex": "58.8",
           "text": "58.8",
           "value": 58.8,
           "values": [
@@ -9021,7 +8496,6 @@
         {
           "row": 3,
           "col": 0,
-          "raw_latex": "our ensemble (ILSVRC'15)",
           "text": "our ensemble (ILSVRC'15)",
           "value": 15.0,
           "values": [
@@ -9037,7 +8511,6 @@
         {
           "row": 3,
           "col": 1,
-          "raw_latex": "\\textbf{63.6}",
           "text": "63.6",
           "value": 63.6,
           "values": [
@@ -9053,7 +8526,6 @@
         {
           "row": 3,
           "col": 2,
-          "raw_latex": "\\textbf{62.1}",
           "text": "62.1",
           "value": 62.1,
           "values": [
@@ -9069,7 +8541,6 @@
       ],
       "n_rows": 4,
       "n_cols": 3,
-      "latex_source": "\\begin{tabular}{l|c|c}\n\\hline\n  & val2 & test \\\\\n\\hline\nGoogLeNet \\cite{Szegedy2015} (ILSVRC'14) & - & 43.9 \\\\\n\\hline\nour single model (ILSVRC'15) & 60.5 & 58.8  \\\\\nour ensemble (ILSVRC'15) & \\textbf{63.6} & \\textbf{62.1} \\\\\n\\hline\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": []
@@ -9141,7 +8612,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "\\tabincell{c}{LOC \\\\ method}",
           "text": "@c@LOC method",
           "value": null,
           "values": [],
@@ -9155,7 +8625,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "\\tabincell{c}{LOC \\\\ network}",
           "text": "@c@LOC network",
           "value": null,
           "values": [],
@@ -9169,7 +8638,6 @@
         {
           "row": 0,
           "col": 2,
-          "raw_latex": "testing",
           "text": "testing",
           "value": null,
           "values": [],
@@ -9183,7 +8651,6 @@
         {
           "row": 0,
           "col": 3,
-          "raw_latex": "\\tabincell{c}{LOC error \\\\on GT CLS}",
           "text": "@c@LOC error on GT CLS",
           "value": null,
           "values": [],
@@ -9197,7 +8664,6 @@
         {
           "row": 0,
           "col": 4,
-          "raw_latex": "\\tabincell{c}{classification\\\\ network}",
           "text": "@c@classification network",
           "value": null,
           "values": [],
@@ -9211,7 +8677,6 @@
         {
           "row": 0,
           "col": 5,
-          "raw_latex": "\\tabincell{c}{top-5 LOC error \\\\ on predicted CLS}",
           "text": "@c@top-5 LOC error on predicted CLS",
           "value": null,
           "values": [],
@@ -9225,7 +8690,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "VGG's \\cite{Simonyan2015}",
           "text": "VGG's",
           "value": null,
           "values": [],
@@ -9239,7 +8703,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "VGG-16",
           "text": "VGG-16",
           "value": null,
           "values": [],
@@ -9253,7 +8716,6 @@
         {
           "row": 1,
           "col": 2,
-          "raw_latex": "1-crop",
           "text": "1-crop",
           "value": 1.0,
           "values": [
@@ -9269,7 +8731,6 @@
         {
           "row": 1,
           "col": 3,
-          "raw_latex": "33.1 \\cite{Simonyan2015}",
           "text": "33.1",
           "value": 33.1,
           "values": [
@@ -9285,7 +8746,6 @@
         {
           "row": 1,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -9299,7 +8759,6 @@
         {
           "row": 1,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -9313,7 +8772,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "RPN",
           "text": "RPN",
           "value": null,
           "values": [],
@@ -9327,7 +8785,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "ResNet-101",
           "text": "ResNet-101",
           "value": null,
           "values": [],
@@ -9341,7 +8798,6 @@
         {
           "row": 2,
           "col": 2,
-          "raw_latex": "1-crop",
           "text": "1-crop",
           "value": 1.0,
           "values": [
@@ -9357,7 +8813,6 @@
         {
           "row": 2,
           "col": 3,
-          "raw_latex": "13.3",
           "text": "13.3",
           "value": 13.3,
           "values": [
@@ -9373,7 +8828,6 @@
         {
           "row": 2,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -9387,7 +8841,6 @@
         {
           "row": 2,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -9401,7 +8854,6 @@
         {
           "row": 3,
           "col": 0,
-          "raw_latex": "RPN",
           "text": "RPN",
           "value": null,
           "values": [],
@@ -9415,7 +8867,6 @@
         {
           "row": 3,
           "col": 1,
-          "raw_latex": "ResNet-101",
           "text": "ResNet-101",
           "value": null,
           "values": [],
@@ -9429,7 +8880,6 @@
         {
           "row": 3,
           "col": 2,
-          "raw_latex": "dense",
           "text": "dense",
           "value": null,
           "values": [],
@@ -9443,7 +8893,6 @@
         {
           "row": 3,
           "col": 3,
-          "raw_latex": "11.7",
           "text": "11.7",
           "value": 11.7,
           "values": [
@@ -9459,7 +8908,6 @@
         {
           "row": 3,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -9473,7 +8921,6 @@
         {
           "row": 3,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -9487,7 +8934,6 @@
         {
           "row": 4,
           "col": 0,
-          "raw_latex": "RPN",
           "text": "RPN",
           "value": null,
           "values": [],
@@ -9501,7 +8947,6 @@
         {
           "row": 4,
           "col": 1,
-          "raw_latex": "ResNet-101",
           "text": "ResNet-101",
           "value": null,
           "values": [],
@@ -9515,7 +8960,6 @@
         {
           "row": 4,
           "col": 2,
-          "raw_latex": "dense",
           "text": "dense",
           "value": null,
           "values": [],
@@ -9529,7 +8973,6 @@
         {
           "row": 4,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -9543,7 +8986,6 @@
         {
           "row": 4,
           "col": 4,
-          "raw_latex": "ResNet-101",
           "text": "ResNet-101",
           "value": null,
           "values": [],
@@ -9557,7 +8999,6 @@
         {
           "row": 4,
           "col": 5,
-          "raw_latex": "14.4",
           "text": "14.4",
           "value": 14.4,
           "values": [
@@ -9573,7 +9014,6 @@
         {
           "row": 5,
           "col": 0,
-          "raw_latex": "RPN+RCNN",
           "text": "RPN+RCNN",
           "value": null,
           "values": [],
@@ -9587,7 +9027,6 @@
         {
           "row": 5,
           "col": 1,
-          "raw_latex": "ResNet-101",
           "text": "ResNet-101",
           "value": null,
           "values": [],
@@ -9601,7 +9040,6 @@
         {
           "row": 5,
           "col": 2,
-          "raw_latex": "dense",
           "text": "dense",
           "value": null,
           "values": [],
@@ -9615,7 +9053,6 @@
         {
           "row": 5,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -9629,7 +9066,6 @@
         {
           "row": 5,
           "col": 4,
-          "raw_latex": "ResNet-101",
           "text": "ResNet-101",
           "value": null,
           "values": [],
@@ -9643,7 +9079,6 @@
         {
           "row": 5,
           "col": 5,
-          "raw_latex": "\\textbf{10.6}",
           "text": "10.6",
           "value": 10.6,
           "values": [
@@ -9659,7 +9094,6 @@
         {
           "row": 6,
           "col": 0,
-          "raw_latex": "RPN+RCNN",
           "text": "RPN+RCNN",
           "value": null,
           "values": [],
@@ -9673,7 +9107,6 @@
         {
           "row": 6,
           "col": 1,
-          "raw_latex": "ensemble",
           "text": "ensemble",
           "value": null,
           "values": [],
@@ -9687,7 +9120,6 @@
         {
           "row": 6,
           "col": 2,
-          "raw_latex": "dense",
           "text": "dense",
           "value": null,
           "values": [],
@@ -9701,7 +9133,6 @@
         {
           "row": 6,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -9715,7 +9146,6 @@
         {
           "row": 6,
           "col": 4,
-          "raw_latex": "ensemble",
           "text": "ensemble",
           "value": null,
           "values": [],
@@ -9729,7 +9159,6 @@
         {
           "row": 6,
           "col": 5,
-          "raw_latex": "\\textbf{8.9}",
           "text": "8.9",
           "value": 8.9,
           "values": [
@@ -9745,7 +9174,6 @@
       ],
       "n_rows": 7,
       "n_cols": 6,
-      "latex_source": "\\begin{tabular}{c|c|c|c|c|c}\n\\hline\n\\tabincell{c}{LOC \\\\ method} & \\tabincell{c}{LOC \\\\ network} & testing & \\tabincell{c}{LOC error \\\\on GT CLS} & \\tabincell{c}{classification\\\\ network} & \\tabincell{c}{top-5 LOC error \\\\ on predicted CLS} \\\\\n\\hline\nVGG's \\cite{Simonyan2015} & VGG-16 & 1-crop & 33.1 \\cite{Simonyan2015} & & \\\\\nRPN & ResNet-101 & 1-crop & 13.3 & & \\\\\nRPN & ResNet-101 & dense & 11.7 & & \\\\\n\\hline\nRPN & ResNet-101 & dense & & ResNet-101 & 14.4 \\\\\nRPN+RCNN & ResNet-101 & dense & & ResNet-101 & \\textbf{10.6} \\\\\nRPN+RCNN & ensemble & dense & & ensemble & \\textbf{8.9} \\\\\n\\hline\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": []
@@ -9793,7 +9221,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "\\multicolumn{1}{c|}{\\multirow{2}{*}{method}}",
           "text": "method",
           "value": null,
           "values": [],
@@ -9807,7 +9234,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "\\multicolumn{2}{c}{top-5 localization err}",
           "text": "top-5 localization err",
           "value": null,
           "values": [],
@@ -9821,7 +9247,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -9835,7 +9260,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "val",
           "text": "val",
           "value": null,
           "values": [],
@@ -9849,7 +9273,6 @@
         {
           "row": 1,
           "col": 2,
-          "raw_latex": "test",
           "text": "test",
           "value": null,
           "values": [],
@@ -9863,7 +9286,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "OverFeat \\cite{Sermanet2014} (ILSVRC'13)",
           "text": "OverFeat (ILSVRC'13)",
           "value": 13.0,
           "values": [
@@ -9879,7 +9301,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "30.0",
           "text": "30.0",
           "value": 30.0,
           "values": [
@@ -9895,7 +9316,6 @@
         {
           "row": 2,
           "col": 2,
-          "raw_latex": "29.9",
           "text": "29.9",
           "value": 29.9,
           "values": [
@@ -9911,7 +9331,6 @@
         {
           "row": 3,
           "col": 0,
-          "raw_latex": "GoogLeNet \\cite{Szegedy2015} (ILSVRC'14)",
           "text": "GoogLeNet (ILSVRC'14)",
           "value": 14.0,
           "values": [
@@ -9927,7 +9346,6 @@
         {
           "row": 3,
           "col": 1,
-          "raw_latex": "-",
           "text": "-",
           "value": null,
           "values": [],
@@ -9941,7 +9359,6 @@
         {
           "row": 3,
           "col": 2,
-          "raw_latex": "26.7",
           "text": "26.7",
           "value": 26.7,
           "values": [
@@ -9957,7 +9374,6 @@
         {
           "row": 4,
           "col": 0,
-          "raw_latex": "VGG \\cite{Simonyan2015} (ILSVRC'14)",
           "text": "VGG (ILSVRC'14)",
           "value": 14.0,
           "values": [
@@ -9973,7 +9389,6 @@
         {
           "row": 4,
           "col": 1,
-          "raw_latex": "26.9",
           "text": "26.9",
           "value": 26.9,
           "values": [
@@ -9989,7 +9404,6 @@
         {
           "row": 4,
           "col": 2,
-          "raw_latex": "25.3",
           "text": "25.3",
           "value": 25.3,
           "values": [
@@ -10005,7 +9419,6 @@
         {
           "row": 5,
           "col": 0,
-          "raw_latex": "ours (ILSVRC'15)",
           "text": "ours (ILSVRC'15)",
           "value": 15.0,
           "values": [
@@ -10021,7 +9434,6 @@
         {
           "row": 5,
           "col": 1,
-          "raw_latex": "\\textbf{8.9}",
           "text": "8.9",
           "value": 8.9,
           "values": [
@@ -10037,7 +9449,6 @@
         {
           "row": 5,
           "col": 2,
-          "raw_latex": "\\textbf{9.0}",
           "text": "9.0",
           "value": 9.0,
           "values": [
@@ -10053,13 +9464,12 @@
       ],
       "n_rows": 6,
       "n_cols": 3,
-      "latex_source": "\\begin{tabular}{l|c|c}\n\\hline\n  \\multicolumn{1}{c|}{\\multirow{2}{*}{method}}  & \\multicolumn{2}{c}{top-5 localization err} \\\\\\cline{2-3}\n  & val & test \\\\\n\\hline\nOverFeat \\cite{Sermanet2014} (ILSVRC'13) & 30.0 & 29.9 \\\\\nGoogLeNet \\cite{Szegedy2015} (ILSVRC'14) & - & 26.7 \\\\\nVGG \\cite{Simonyan2015} (ILSVRC'14) & 26.9 & 25.3 \\\\\n\\hline\nours (ILSVRC'15) & \\textbf{8.9} & \\textbf{9.0} \\\\\n\\hline\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": []
     }
   ],
   "tables_parsed": 15,
-  "started_at": "2026-08-01T08:52:35.269833Z",
-  "finished_at": "2026-08-01T08:52:36.545881Z"
+  "started_at": "2026-08-01T11:48:06.848403Z",
+  "finished_at": "2026-08-01T11:48:08.301286Z"
 }

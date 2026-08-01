@@ -171,6 +171,23 @@ def synthetic() -> RunReport:
     )
 
 
+# The LaTeX a cell and a table came from. Kept on the model because a checker may
+# need it, dropped from the serialised report because the frontend never reads it.
+#
+# CLIP's report was 1.4MB with these in, and prerendering the report pages died with
+# "Zone Allocation failed - process out of memory" at page 7 of 15. Nothing about the
+# verdicts changes: no check reads a report back, and the corpus gate compares the
+# same fields either way.
+_RENDER_EXCLUDE = {
+    "tables": {
+        "__all__": {
+            "latex_source": True,
+            "cells": {"__all__": {"raw_latex": True}},
+        }
+    }
+}
+
+
 def _render_all() -> dict[str, str]:
     """Every fixture's JSON, keyed by filename. Pure — writes nothing."""
     out: dict[str, str] = {}
@@ -181,7 +198,9 @@ def _render_all() -> dict[str, str]:
         report = run_paper(
             arxiv_id, from_directory=str(d), checks=("bold_extreme", "row_arithmetic")
         )
-        out[f"{arxiv_id}.json"] = report.model_dump_json(indent=2)
+        out[f"{arxiv_id}.json"] = report.model_dump_json(
+            indent=2, exclude=_RENDER_EXCLUDE
+        )
     out["synthetic.json"] = synthetic().model_dump_json(indent=2)
     out["run-report.schema.json"] = json.dumps(RunReport.model_json_schema(), indent=2)
     return out
@@ -256,36 +275,16 @@ def main() -> int:
     if parser.parse_args().verify:
         return verify()
 
+    # Write what verify() checks, from the same function. Two code paths building
+    # the same files is how they drift: this one used to serialise without
+    # _RENDER_EXCLUDE, so the committed fixtures kept every cell's raw LaTeX and
+    # the frontend build ran out of memory prerendering them.
     OUT.mkdir(parents=True, exist_ok=True)
-    written = []
-
-    for arxiv_id in REAL:
-        d = PAPERS / arxiv_id
-        if not d.is_dir():
-            print(f"  skip {arxiv_id}: not in the corpus")
-            continue
-        report = run_paper(
-            arxiv_id,
-            from_directory=str(d),
-            checks=("bold_extreme", "row_arithmetic"),
-        )
-        path = OUT / f"{arxiv_id}.json"
-        path.write_text(report.model_dump_json(indent=2), encoding="utf-8")
-        written.append(path)
-        n_find = sum(len(c.findings) for c in report.checks)
-        print(f"  {arxiv_id}  {report.tables_parsed:>3} tables  {n_find} findings  "
-              f"{len(report.not_checked)} not checked")
-
-    path = OUT / "synthetic.json"
-    path.write_text(synthetic().model_dump_json(indent=2), encoding="utf-8")
-    written.append(path)
-    print("  synthetic  every verdict state, not a real paper")
-
-    # The schema itself, so the frontend can generate types before FastAPI exists.
-    schema = OUT / "run-report.schema.json"
-    schema.write_text(json.dumps(RunReport.model_json_schema(), indent=2), encoding="utf-8")
-    written.append(schema)
-    print(f"\n{len(written)} files in {OUT}")
+    rendered = _render_all()
+    for name, payload in rendered.items():
+        (OUT / name).write_text(payload, encoding="utf-8")
+        print(f"  {name:28s} {len(payload) // 1024:>5} KB")
+    print(f"\n{len(rendered)} files in {OUT}")
     return 0
 
 

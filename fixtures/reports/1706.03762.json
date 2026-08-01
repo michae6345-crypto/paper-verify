@@ -6,20 +6,20 @@
     {
       "checker": "bold_extreme",
       "checker_version": "1.0.0",
-      "policy_version": "",
-      "fingerprint": "",
+      "policy_version": "1",
+      "fingerprint": "becb542333f431f22b86882fb5bfa2888a3dfb44a41b5230d0994ac6dd89b44f",
       "verdict": "matches",
       "reason": null,
       "findings": [],
       "display_name": "Bolded value is the best in its block",
       "description": "Checks that each bolded number is the best value in its column, comparing only within the same rule-delimited block of the table.",
-      "duration_ms": 0,
-      "created_at": "2026-08-01T08:52:34.298169Z"
+      "duration_ms": 2,
+      "created_at": "2026-08-01T11:48:05.748964Z"
     },
     {
       "checker": "row_arithmetic",
       "checker_version": "1.0.0",
-      "policy_version": "",
+      "policy_version": "1",
       "fingerprint": "",
       "verdict": "not_attempted",
       "reason": null,
@@ -27,7 +27,7 @@
       "display_name": "Average columns match their row",
       "description": "Checks that a column labelled average, mean or overall equals the mean of the other numbers in the same row, to the precision they were printed at.",
       "duration_ms": 0,
-      "created_at": "2026-08-01T08:52:34.298540Z"
+      "created_at": "2026-08-01T11:48:05.752445Z"
     }
   ],
   "not_checked": [
@@ -89,7 +89,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "Layer Type",
           "text": "Layer Type",
           "value": null,
           "values": [],
@@ -103,7 +102,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "Complexity per Layer",
           "text": "Complexity per Layer",
           "value": null,
           "values": [],
@@ -117,7 +115,6 @@
         {
           "row": 0,
           "col": 2,
-          "raw_latex": "Sequential",
           "text": "Sequential",
           "value": null,
           "values": [],
@@ -131,7 +128,6 @@
         {
           "row": 0,
           "col": 3,
-          "raw_latex": "Maximum Path Length",
           "text": "Maximum Path Length",
           "value": null,
           "values": [],
@@ -145,7 +141,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -159,7 +154,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -173,7 +167,6 @@
         {
           "row": 1,
           "col": 2,
-          "raw_latex": "Operations",
           "text": "Operations",
           "value": null,
           "values": [],
@@ -187,7 +180,6 @@
         {
           "row": 1,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -201,7 +193,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "\\rule{0pt}{2.0ex}Self-Attention",
           "text": "Self-Attention",
           "value": null,
           "values": [],
@@ -215,7 +206,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "$O(n^2 \\cdot d)$",
           "text": "O(n^2 ·d)",
           "value": 2.0,
           "values": [
@@ -231,7 +221,6 @@
         {
           "row": 2,
           "col": 2,
-          "raw_latex": "$O(1)$",
           "text": "O(1)",
           "value": 1.0,
           "values": [
@@ -247,7 +236,6 @@
         {
           "row": 2,
           "col": 3,
-          "raw_latex": "$O(1)$",
           "text": "O(1)",
           "value": 1.0,
           "values": [
@@ -263,7 +251,6 @@
         {
           "row": 3,
           "col": 0,
-          "raw_latex": "Recurrent",
           "text": "Recurrent",
           "value": null,
           "values": [],
@@ -277,7 +264,6 @@
         {
           "row": 3,
           "col": 1,
-          "raw_latex": "$O(n \\cdot d^2)$",
           "text": "O(n ·d^2)",
           "value": 2.0,
           "values": [
@@ -293,7 +279,6 @@
         {
           "row": 3,
           "col": 2,
-          "raw_latex": "$O(n)$",
           "text": "O(n)",
           "value": null,
           "values": [],
@@ -307,7 +292,6 @@
         {
           "row": 3,
           "col": 3,
-          "raw_latex": "$O(n)$",
           "text": "O(n)",
           "value": null,
           "values": [],
@@ -321,7 +305,6 @@
         {
           "row": 4,
           "col": 0,
-          "raw_latex": "Convolutional",
           "text": "Convolutional",
           "value": null,
           "values": [],
@@ -335,7 +318,6 @@
         {
           "row": 4,
           "col": 1,
-          "raw_latex": "$O(k \\cdot n \\cdot d^2)$",
           "text": "O(k ·n ·d^2)",
           "value": 2.0,
           "values": [
@@ -351,7 +333,6 @@
         {
           "row": 4,
           "col": 2,
-          "raw_latex": "$O(1)$",
           "text": "O(1)",
           "value": 1.0,
           "values": [
@@ -367,7 +348,6 @@
         {
           "row": 4,
           "col": 3,
-          "raw_latex": "$O(log_k(n))$",
           "text": "O(log_k(n))",
           "value": null,
           "values": [],
@@ -381,7 +361,6 @@
         {
           "row": 5,
           "col": 0,
-          "raw_latex": "Self-Attention (restricted)",
           "text": "Self-Attention (restricted)",
           "value": null,
           "values": [],
@@ -395,7 +374,6 @@
         {
           "row": 5,
           "col": 1,
-          "raw_latex": "$O(r \\cdot n \\cdot d)$",
           "text": "O(r ·n ·d)",
           "value": null,
           "values": [],
@@ -409,7 +387,6 @@
         {
           "row": 5,
           "col": 2,
-          "raw_latex": "$O(1)$",
           "text": "O(1)",
           "value": 1.0,
           "values": [
@@ -425,7 +402,6 @@
         {
           "row": 5,
           "col": 3,
-          "raw_latex": "$O(n/r)$",
           "text": "O(n/r)",
           "value": null,
           "values": [],
@@ -439,7 +415,6 @@
       ],
       "n_rows": 6,
       "n_cols": 4,
-      "latex_source": "\\begin{tabular}{lccc}\n\\toprule\nLayer Type & Complexity per Layer & Sequential & Maximum Path Length  \\\\\n           &             & Operations &   \\\\\n\\hline\n\\rule{0pt}{2.0ex}Self-Attention & $O(n^2 \\cdot d)$ & $O(1)$ & $O(1)$ \\\\\nRecurrent & $O(n \\cdot d^2)$ & $O(n)$ & $O(n)$ \\\\\n\nConvolutional & $O(k \\cdot n \\cdot d^2)$ & $O(1)$ & $O(log_k(n))$ \\\\\n          \nSelf-Attention (restricted)& $O(r \\cdot n \\cdot d)$ & $O(1)$ & $O(n/r)$ \\\\\n\n                                                                                             \n\n                                                                     \n\n                                                          \n                                                                                             \n\n                                                                     \n\n                                                          \n\\bottomrule\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": []
@@ -511,7 +486,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "\\multirow{2}{*}{\\vspace{-2mm}Model}",
           "text": "Model",
           "value": null,
           "values": [],
@@ -525,7 +499,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "\\multicolumn{2}{c}{BLEU}",
           "text": "BLEU",
           "value": null,
           "values": [],
@@ -539,7 +512,6 @@
         {
           "row": 0,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -553,7 +525,6 @@
         {
           "row": 0,
           "col": 4,
-          "raw_latex": "\\multicolumn{2}{c}{Training Cost (FLOPs)}",
           "text": "Training Cost (FLOPs)",
           "value": null,
           "values": [],
@@ -567,7 +538,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -581,7 +551,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "EN-DE",
           "text": "EN-DE",
           "value": null,
           "values": [],
@@ -595,7 +564,6 @@
         {
           "row": 1,
           "col": 2,
-          "raw_latex": "EN-FR",
           "text": "EN-FR",
           "value": null,
           "values": [],
@@ -609,7 +577,6 @@
         {
           "row": 1,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -623,7 +590,6 @@
         {
           "row": 1,
           "col": 4,
-          "raw_latex": "EN-DE",
           "text": "EN-DE",
           "value": null,
           "values": [],
@@ -637,7 +603,6 @@
         {
           "row": 1,
           "col": 5,
-          "raw_latex": "EN-FR",
           "text": "EN-FR",
           "value": null,
           "values": [],
@@ -651,7 +616,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "ByteNet \\citep{NalBytenet2017}",
           "text": "ByteNet",
           "value": null,
           "values": [],
@@ -665,7 +629,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "23.75",
           "text": "23.75",
           "value": 23.75,
           "values": [
@@ -681,7 +644,6 @@
         {
           "row": 2,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -695,7 +657,6 @@
         {
           "row": 2,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -709,7 +670,6 @@
         {
           "row": 2,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -723,7 +683,6 @@
         {
           "row": 2,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -737,7 +696,6 @@
         {
           "row": 3,
           "col": 0,
-          "raw_latex": "Deep-Att + PosUnk \\citep{DBLP:journals/corr/ZhouCWLX16}",
           "text": "Deep-Att + PosUnk",
           "value": null,
           "values": [],
@@ -751,7 +709,6 @@
         {
           "row": 3,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -765,7 +722,6 @@
         {
           "row": 3,
           "col": 2,
-          "raw_latex": "39.2",
           "text": "39.2",
           "value": 39.2,
           "values": [
@@ -781,7 +737,6 @@
         {
           "row": 3,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -795,7 +750,6 @@
         {
           "row": 3,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -809,7 +763,6 @@
         {
           "row": 3,
           "col": 5,
-          "raw_latex": "$1.0\\cdot10^{20}$",
           "text": "1.0·10^20",
           "value": 1e+20,
           "values": [
@@ -825,7 +778,6 @@
         {
           "row": 4,
           "col": 0,
-          "raw_latex": "GNMT + RL \\citep{wu2016google}",
           "text": "GNMT + RL",
           "value": null,
           "values": [],
@@ -839,7 +791,6 @@
         {
           "row": 4,
           "col": 1,
-          "raw_latex": "24.6",
           "text": "24.6",
           "value": 24.6,
           "values": [
@@ -855,7 +806,6 @@
         {
           "row": 4,
           "col": 2,
-          "raw_latex": "39.92",
           "text": "39.92",
           "value": 39.92,
           "values": [
@@ -871,7 +821,6 @@
         {
           "row": 4,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -885,7 +834,6 @@
         {
           "row": 4,
           "col": 4,
-          "raw_latex": "$2.3\\cdot10^{19}$",
           "text": "2.3·10^19",
           "value": 2.3e+19,
           "values": [
@@ -901,7 +849,6 @@
         {
           "row": 4,
           "col": 5,
-          "raw_latex": "$1.4\\cdot10^{20}$",
           "text": "1.4·10^20",
           "value": 1.4e+20,
           "values": [
@@ -917,7 +864,6 @@
         {
           "row": 5,
           "col": 0,
-          "raw_latex": "ConvS2S \\citep{JonasFaceNet2017}",
           "text": "ConvS2S",
           "value": null,
           "values": [],
@@ -931,7 +877,6 @@
         {
           "row": 5,
           "col": 1,
-          "raw_latex": "25.16",
           "text": "25.16",
           "value": 25.16,
           "values": [
@@ -947,7 +892,6 @@
         {
           "row": 5,
           "col": 2,
-          "raw_latex": "40.46",
           "text": "40.46",
           "value": 40.46,
           "values": [
@@ -963,7 +907,6 @@
         {
           "row": 5,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -977,7 +920,6 @@
         {
           "row": 5,
           "col": 4,
-          "raw_latex": "$9.6\\cdot10^{18}$",
           "text": "9.6·10^18",
           "value": 9.6e+18,
           "values": [
@@ -993,7 +935,6 @@
         {
           "row": 5,
           "col": 5,
-          "raw_latex": "$1.5\\cdot10^{20}$",
           "text": "1.5·10^20",
           "value": 1.5e+20,
           "values": [
@@ -1009,7 +950,6 @@
         {
           "row": 6,
           "col": 0,
-          "raw_latex": "MoE \\citep{shazeer2017outrageously}",
           "text": "MoE",
           "value": null,
           "values": [],
@@ -1023,7 +963,6 @@
         {
           "row": 6,
           "col": 1,
-          "raw_latex": "26.03",
           "text": "26.03",
           "value": 26.03,
           "values": [
@@ -1039,7 +978,6 @@
         {
           "row": 6,
           "col": 2,
-          "raw_latex": "40.56",
           "text": "40.56",
           "value": 40.56,
           "values": [
@@ -1055,7 +993,6 @@
         {
           "row": 6,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1069,7 +1006,6 @@
         {
           "row": 6,
           "col": 4,
-          "raw_latex": "$2.0\\cdot10^{19}$",
           "text": "2.0·10^19",
           "value": 2e+19,
           "values": [
@@ -1085,7 +1021,6 @@
         {
           "row": 6,
           "col": 5,
-          "raw_latex": "$1.2\\cdot10^{20}$",
           "text": "1.2·10^20",
           "value": 1.2e+20,
           "values": [
@@ -1101,7 +1036,6 @@
         {
           "row": 7,
           "col": 0,
-          "raw_latex": "\\rule{0pt}{2.0ex}Deep-Att + PosUnk Ensemble \\citep{DBLP:journals/corr/ZhouCWLX16}",
           "text": "Deep-Att + PosUnk Ensemble",
           "value": null,
           "values": [],
@@ -1115,7 +1049,6 @@
         {
           "row": 7,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1129,7 +1062,6 @@
         {
           "row": 7,
           "col": 2,
-          "raw_latex": "40.4",
           "text": "40.4",
           "value": 40.4,
           "values": [
@@ -1145,7 +1077,6 @@
         {
           "row": 7,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1159,7 +1090,6 @@
         {
           "row": 7,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1173,7 +1103,6 @@
         {
           "row": 7,
           "col": 5,
-          "raw_latex": "$8.0\\cdot10^{20}$",
           "text": "8.0·10^20",
           "value": 8e+20,
           "values": [
@@ -1189,7 +1118,6 @@
         {
           "row": 8,
           "col": 0,
-          "raw_latex": "GNMT + RL Ensemble \\citep{wu2016google}",
           "text": "GNMT + RL Ensemble",
           "value": null,
           "values": [],
@@ -1203,7 +1131,6 @@
         {
           "row": 8,
           "col": 1,
-          "raw_latex": "26.30",
           "text": "26.30",
           "value": 26.3,
           "values": [
@@ -1219,7 +1146,6 @@
         {
           "row": 8,
           "col": 2,
-          "raw_latex": "41.16",
           "text": "41.16",
           "value": 41.16,
           "values": [
@@ -1235,7 +1161,6 @@
         {
           "row": 8,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1249,7 +1174,6 @@
         {
           "row": 8,
           "col": 4,
-          "raw_latex": "$1.8\\cdot10^{20}$",
           "text": "1.8·10^20",
           "value": 1.8e+20,
           "values": [
@@ -1265,7 +1189,6 @@
         {
           "row": 8,
           "col": 5,
-          "raw_latex": "$1.1\\cdot10^{21}$",
           "text": "1.1·10^21",
           "value": 1.1e+21,
           "values": [
@@ -1281,7 +1204,6 @@
         {
           "row": 9,
           "col": 0,
-          "raw_latex": "ConvS2S Ensemble \\citep{JonasFaceNet2017}",
           "text": "ConvS2S Ensemble",
           "value": null,
           "values": [],
@@ -1295,7 +1217,6 @@
         {
           "row": 9,
           "col": 1,
-          "raw_latex": "26.36",
           "text": "26.36",
           "value": 26.36,
           "values": [
@@ -1311,7 +1232,6 @@
         {
           "row": 9,
           "col": 2,
-          "raw_latex": "\\textbf{41.29}",
           "text": "41.29",
           "value": 41.29,
           "values": [
@@ -1327,7 +1247,6 @@
         {
           "row": 9,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1341,7 +1260,6 @@
         {
           "row": 9,
           "col": 4,
-          "raw_latex": "$7.7\\cdot10^{19}$",
           "text": "7.7·10^19",
           "value": 7.7e+19,
           "values": [
@@ -1357,7 +1275,6 @@
         {
           "row": 9,
           "col": 5,
-          "raw_latex": "$1.2\\cdot10^{21}$",
           "text": "1.2·10^21",
           "value": 1.2e+21,
           "values": [
@@ -1373,7 +1290,6 @@
         {
           "row": 10,
           "col": 0,
-          "raw_latex": "\\rule{0pt}{2.2ex}Transformer (base model)",
           "text": "Transformer (base model)",
           "value": null,
           "values": [],
@@ -1387,7 +1303,6 @@
         {
           "row": 10,
           "col": 1,
-          "raw_latex": "27.3",
           "text": "27.3",
           "value": 27.3,
           "values": [
@@ -1403,7 +1318,6 @@
         {
           "row": 10,
           "col": 2,
-          "raw_latex": "38.1",
           "text": "38.1",
           "value": 38.1,
           "values": [
@@ -1419,7 +1333,6 @@
         {
           "row": 10,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1433,7 +1346,6 @@
         {
           "row": 10,
           "col": 4,
-          "raw_latex": "\\multicolumn{2}{c}{\\boldmath$3.3\\cdot10^{18}$}",
           "text": "3.3·10^18",
           "value": 3.3e+18,
           "values": [
@@ -1449,7 +1361,6 @@
         {
           "row": 11,
           "col": 0,
-          "raw_latex": "Transformer (big)",
           "text": "Transformer (big)",
           "value": null,
           "values": [],
@@ -1463,7 +1374,6 @@
         {
           "row": 11,
           "col": 1,
-          "raw_latex": "\\textbf{28.4}",
           "text": "28.4",
           "value": 28.4,
           "values": [
@@ -1479,7 +1389,6 @@
         {
           "row": 11,
           "col": 2,
-          "raw_latex": "\\textbf{41.8}",
           "text": "41.8",
           "value": 41.8,
           "values": [
@@ -1495,7 +1404,6 @@
         {
           "row": 11,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1509,7 +1417,6 @@
         {
           "row": 11,
           "col": 4,
-          "raw_latex": "\\multicolumn{2}{c}{$2.3\\cdot10^{19}$}",
           "text": "2.3·10^19",
           "value": 2.3e+19,
           "values": [
@@ -1525,7 +1432,6 @@
       ],
       "n_rows": 12,
       "n_cols": 6,
-      "latex_source": "\\begin{tabular}{lccccc}\n\\toprule\n\\multirow{2}{*}{\\vspace{-2mm}Model} & \\multicolumn{2}{c}{BLEU} & & \\multicolumn{2}{c}{Training Cost (FLOPs)} \\\\\n\\cmidrule{2-3} \\cmidrule{5-6} \n& EN-DE & EN-FR & & EN-DE & EN-FR \\\\ \n\\hline\nByteNet \\citep{NalBytenet2017} & 23.75 & & & &\\\\\nDeep-Att + PosUnk \\citep{DBLP:journals/corr/ZhouCWLX16} & & 39.2 & & & $1.0\\cdot10^{20}$ \\\\\nGNMT + RL \\citep{wu2016google} & 24.6 & 39.92 & & $2.3\\cdot10^{19}$  & $1.4\\cdot10^{20}$\\\\\nConvS2S \\citep{JonasFaceNet2017} & 25.16 & 40.46 & & $9.6\\cdot10^{18}$ & $1.5\\cdot10^{20}$\\\\\nMoE \\citep{shazeer2017outrageously} & 26.03 & 40.56 & & $2.0\\cdot10^{19}$ & $1.2\\cdot10^{20}$ \\\\\n\\hline\n\\rule{0pt}{2.0ex}Deep-Att + PosUnk Ensemble \\citep{DBLP:journals/corr/ZhouCWLX16} & & 40.4 & & &\n $8.0\\cdot10^{20}$ \\\\\nGNMT + RL Ensemble \\citep{wu2016google} & 26.30 & 41.16 & & $1.8\\cdot10^{20}$  & $1.1\\cdot10^{21}$\\\\\nConvS2S Ensemble \\citep{JonasFaceNet2017} & 26.36 & \\textbf{41.29} & & $7.7\\cdot10^{19}$ & $1.2\\cdot10^{21}$\\\\\n\\specialrule{1pt}{-1pt}{0pt}\n\\rule{0pt}{2.2ex}Transformer (base model) & 27.3 & 38.1 & & \\multicolumn{2}{c}{\\boldmath$3.3\\cdot10^{18}$}\\\\\nTransformer (big) & \\textbf{28.4} & \\textbf{41.8} & & \\multicolumn{2}{c}{$2.3\\cdot10^{19}$} \\\\\n       \n                             \n                  \n\\bottomrule\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": []
@@ -1653,7 +1559,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "\\rule{0pt}{2.0ex}",
           "text": "",
           "value": null,
           "values": [],
@@ -1667,7 +1572,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "\\multirow{2}{*}{$N$}",
           "text": "N",
           "value": null,
           "values": [],
@@ -1681,7 +1585,6 @@
         {
           "row": 0,
           "col": 2,
-          "raw_latex": "\\multirow{2}{*}{$\\dmodel$}",
           "text": "d_model",
           "value": null,
           "values": [],
@@ -1695,7 +1598,6 @@
         {
           "row": 0,
           "col": 3,
-          "raw_latex": "\\multirow{2}{*}{$\\dff$}",
           "text": "d_ff",
           "value": null,
           "values": [],
@@ -1709,7 +1611,6 @@
         {
           "row": 0,
           "col": 4,
-          "raw_latex": "\\multirow{2}{*}{$h$}",
           "text": "h",
           "value": null,
           "values": [],
@@ -1723,7 +1624,6 @@
         {
           "row": 0,
           "col": 5,
-          "raw_latex": "\\multirow{2}{*}{$d_k$}",
           "text": "d_k",
           "value": null,
           "values": [],
@@ -1737,7 +1637,6 @@
         {
           "row": 0,
           "col": 6,
-          "raw_latex": "\\multirow{2}{*}{$d_v$}",
           "text": "d_v",
           "value": null,
           "values": [],
@@ -1751,7 +1650,6 @@
         {
           "row": 0,
           "col": 7,
-          "raw_latex": "\\multirow{2}{*}{$P_{drop}$}",
           "text": "P_drop",
           "value": null,
           "values": [],
@@ -1765,7 +1663,6 @@
         {
           "row": 0,
           "col": 8,
-          "raw_latex": "\\multirow{2}{*}{$\\epsilon_{ls}$}",
           "text": "ε_ls",
           "value": null,
           "values": [],
@@ -1779,7 +1676,6 @@
         {
           "row": 0,
           "col": 9,
-          "raw_latex": "train",
           "text": "train",
           "value": null,
           "values": [],
@@ -1793,7 +1689,6 @@
         {
           "row": 0,
           "col": 10,
-          "raw_latex": "PPL",
           "text": "PPL",
           "value": null,
           "values": [],
@@ -1807,7 +1702,6 @@
         {
           "row": 0,
           "col": 11,
-          "raw_latex": "BLEU",
           "text": "BLEU",
           "value": null,
           "values": [],
@@ -1821,7 +1715,6 @@
         {
           "row": 0,
           "col": 12,
-          "raw_latex": "params",
           "text": "params",
           "value": null,
           "values": [],
@@ -1835,7 +1728,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1849,7 +1741,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1863,7 +1754,6 @@
         {
           "row": 1,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1877,7 +1767,6 @@
         {
           "row": 1,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1891,7 +1780,6 @@
         {
           "row": 1,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1905,7 +1793,6 @@
         {
           "row": 1,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1919,7 +1806,6 @@
         {
           "row": 1,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1933,7 +1819,6 @@
         {
           "row": 1,
           "col": 7,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1947,7 +1832,6 @@
         {
           "row": 1,
           "col": 8,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -1961,7 +1845,6 @@
         {
           "row": 1,
           "col": 9,
-          "raw_latex": "steps",
           "text": "steps",
           "value": null,
           "values": [],
@@ -1975,7 +1858,6 @@
         {
           "row": 1,
           "col": 10,
-          "raw_latex": "(dev)",
           "text": "(dev)",
           "value": null,
           "values": [],
@@ -1989,7 +1871,6 @@
         {
           "row": 1,
           "col": 11,
-          "raw_latex": "(dev)",
           "text": "(dev)",
           "value": null,
           "values": [],
@@ -2003,7 +1884,6 @@
         {
           "row": 1,
           "col": 12,
-          "raw_latex": "$\\times10^6$",
           "text": "×10^6",
           "value": 1000000.0,
           "values": [
@@ -2019,7 +1899,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "\\rule{0pt}{2.0ex}\nbase",
           "text": "base",
           "value": null,
           "values": [],
@@ -2033,7 +1912,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "6",
           "text": "6",
           "value": 6.0,
           "values": [
@@ -2049,7 +1927,6 @@
         {
           "row": 2,
           "col": 2,
-          "raw_latex": "512",
           "text": "512",
           "value": 512.0,
           "values": [
@@ -2065,7 +1942,6 @@
         {
           "row": 2,
           "col": 3,
-          "raw_latex": "2048",
           "text": "2048",
           "value": 2048.0,
           "values": [
@@ -2081,7 +1957,6 @@
         {
           "row": 2,
           "col": 4,
-          "raw_latex": "8",
           "text": "8",
           "value": 8.0,
           "values": [
@@ -2097,7 +1972,6 @@
         {
           "row": 2,
           "col": 5,
-          "raw_latex": "64",
           "text": "64",
           "value": 64.0,
           "values": [
@@ -2113,7 +1987,6 @@
         {
           "row": 2,
           "col": 6,
-          "raw_latex": "64",
           "text": "64",
           "value": 64.0,
           "values": [
@@ -2129,7 +2002,6 @@
         {
           "row": 2,
           "col": 7,
-          "raw_latex": "0.1",
           "text": "0.1",
           "value": 0.1,
           "values": [
@@ -2145,7 +2017,6 @@
         {
           "row": 2,
           "col": 8,
-          "raw_latex": "0.1",
           "text": "0.1",
           "value": 0.1,
           "values": [
@@ -2161,7 +2032,6 @@
         {
           "row": 2,
           "col": 9,
-          "raw_latex": "100K",
           "text": "100K",
           "value": 100000.0,
           "values": [
@@ -2177,7 +2047,6 @@
         {
           "row": 2,
           "col": 10,
-          "raw_latex": "4.92",
           "text": "4.92",
           "value": 4.92,
           "values": [
@@ -2193,7 +2062,6 @@
         {
           "row": 2,
           "col": 11,
-          "raw_latex": "25.8",
           "text": "25.8",
           "value": 25.8,
           "values": [
@@ -2209,7 +2077,6 @@
         {
           "row": 2,
           "col": 12,
-          "raw_latex": "65",
           "text": "65",
           "value": 65.0,
           "values": [
@@ -2225,7 +2092,6 @@
         {
           "row": 3,
           "col": 0,
-          "raw_latex": "\\rule{0pt}{2.0ex}\n\\multirow{4}{*}{(A)}",
           "text": "(A)",
           "value": null,
           "values": [],
@@ -2239,7 +2105,6 @@
         {
           "row": 3,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2253,7 +2118,6 @@
         {
           "row": 3,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2267,7 +2131,6 @@
         {
           "row": 3,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2281,7 +2144,6 @@
         {
           "row": 3,
           "col": 4,
-          "raw_latex": "1",
           "text": "1",
           "value": 1.0,
           "values": [
@@ -2297,7 +2159,6 @@
         {
           "row": 3,
           "col": 5,
-          "raw_latex": "512",
           "text": "512",
           "value": 512.0,
           "values": [
@@ -2313,7 +2174,6 @@
         {
           "row": 3,
           "col": 6,
-          "raw_latex": "512",
           "text": "512",
           "value": 512.0,
           "values": [
@@ -2329,7 +2189,6 @@
         {
           "row": 3,
           "col": 7,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2343,7 +2202,6 @@
         {
           "row": 3,
           "col": 8,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2357,7 +2215,6 @@
         {
           "row": 3,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2371,7 +2228,6 @@
         {
           "row": 3,
           "col": 10,
-          "raw_latex": "5.29",
           "text": "5.29",
           "value": 5.29,
           "values": [
@@ -2387,7 +2243,6 @@
         {
           "row": 3,
           "col": 11,
-          "raw_latex": "24.9",
           "text": "24.9",
           "value": 24.9,
           "values": [
@@ -2403,7 +2258,6 @@
         {
           "row": 3,
           "col": 12,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2417,7 +2271,6 @@
         {
           "row": 4,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2431,7 +2284,6 @@
         {
           "row": 4,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2445,7 +2297,6 @@
         {
           "row": 4,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2459,7 +2310,6 @@
         {
           "row": 4,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2473,7 +2323,6 @@
         {
           "row": 4,
           "col": 4,
-          "raw_latex": "4",
           "text": "4",
           "value": 4.0,
           "values": [
@@ -2489,7 +2338,6 @@
         {
           "row": 4,
           "col": 5,
-          "raw_latex": "128",
           "text": "128",
           "value": 128.0,
           "values": [
@@ -2505,7 +2353,6 @@
         {
           "row": 4,
           "col": 6,
-          "raw_latex": "128",
           "text": "128",
           "value": 128.0,
           "values": [
@@ -2521,7 +2368,6 @@
         {
           "row": 4,
           "col": 7,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2535,7 +2381,6 @@
         {
           "row": 4,
           "col": 8,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2549,7 +2394,6 @@
         {
           "row": 4,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2563,7 +2407,6 @@
         {
           "row": 4,
           "col": 10,
-          "raw_latex": "5.00",
           "text": "5.00",
           "value": 5.0,
           "values": [
@@ -2579,7 +2422,6 @@
         {
           "row": 4,
           "col": 11,
-          "raw_latex": "25.5",
           "text": "25.5",
           "value": 25.5,
           "values": [
@@ -2595,7 +2437,6 @@
         {
           "row": 4,
           "col": 12,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2609,7 +2450,6 @@
         {
           "row": 5,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2623,7 +2463,6 @@
         {
           "row": 5,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2637,7 +2476,6 @@
         {
           "row": 5,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2651,7 +2489,6 @@
         {
           "row": 5,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2665,7 +2502,6 @@
         {
           "row": 5,
           "col": 4,
-          "raw_latex": "16",
           "text": "16",
           "value": 16.0,
           "values": [
@@ -2681,7 +2517,6 @@
         {
           "row": 5,
           "col": 5,
-          "raw_latex": "32",
           "text": "32",
           "value": 32.0,
           "values": [
@@ -2697,7 +2532,6 @@
         {
           "row": 5,
           "col": 6,
-          "raw_latex": "32",
           "text": "32",
           "value": 32.0,
           "values": [
@@ -2713,7 +2547,6 @@
         {
           "row": 5,
           "col": 7,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2727,7 +2560,6 @@
         {
           "row": 5,
           "col": 8,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2741,7 +2573,6 @@
         {
           "row": 5,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2755,7 +2586,6 @@
         {
           "row": 5,
           "col": 10,
-          "raw_latex": "4.91",
           "text": "4.91",
           "value": 4.91,
           "values": [
@@ -2771,7 +2601,6 @@
         {
           "row": 5,
           "col": 11,
-          "raw_latex": "25.8",
           "text": "25.8",
           "value": 25.8,
           "values": [
@@ -2787,7 +2616,6 @@
         {
           "row": 5,
           "col": 12,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2801,7 +2629,6 @@
         {
           "row": 6,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2815,7 +2642,6 @@
         {
           "row": 6,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2829,7 +2655,6 @@
         {
           "row": 6,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2843,7 +2668,6 @@
         {
           "row": 6,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2857,7 +2681,6 @@
         {
           "row": 6,
           "col": 4,
-          "raw_latex": "32",
           "text": "32",
           "value": 32.0,
           "values": [
@@ -2873,7 +2696,6 @@
         {
           "row": 6,
           "col": 5,
-          "raw_latex": "16",
           "text": "16",
           "value": 16.0,
           "values": [
@@ -2889,7 +2711,6 @@
         {
           "row": 6,
           "col": 6,
-          "raw_latex": "16",
           "text": "16",
           "value": 16.0,
           "values": [
@@ -2905,7 +2726,6 @@
         {
           "row": 6,
           "col": 7,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2919,7 +2739,6 @@
         {
           "row": 6,
           "col": 8,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2933,7 +2752,6 @@
         {
           "row": 6,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2947,7 +2765,6 @@
         {
           "row": 6,
           "col": 10,
-          "raw_latex": "5.01",
           "text": "5.01",
           "value": 5.01,
           "values": [
@@ -2963,7 +2780,6 @@
         {
           "row": 6,
           "col": 11,
-          "raw_latex": "25.4",
           "text": "25.4",
           "value": 25.4,
           "values": [
@@ -2979,7 +2795,6 @@
         {
           "row": 6,
           "col": 12,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -2993,7 +2808,6 @@
         {
           "row": 7,
           "col": 0,
-          "raw_latex": "\\rule{0pt}{2.0ex}\n\\multirow{2}{*}{(B)}",
           "text": "(B)",
           "value": null,
           "values": [],
@@ -3007,7 +2821,6 @@
         {
           "row": 7,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3021,7 +2834,6 @@
         {
           "row": 7,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3035,7 +2847,6 @@
         {
           "row": 7,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3049,7 +2860,6 @@
         {
           "row": 7,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3063,7 +2873,6 @@
         {
           "row": 7,
           "col": 5,
-          "raw_latex": "16",
           "text": "16",
           "value": 16.0,
           "values": [
@@ -3079,7 +2888,6 @@
         {
           "row": 7,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3093,7 +2901,6 @@
         {
           "row": 7,
           "col": 7,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3107,7 +2914,6 @@
         {
           "row": 7,
           "col": 8,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3121,7 +2927,6 @@
         {
           "row": 7,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3135,7 +2940,6 @@
         {
           "row": 7,
           "col": 10,
-          "raw_latex": "5.16",
           "text": "5.16",
           "value": 5.16,
           "values": [
@@ -3151,7 +2955,6 @@
         {
           "row": 7,
           "col": 11,
-          "raw_latex": "25.1",
           "text": "25.1",
           "value": 25.1,
           "values": [
@@ -3167,7 +2970,6 @@
         {
           "row": 7,
           "col": 12,
-          "raw_latex": "58",
           "text": "58",
           "value": 58.0,
           "values": [
@@ -3183,7 +2985,6 @@
         {
           "row": 8,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3197,7 +2998,6 @@
         {
           "row": 8,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3211,7 +3011,6 @@
         {
           "row": 8,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3225,7 +3024,6 @@
         {
           "row": 8,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3239,7 +3037,6 @@
         {
           "row": 8,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3253,7 +3050,6 @@
         {
           "row": 8,
           "col": 5,
-          "raw_latex": "32",
           "text": "32",
           "value": 32.0,
           "values": [
@@ -3269,7 +3065,6 @@
         {
           "row": 8,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3283,7 +3078,6 @@
         {
           "row": 8,
           "col": 7,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3297,7 +3091,6 @@
         {
           "row": 8,
           "col": 8,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3311,7 +3104,6 @@
         {
           "row": 8,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3325,7 +3117,6 @@
         {
           "row": 8,
           "col": 10,
-          "raw_latex": "5.01",
           "text": "5.01",
           "value": 5.01,
           "values": [
@@ -3341,7 +3132,6 @@
         {
           "row": 8,
           "col": 11,
-          "raw_latex": "25.4",
           "text": "25.4",
           "value": 25.4,
           "values": [
@@ -3357,7 +3147,6 @@
         {
           "row": 8,
           "col": 12,
-          "raw_latex": "60",
           "text": "60",
           "value": 60.0,
           "values": [
@@ -3373,7 +3162,6 @@
         {
           "row": 9,
           "col": 0,
-          "raw_latex": "\\rule{0pt}{2.0ex}\n\\multirow{7}{*}{(C)}",
           "text": "(C)",
           "value": null,
           "values": [],
@@ -3387,7 +3175,6 @@
         {
           "row": 9,
           "col": 1,
-          "raw_latex": "2",
           "text": "2",
           "value": 2.0,
           "values": [
@@ -3403,7 +3190,6 @@
         {
           "row": 9,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3417,7 +3203,6 @@
         {
           "row": 9,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3431,7 +3216,6 @@
         {
           "row": 9,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3445,7 +3229,6 @@
         {
           "row": 9,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3459,7 +3242,6 @@
         {
           "row": 9,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3473,7 +3255,6 @@
         {
           "row": 9,
           "col": 7,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3487,7 +3268,6 @@
         {
           "row": 9,
           "col": 8,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3501,7 +3281,6 @@
         {
           "row": 9,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3515,7 +3294,6 @@
         {
           "row": 9,
           "col": 10,
-          "raw_latex": "6.11",
           "text": "6.11",
           "value": 6.11,
           "values": [
@@ -3531,7 +3309,6 @@
         {
           "row": 9,
           "col": 11,
-          "raw_latex": "23.7",
           "text": "23.7",
           "value": 23.7,
           "values": [
@@ -3547,7 +3324,6 @@
         {
           "row": 9,
           "col": 12,
-          "raw_latex": "36",
           "text": "36",
           "value": 36.0,
           "values": [
@@ -3563,7 +3339,6 @@
         {
           "row": 10,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3577,7 +3352,6 @@
         {
           "row": 10,
           "col": 1,
-          "raw_latex": "4",
           "text": "4",
           "value": 4.0,
           "values": [
@@ -3593,7 +3367,6 @@
         {
           "row": 10,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3607,7 +3380,6 @@
         {
           "row": 10,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3621,7 +3393,6 @@
         {
           "row": 10,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3635,7 +3406,6 @@
         {
           "row": 10,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3649,7 +3419,6 @@
         {
           "row": 10,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3663,7 +3432,6 @@
         {
           "row": 10,
           "col": 7,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3677,7 +3445,6 @@
         {
           "row": 10,
           "col": 8,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3691,7 +3458,6 @@
         {
           "row": 10,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3705,7 +3471,6 @@
         {
           "row": 10,
           "col": 10,
-          "raw_latex": "5.19",
           "text": "5.19",
           "value": 5.19,
           "values": [
@@ -3721,7 +3486,6 @@
         {
           "row": 10,
           "col": 11,
-          "raw_latex": "25.3",
           "text": "25.3",
           "value": 25.3,
           "values": [
@@ -3737,7 +3501,6 @@
         {
           "row": 10,
           "col": 12,
-          "raw_latex": "50",
           "text": "50",
           "value": 50.0,
           "values": [
@@ -3753,7 +3516,6 @@
         {
           "row": 11,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3767,7 +3529,6 @@
         {
           "row": 11,
           "col": 1,
-          "raw_latex": "8",
           "text": "8",
           "value": 8.0,
           "values": [
@@ -3783,7 +3544,6 @@
         {
           "row": 11,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3797,7 +3557,6 @@
         {
           "row": 11,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3811,7 +3570,6 @@
         {
           "row": 11,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3825,7 +3583,6 @@
         {
           "row": 11,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3839,7 +3596,6 @@
         {
           "row": 11,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3853,7 +3609,6 @@
         {
           "row": 11,
           "col": 7,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3867,7 +3622,6 @@
         {
           "row": 11,
           "col": 8,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3881,7 +3635,6 @@
         {
           "row": 11,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3895,7 +3648,6 @@
         {
           "row": 11,
           "col": 10,
-          "raw_latex": "4.88",
           "text": "4.88",
           "value": 4.88,
           "values": [
@@ -3911,7 +3663,6 @@
         {
           "row": 11,
           "col": 11,
-          "raw_latex": "25.5",
           "text": "25.5",
           "value": 25.5,
           "values": [
@@ -3927,7 +3678,6 @@
         {
           "row": 11,
           "col": 12,
-          "raw_latex": "80",
           "text": "80",
           "value": 80.0,
           "values": [
@@ -3943,7 +3693,6 @@
         {
           "row": 12,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3957,7 +3706,6 @@
         {
           "row": 12,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -3971,7 +3719,6 @@
         {
           "row": 12,
           "col": 2,
-          "raw_latex": "256",
           "text": "256",
           "value": 256.0,
           "values": [
@@ -3987,7 +3734,6 @@
         {
           "row": 12,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4001,7 +3747,6 @@
         {
           "row": 12,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4015,7 +3760,6 @@
         {
           "row": 12,
           "col": 5,
-          "raw_latex": "32",
           "text": "32",
           "value": 32.0,
           "values": [
@@ -4031,7 +3775,6 @@
         {
           "row": 12,
           "col": 6,
-          "raw_latex": "32",
           "text": "32",
           "value": 32.0,
           "values": [
@@ -4047,7 +3790,6 @@
         {
           "row": 12,
           "col": 7,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4061,7 +3803,6 @@
         {
           "row": 12,
           "col": 8,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4075,7 +3816,6 @@
         {
           "row": 12,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4089,7 +3829,6 @@
         {
           "row": 12,
           "col": 10,
-          "raw_latex": "5.75",
           "text": "5.75",
           "value": 5.75,
           "values": [
@@ -4105,7 +3844,6 @@
         {
           "row": 12,
           "col": 11,
-          "raw_latex": "24.5",
           "text": "24.5",
           "value": 24.5,
           "values": [
@@ -4121,7 +3859,6 @@
         {
           "row": 12,
           "col": 12,
-          "raw_latex": "28",
           "text": "28",
           "value": 28.0,
           "values": [
@@ -4137,7 +3874,6 @@
         {
           "row": 13,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4151,7 +3887,6 @@
         {
           "row": 13,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4165,7 +3900,6 @@
         {
           "row": 13,
           "col": 2,
-          "raw_latex": "1024",
           "text": "1024",
           "value": 1024.0,
           "values": [
@@ -4181,7 +3915,6 @@
         {
           "row": 13,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4195,7 +3928,6 @@
         {
           "row": 13,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4209,7 +3941,6 @@
         {
           "row": 13,
           "col": 5,
-          "raw_latex": "128",
           "text": "128",
           "value": 128.0,
           "values": [
@@ -4225,7 +3956,6 @@
         {
           "row": 13,
           "col": 6,
-          "raw_latex": "128",
           "text": "128",
           "value": 128.0,
           "values": [
@@ -4241,7 +3971,6 @@
         {
           "row": 13,
           "col": 7,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4255,7 +3984,6 @@
         {
           "row": 13,
           "col": 8,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4269,7 +3997,6 @@
         {
           "row": 13,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4283,7 +4010,6 @@
         {
           "row": 13,
           "col": 10,
-          "raw_latex": "4.66",
           "text": "4.66",
           "value": 4.66,
           "values": [
@@ -4299,7 +4025,6 @@
         {
           "row": 13,
           "col": 11,
-          "raw_latex": "26.0",
           "text": "26.0",
           "value": 26.0,
           "values": [
@@ -4315,7 +4040,6 @@
         {
           "row": 13,
           "col": 12,
-          "raw_latex": "168",
           "text": "168",
           "value": 168.0,
           "values": [
@@ -4331,7 +4055,6 @@
         {
           "row": 14,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4345,7 +4068,6 @@
         {
           "row": 14,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4359,7 +4081,6 @@
         {
           "row": 14,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4373,7 +4094,6 @@
         {
           "row": 14,
           "col": 3,
-          "raw_latex": "1024",
           "text": "1024",
           "value": 1024.0,
           "values": [
@@ -4389,7 +4109,6 @@
         {
           "row": 14,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4403,7 +4122,6 @@
         {
           "row": 14,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4417,7 +4135,6 @@
         {
           "row": 14,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4431,7 +4148,6 @@
         {
           "row": 14,
           "col": 7,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4445,7 +4161,6 @@
         {
           "row": 14,
           "col": 8,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4459,7 +4174,6 @@
         {
           "row": 14,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4473,7 +4187,6 @@
         {
           "row": 14,
           "col": 10,
-          "raw_latex": "5.12",
           "text": "5.12",
           "value": 5.12,
           "values": [
@@ -4489,7 +4202,6 @@
         {
           "row": 14,
           "col": 11,
-          "raw_latex": "25.4",
           "text": "25.4",
           "value": 25.4,
           "values": [
@@ -4505,7 +4217,6 @@
         {
           "row": 14,
           "col": 12,
-          "raw_latex": "53",
           "text": "53",
           "value": 53.0,
           "values": [
@@ -4521,7 +4232,6 @@
         {
           "row": 15,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4535,7 +4245,6 @@
         {
           "row": 15,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4549,7 +4258,6 @@
         {
           "row": 15,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4563,7 +4271,6 @@
         {
           "row": 15,
           "col": 3,
-          "raw_latex": "4096",
           "text": "4096",
           "value": 4096.0,
           "values": [
@@ -4579,7 +4286,6 @@
         {
           "row": 15,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4593,7 +4299,6 @@
         {
           "row": 15,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4607,7 +4312,6 @@
         {
           "row": 15,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4621,7 +4325,6 @@
         {
           "row": 15,
           "col": 7,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4635,7 +4338,6 @@
         {
           "row": 15,
           "col": 8,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4649,7 +4351,6 @@
         {
           "row": 15,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4663,7 +4364,6 @@
         {
           "row": 15,
           "col": 10,
-          "raw_latex": "4.75",
           "text": "4.75",
           "value": 4.75,
           "values": [
@@ -4679,7 +4379,6 @@
         {
           "row": 15,
           "col": 11,
-          "raw_latex": "26.2",
           "text": "26.2",
           "value": 26.2,
           "values": [
@@ -4695,7 +4394,6 @@
         {
           "row": 15,
           "col": 12,
-          "raw_latex": "90",
           "text": "90",
           "value": 90.0,
           "values": [
@@ -4711,7 +4409,6 @@
         {
           "row": 16,
           "col": 0,
-          "raw_latex": "\\rule{0pt}{2.0ex}\n\\multirow{4}{*}{(D)}",
           "text": "(D)",
           "value": null,
           "values": [],
@@ -4725,7 +4422,6 @@
         {
           "row": 16,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4739,7 +4435,6 @@
         {
           "row": 16,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4753,7 +4448,6 @@
         {
           "row": 16,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4767,7 +4461,6 @@
         {
           "row": 16,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4781,7 +4474,6 @@
         {
           "row": 16,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4795,7 +4487,6 @@
         {
           "row": 16,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4809,7 +4500,6 @@
         {
           "row": 16,
           "col": 7,
-          "raw_latex": "0.0",
           "text": "0.0",
           "value": 0.0,
           "values": [
@@ -4825,7 +4515,6 @@
         {
           "row": 16,
           "col": 8,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4839,7 +4528,6 @@
         {
           "row": 16,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4853,7 +4541,6 @@
         {
           "row": 16,
           "col": 10,
-          "raw_latex": "5.77",
           "text": "5.77",
           "value": 5.77,
           "values": [
@@ -4869,7 +4556,6 @@
         {
           "row": 16,
           "col": 11,
-          "raw_latex": "24.6",
           "text": "24.6",
           "value": 24.6,
           "values": [
@@ -4885,7 +4571,6 @@
         {
           "row": 16,
           "col": 12,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4899,7 +4584,6 @@
         {
           "row": 17,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4913,7 +4597,6 @@
         {
           "row": 17,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4927,7 +4610,6 @@
         {
           "row": 17,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4941,7 +4623,6 @@
         {
           "row": 17,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4955,7 +4636,6 @@
         {
           "row": 17,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4969,7 +4649,6 @@
         {
           "row": 17,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4983,7 +4662,6 @@
         {
           "row": 17,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -4997,7 +4675,6 @@
         {
           "row": 17,
           "col": 7,
-          "raw_latex": "0.2",
           "text": "0.2",
           "value": 0.2,
           "values": [
@@ -5013,7 +4690,6 @@
         {
           "row": 17,
           "col": 8,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5027,7 +4703,6 @@
         {
           "row": 17,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5041,7 +4716,6 @@
         {
           "row": 17,
           "col": 10,
-          "raw_latex": "4.95",
           "text": "4.95",
           "value": 4.95,
           "values": [
@@ -5057,7 +4731,6 @@
         {
           "row": 17,
           "col": 11,
-          "raw_latex": "25.5",
           "text": "25.5",
           "value": 25.5,
           "values": [
@@ -5073,7 +4746,6 @@
         {
           "row": 17,
           "col": 12,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5087,7 +4759,6 @@
         {
           "row": 18,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5101,7 +4772,6 @@
         {
           "row": 18,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5115,7 +4785,6 @@
         {
           "row": 18,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5129,7 +4798,6 @@
         {
           "row": 18,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5143,7 +4811,6 @@
         {
           "row": 18,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5157,7 +4824,6 @@
         {
           "row": 18,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5171,7 +4837,6 @@
         {
           "row": 18,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5185,7 +4850,6 @@
         {
           "row": 18,
           "col": 7,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5199,7 +4863,6 @@
         {
           "row": 18,
           "col": 8,
-          "raw_latex": "0.0",
           "text": "0.0",
           "value": 0.0,
           "values": [
@@ -5215,7 +4878,6 @@
         {
           "row": 18,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5229,7 +4891,6 @@
         {
           "row": 18,
           "col": 10,
-          "raw_latex": "4.67",
           "text": "4.67",
           "value": 4.67,
           "values": [
@@ -5245,7 +4906,6 @@
         {
           "row": 18,
           "col": 11,
-          "raw_latex": "25.3",
           "text": "25.3",
           "value": 25.3,
           "values": [
@@ -5261,7 +4921,6 @@
         {
           "row": 18,
           "col": 12,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5275,7 +4934,6 @@
         {
           "row": 19,
           "col": 0,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5289,7 +4947,6 @@
         {
           "row": 19,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5303,7 +4960,6 @@
         {
           "row": 19,
           "col": 2,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5317,7 +4973,6 @@
         {
           "row": 19,
           "col": 3,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5331,7 +4986,6 @@
         {
           "row": 19,
           "col": 4,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5345,7 +4999,6 @@
         {
           "row": 19,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5359,7 +5012,6 @@
         {
           "row": 19,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5373,7 +5025,6 @@
         {
           "row": 19,
           "col": 7,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5387,7 +5038,6 @@
         {
           "row": 19,
           "col": 8,
-          "raw_latex": "0.2",
           "text": "0.2",
           "value": 0.2,
           "values": [
@@ -5403,7 +5053,6 @@
         {
           "row": 19,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5417,7 +5066,6 @@
         {
           "row": 19,
           "col": 10,
-          "raw_latex": "5.47",
           "text": "5.47",
           "value": 5.47,
           "values": [
@@ -5433,7 +5081,6 @@
         {
           "row": 19,
           "col": 11,
-          "raw_latex": "25.7",
           "text": "25.7",
           "value": 25.7,
           "values": [
@@ -5449,7 +5096,6 @@
         {
           "row": 19,
           "col": 12,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5463,7 +5109,6 @@
         {
           "row": 20,
           "col": 0,
-          "raw_latex": "\\rule{0pt}{2.0ex}\n(E)",
           "text": "(E)",
           "value": null,
           "values": [],
@@ -5477,7 +5122,6 @@
         {
           "row": 20,
           "col": 1,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5491,7 +5135,6 @@
         {
           "row": 20,
           "col": 2,
-          "raw_latex": "\\multicolumn{7}{c}{positional embedding instead of sinusoids}",
           "text": "positional embedding instead of sinusoids",
           "value": null,
           "values": [],
@@ -5505,7 +5148,6 @@
         {
           "row": 20,
           "col": 9,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5519,7 +5161,6 @@
         {
           "row": 20,
           "col": 10,
-          "raw_latex": "4.92",
           "text": "4.92",
           "value": 4.92,
           "values": [
@@ -5535,7 +5176,6 @@
         {
           "row": 20,
           "col": 11,
-          "raw_latex": "25.7",
           "text": "25.7",
           "value": 25.7,
           "values": [
@@ -5551,7 +5191,6 @@
         {
           "row": 20,
           "col": 12,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5565,7 +5204,6 @@
         {
           "row": 21,
           "col": 0,
-          "raw_latex": "\\rule{0pt}{2.0ex}\nbig",
           "text": "big",
           "value": null,
           "values": [],
@@ -5579,7 +5217,6 @@
         {
           "row": 21,
           "col": 1,
-          "raw_latex": "6",
           "text": "6",
           "value": 6.0,
           "values": [
@@ -5595,7 +5232,6 @@
         {
           "row": 21,
           "col": 2,
-          "raw_latex": "1024",
           "text": "1024",
           "value": 1024.0,
           "values": [
@@ -5611,7 +5247,6 @@
         {
           "row": 21,
           "col": 3,
-          "raw_latex": "4096",
           "text": "4096",
           "value": 4096.0,
           "values": [
@@ -5627,7 +5262,6 @@
         {
           "row": 21,
           "col": 4,
-          "raw_latex": "16",
           "text": "16",
           "value": 16.0,
           "values": [
@@ -5643,7 +5277,6 @@
         {
           "row": 21,
           "col": 5,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5657,7 +5290,6 @@
         {
           "row": 21,
           "col": 6,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5671,7 +5303,6 @@
         {
           "row": 21,
           "col": 7,
-          "raw_latex": "0.3",
           "text": "0.3",
           "value": 0.3,
           "values": [
@@ -5687,7 +5318,6 @@
         {
           "row": 21,
           "col": 8,
-          "raw_latex": "",
           "text": "",
           "value": null,
           "values": [],
@@ -5701,7 +5331,6 @@
         {
           "row": 21,
           "col": 9,
-          "raw_latex": "300K",
           "text": "300K",
           "value": 300000.0,
           "values": [
@@ -5717,7 +5346,6 @@
         {
           "row": 21,
           "col": 10,
-          "raw_latex": "\\textbf{4.33}",
           "text": "4.33",
           "value": 4.33,
           "values": [
@@ -5733,7 +5361,6 @@
         {
           "row": 21,
           "col": 11,
-          "raw_latex": "\\textbf{26.4}",
           "text": "26.4",
           "value": 26.4,
           "values": [
@@ -5749,7 +5376,6 @@
         {
           "row": 21,
           "col": 12,
-          "raw_latex": "213",
           "text": "213",
           "value": 213.0,
           "values": [
@@ -5765,7 +5391,6 @@
       ],
       "n_rows": 22,
       "n_cols": 13,
-      "latex_source": "\\begin{tabular}{c|ccccccccc|ccc}\n\\hline\\rule{0pt}{2.0ex}\n & \\multirow{2}{*}{$N$} & \\multirow{2}{*}{$\\dmodel$} &\n\\multirow{2}{*}{$\\dff$} & \\multirow{2}{*}{$h$} & \n\\multirow{2}{*}{$d_k$} & \\multirow{2}{*}{$d_v$} & \n\\multirow{2}{*}{$P_{drop}$} & \\multirow{2}{*}{$\\epsilon_{ls}$} &\ntrain & PPL & BLEU & params \\\\\n & & & & & & & & & steps & (dev) & (dev) & $\\times10^6$ \\\\\n                            \n\\hline\\rule{0pt}{2.0ex}\nbase & 6 & 512 & 2048 & 8 & 64 & 64 & 0.1 & 0.1 & 100K & 4.92 & 25.8 & 65 \\\\\n\\hline\\rule{0pt}{2.0ex}\n\\multirow{4}{*}{(A)}\n& & & & 1 & 512 & 512 & & & & 5.29 & 24.9 &  \\\\\n& & & & 4 & 128 & 128 & & & & 5.00 & 25.5 &  \\\\\n& & & & 16 & 32 & 32 & & & & 4.91 & 25.8 &  \\\\\n& & & & 32 & 16 & 16 & & & & 5.01 & 25.4 &  \\\\\n\\hline\\rule{0pt}{2.0ex}\n\\multirow{2}{*}{(B)}\n& & & & & 16 & & & & & 5.16 & 25.1 & 58 \\\\\n& & & & & 32 & & & & & 5.01 & 25.4 & 60 \\\\\n\\hline\\rule{0pt}{2.0ex}\n\\multirow{7}{*}{(C)}\n& 2 & & & & & & & &            & 6.11 & 23.7 & 36 \\\\\n& 4 & & & & & & & &            & 5.19 & 25.3 & 50 \\\\\n& 8 & & & & & & & &            & 4.88 & 25.5 & 80 \\\\\n& & 256 & & & 32 & 32 & & &    & 5.75 & 24.5 & 28 \\\\\n& & 1024 & & & 128 & 128 & & & & 4.66 & 26.0 & 168 \\\\\n& & & 1024 & & & & & &         & 5.12 & 25.4 & 53 \\\\\n& & & 4096 & & & & & &         & 4.75 & 26.2 & 90 \\\\\n\\hline\\rule{0pt}{2.0ex}\n\\multirow{4}{*}{(D)}\n& & & & & & & 0.0 & & & 5.77 & 24.6 &  \\\\\n& & & & & & & 0.2 & & & 4.95 & 25.5 &  \\\\\n& & & & & & & & 0.0 & & 4.67 & 25.3 &  \\\\\n& & & & & & & & 0.2 & & 5.47 & 25.7 &  \\\\\n\\hline\\rule{0pt}{2.0ex}\n(E) & & \\multicolumn{7}{c}{positional embedding instead of sinusoids} & & 4.92 & 25.7 & \\\\\n\\hline\\rule{0pt}{2.0ex}\nbig & 6 & 1024 & 4096 & 16 & & & 0.3 & & 300K & \\textbf{4.33} & \\textbf{26.4} & 213 \\\\\n\\hline\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": []
@@ -5813,7 +5438,6 @@
         {
           "row": 0,
           "col": 0,
-          "raw_latex": "{\\bf Parser}",
           "text": "Parser",
           "value": null,
           "values": [],
@@ -5827,7 +5451,6 @@
         {
           "row": 0,
           "col": 1,
-          "raw_latex": "{\\bf Training}",
           "text": "Training",
           "value": null,
           "values": [],
@@ -5841,7 +5464,6 @@
         {
           "row": 0,
           "col": 2,
-          "raw_latex": "{\\bf WSJ 23 F1}",
           "text": "WSJ 23 F1",
           "value": 23.0,
           "values": [
@@ -5857,7 +5479,6 @@
         {
           "row": 1,
           "col": 0,
-          "raw_latex": "Vinyals \\& Kaiser el al. (2014) \\cite{KVparse15}",
           "text": "Vinyals & Kaiser el al. (2014)",
           "value": 2014.0,
           "values": [
@@ -5873,7 +5494,6 @@
         {
           "row": 1,
           "col": 1,
-          "raw_latex": "WSJ only, discriminative",
           "text": "WSJ only, discriminative",
           "value": null,
           "values": [],
@@ -5887,7 +5507,6 @@
         {
           "row": 1,
           "col": 2,
-          "raw_latex": "88.3",
           "text": "88.3",
           "value": 88.3,
           "values": [
@@ -5903,7 +5522,6 @@
         {
           "row": 2,
           "col": 0,
-          "raw_latex": "Petrov et al. (2006) \\cite{petrov-EtAl:2006:ACL}",
           "text": "Petrov et al. (2006)",
           "value": 2006.0,
           "values": [
@@ -5919,7 +5537,6 @@
         {
           "row": 2,
           "col": 1,
-          "raw_latex": "WSJ only, discriminative",
           "text": "WSJ only, discriminative",
           "value": null,
           "values": [],
@@ -5933,7 +5550,6 @@
         {
           "row": 2,
           "col": 2,
-          "raw_latex": "90.4",
           "text": "90.4",
           "value": 90.4,
           "values": [
@@ -5949,7 +5565,6 @@
         {
           "row": 3,
           "col": 0,
-          "raw_latex": "Zhu et al. (2013) \\cite{zhu-EtAl:2013:ACL}",
           "text": "Zhu et al. (2013)",
           "value": 2013.0,
           "values": [
@@ -5965,7 +5580,6 @@
         {
           "row": 3,
           "col": 1,
-          "raw_latex": "WSJ only, discriminative",
           "text": "WSJ only, discriminative",
           "value": null,
           "values": [],
@@ -5979,7 +5593,6 @@
         {
           "row": 3,
           "col": 2,
-          "raw_latex": "90.4",
           "text": "90.4",
           "value": 90.4,
           "values": [
@@ -5995,7 +5608,6 @@
         {
           "row": 4,
           "col": 0,
-          "raw_latex": "Dyer et al. (2016) \\cite{dyer-rnng:16}",
           "text": "Dyer et al. (2016)",
           "value": 2016.0,
           "values": [
@@ -6011,7 +5623,6 @@
         {
           "row": 4,
           "col": 1,
-          "raw_latex": "WSJ only, discriminative",
           "text": "WSJ only, discriminative",
           "value": null,
           "values": [],
@@ -6025,7 +5636,6 @@
         {
           "row": 4,
           "col": 2,
-          "raw_latex": "91.7",
           "text": "91.7",
           "value": 91.7,
           "values": [
@@ -6041,7 +5651,6 @@
         {
           "row": 5,
           "col": 0,
-          "raw_latex": "Transformer (4 layers)",
           "text": "Transformer (4 layers)",
           "value": 4.0,
           "values": [
@@ -6057,7 +5666,6 @@
         {
           "row": 5,
           "col": 1,
-          "raw_latex": "WSJ only, discriminative",
           "text": "WSJ only, discriminative",
           "value": null,
           "values": [],
@@ -6071,7 +5679,6 @@
         {
           "row": 5,
           "col": 2,
-          "raw_latex": "91.3",
           "text": "91.3",
           "value": 91.3,
           "values": [
@@ -6087,7 +5694,6 @@
         {
           "row": 6,
           "col": 0,
-          "raw_latex": "Zhu et al. (2013) \\cite{zhu-EtAl:2013:ACL}",
           "text": "Zhu et al. (2013)",
           "value": 2013.0,
           "values": [
@@ -6103,7 +5709,6 @@
         {
           "row": 6,
           "col": 1,
-          "raw_latex": "semi-supervised",
           "text": "semi-supervised",
           "value": null,
           "values": [],
@@ -6117,7 +5722,6 @@
         {
           "row": 6,
           "col": 2,
-          "raw_latex": "91.3",
           "text": "91.3",
           "value": 91.3,
           "values": [
@@ -6133,7 +5737,6 @@
         {
           "row": 7,
           "col": 0,
-          "raw_latex": "Huang \\& Harper (2009) \\cite{huang-harper:2009:EMNLP}",
           "text": "Huang & Harper (2009)",
           "value": 2009.0,
           "values": [
@@ -6149,7 +5752,6 @@
         {
           "row": 7,
           "col": 1,
-          "raw_latex": "semi-supervised",
           "text": "semi-supervised",
           "value": null,
           "values": [],
@@ -6163,7 +5765,6 @@
         {
           "row": 7,
           "col": 2,
-          "raw_latex": "91.3",
           "text": "91.3",
           "value": 91.3,
           "values": [
@@ -6179,7 +5780,6 @@
         {
           "row": 8,
           "col": 0,
-          "raw_latex": "McClosky et al. (2006) \\cite{mcclosky-etAl:2006:NAACL}",
           "text": "McClosky et al. (2006)",
           "value": 2006.0,
           "values": [
@@ -6195,7 +5795,6 @@
         {
           "row": 8,
           "col": 1,
-          "raw_latex": "semi-supervised",
           "text": "semi-supervised",
           "value": null,
           "values": [],
@@ -6209,7 +5808,6 @@
         {
           "row": 8,
           "col": 2,
-          "raw_latex": "92.1",
           "text": "92.1",
           "value": 92.1,
           "values": [
@@ -6225,7 +5823,6 @@
         {
           "row": 9,
           "col": 0,
-          "raw_latex": "Vinyals \\& Kaiser el al. (2014) \\cite{KVparse15}",
           "text": "Vinyals & Kaiser el al. (2014)",
           "value": 2014.0,
           "values": [
@@ -6241,7 +5838,6 @@
         {
           "row": 9,
           "col": 1,
-          "raw_latex": "semi-supervised",
           "text": "semi-supervised",
           "value": null,
           "values": [],
@@ -6255,7 +5851,6 @@
         {
           "row": 9,
           "col": 2,
-          "raw_latex": "92.1",
           "text": "92.1",
           "value": 92.1,
           "values": [
@@ -6271,7 +5866,6 @@
         {
           "row": 10,
           "col": 0,
-          "raw_latex": "Transformer (4 layers)",
           "text": "Transformer (4 layers)",
           "value": 4.0,
           "values": [
@@ -6287,7 +5881,6 @@
         {
           "row": 10,
           "col": 1,
-          "raw_latex": "semi-supervised",
           "text": "semi-supervised",
           "value": null,
           "values": [],
@@ -6301,7 +5894,6 @@
         {
           "row": 10,
           "col": 2,
-          "raw_latex": "92.7",
           "text": "92.7",
           "value": 92.7,
           "values": [
@@ -6317,7 +5909,6 @@
         {
           "row": 11,
           "col": 0,
-          "raw_latex": "Luong et al. (2015) \\cite{multiseq2seq}",
           "text": "Luong et al. (2015)",
           "value": 2015.0,
           "values": [
@@ -6333,7 +5924,6 @@
         {
           "row": 11,
           "col": 1,
-          "raw_latex": "multi-task",
           "text": "multi-task",
           "value": null,
           "values": [],
@@ -6347,7 +5937,6 @@
         {
           "row": 11,
           "col": 2,
-          "raw_latex": "93.0",
           "text": "93.0",
           "value": 93.0,
           "values": [
@@ -6363,7 +5952,6 @@
         {
           "row": 12,
           "col": 0,
-          "raw_latex": "Dyer et al. (2016) \\cite{dyer-rnng:16}",
           "text": "Dyer et al. (2016)",
           "value": 2016.0,
           "values": [
@@ -6379,7 +5967,6 @@
         {
           "row": 12,
           "col": 1,
-          "raw_latex": "generative",
           "text": "generative",
           "value": null,
           "values": [],
@@ -6393,7 +5980,6 @@
         {
           "row": 12,
           "col": 2,
-          "raw_latex": "93.3",
           "text": "93.3",
           "value": 93.3,
           "values": [
@@ -6409,13 +5995,12 @@
       ],
       "n_rows": 13,
       "n_cols": 3,
-      "latex_source": "\\begin{tabular}{c|c|c}\n\\hline\n{\\bf Parser}  & {\\bf Training} & {\\bf WSJ 23 F1} \\\\ \\hline\nVinyals \\& Kaiser el al. (2014) \\cite{KVparse15}\n  & WSJ only, discriminative & 88.3 \\\\\nPetrov et al. (2006) \\cite{petrov-EtAl:2006:ACL}\n  & WSJ only, discriminative & 90.4 \\\\\nZhu et al. (2013) \\cite{zhu-EtAl:2013:ACL}\n  & WSJ only, discriminative & 90.4   \\\\\nDyer et al. (2016) \\cite{dyer-rnng:16}\n  & WSJ only, discriminative & 91.7   \\\\\n\\specialrule{1pt}{-1pt}{0pt}\nTransformer (4 layers)  &  WSJ only, discriminative & 91.3 \\\\\n\\specialrule{1pt}{-1pt}{0pt}   \nZhu et al. (2013) \\cite{zhu-EtAl:2013:ACL}\n  & semi-supervised & 91.3 \\\\\nHuang \\& Harper (2009) \\cite{huang-harper:2009:EMNLP}\n  & semi-supervised & 91.3 \\\\\nMcClosky et al. (2006) \\cite{mcclosky-etAl:2006:NAACL}\n  & semi-supervised & 92.1 \\\\\nVinyals \\& Kaiser el al. (2014) \\cite{KVparse15}\n  & semi-supervised & 92.1 \\\\\n\\specialrule{1pt}{-1pt}{0pt}\nTransformer (4 layers)  & semi-supervised & 92.7 \\\\\n\\specialrule{1pt}{-1pt}{0pt}   \nLuong et al. (2015) \\cite{multiseq2seq}\n  & multi-task & 93.0   \\\\\nDyer et al. (2016) \\cite{dyer-rnng:16}\n  & generative & 93.3   \\\\\n\\hline\n\\end{tabular}",
       "header_source": "rule",
       "is_nested": false,
       "parse_warnings": []
     }
   ],
   "tables_parsed": 4,
-  "started_at": "2026-08-01T08:52:33.359290Z",
-  "finished_at": "2026-08-01T08:52:34.298555Z"
+  "started_at": "2026-08-01T11:48:04.342511Z",
+  "finished_at": "2026-08-01T11:48:05.752611Z"
 }
