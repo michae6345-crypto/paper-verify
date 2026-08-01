@@ -10,11 +10,12 @@
       "fingerprint": "9335113369e3b24015646ee78281516dc2cb670e820764b6635e209cae2c9316",
       "verdict": "matches",
       "reason": null,
+      "provenance": "extracted",
       "findings": [],
       "display_name": "Bolded value is the best in its block",
       "description": "Checks that each bolded number is the best value in its column, comparing only within the same rule-delimited block of the table.",
-      "duration_ms": 1,
-      "created_at": "2026-08-01T11:48:08.299987Z"
+      "duration_ms": 2,
+      "created_at": "2026-08-01T12:26:16.257227Z"
     },
     {
       "checker": "row_arithmetic",
@@ -23,43 +24,50 @@
       "fingerprint": "",
       "verdict": "unverifiable",
       "reason": "table_structure_not_parsed",
+      "provenance": "extracted",
       "findings": [],
       "display_name": "Average columns match their row",
       "description": "Checks that a column labelled average, mean or overall equals the mean of the other numbers in the same row, to the precision they were printed at.",
-      "duration_ms": 0,
-      "created_at": "2026-08-01T11:48:08.301094Z"
+      "duration_ms": 1,
+      "created_at": "2026-08-01T12:26:16.259892Z"
     }
   ],
   "not_checked": [
     {
       "what": "Table tab:arch",
       "reason": "table_structure_not_parsed",
-      "detail": "tab:arch/r10: row covers 6 columns, column spec declares 7; tab:arch/r11: row covers 6 columns, column spec declares 7"
+      "detail": "tab:arch/r10: row covers 6 columns, column spec declares 7; tab:arch/r11: row covers 6 columns, column spec declares 7",
+      "siglum": "a"
     },
     {
       "what": "Table tab:single",
       "reason": "table_structure_not_parsed",
-      "detail": "tab:single: a second tabular resolves to the same \\label; anchored as tab:single-2 instead"
+      "detail": "tab:single: a second tabular resolves to the same \\label; anchored as tab:single-2 instead",
+      "siglum": "b"
     },
     {
       "what": "Table tab:detection_voc",
       "reason": "table_structure_not_parsed",
-      "detail": "tab:detection_voc: a second tabular resolves to the same \\label; anchored as tab:detection_voc-2 instead"
+      "detail": "tab:detection_voc: a second tabular resolves to the same \\label; anchored as tab:detection_voc-2 instead",
+      "siglum": "c"
     },
     {
       "what": "Table tab:detection_coco_improve",
       "reason": "table_structure_not_parsed",
-      "detail": "tab:detection_coco_improve/r3: row covers 4 columns, column spec declares 5; tab:detection_coco_improve/r4: row covers 4 columns, column spec declares 5; tab:detection_coco_improve/r5: row covers 4 columns, column spec declares 5"
+      "detail": "tab:detection_coco_improve/r3: row covers 4 columns, column spec declares 5; tab:detection_coco_improve/r4: row covers 4 columns, column spec declares 5; tab:detection_coco_improve/r5: row covers 4 columns, column spec declares 5",
+      "siglum": "d"
     },
     {
       "what": "Table tab:voc07_all",
       "reason": "table_structure_not_parsed",
-      "detail": "tab:voc07_all: a second tabular resolves to the same \\label; anchored as tab:voc07_all-2 instead"
+      "detail": "tab:voc07_all: a second tabular resolves to the same \\label; anchored as tab:voc07_all-2 instead",
+      "siglum": "e"
     },
     {
       "what": "Average columns match their row",
       "reason": "table_structure_not_parsed",
-      "detail": ""
+      "detail": "",
+      "siglum": "f"
     }
   ],
   "tables": [
@@ -9470,6 +9478,7 @@
     }
   ],
   "tables_parsed": 15,
-  "started_at": "2026-08-01T11:48:06.848403Z",
-  "finished_at": "2026-08-01T11:48:08.301286Z"
+  "amendments": [],
+  "started_at": "2026-08-01T12:26:12.821756Z",
+  "finished_at": "2026-08-01T12:26:16.260194Z"
 }

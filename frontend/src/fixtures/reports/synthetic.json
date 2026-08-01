@@ -10,9 +10,11 @@
       "fingerprint": "",
       "verdict": "diverges",
       "reason": null,
+      "provenance": "extracted",
       "findings": [
         {
           "severity": "high",
+          "siglum": "",
           "claimed": "87.4",
           "computed": "84.1",
           "delta": "-3.3",
@@ -42,9 +44,11 @@
       "fingerprint": "",
       "verdict": "within_tolerance",
       "reason": null,
+      "provenance": "extracted",
       "findings": [
         {
           "severity": "low",
+          "siglum": "",
           "claimed": "71.0",
           "computed": "70.944",
           "delta": "+0.056",
@@ -74,6 +78,7 @@
       "fingerprint": "",
       "verdict": "matches",
       "reason": null,
+      "provenance": "extracted",
       "findings": [],
       "display_name": "Links resolve",
       "description": "Requests every URL in the paper and reports those that return not-found.",
@@ -87,6 +92,7 @@
       "fingerprint": "",
       "verdict": "unverifiable",
       "reason": "reference_not_indexed",
+      "provenance": "extracted",
       "findings": [],
       "display_name": "Citations exist",
       "description": "Looks up each reference in Crossref and OpenAlex, and reports confirmed retractions.",
@@ -100,6 +106,7 @@
       "fingerprint": "",
       "verdict": "not_attempted",
       "reason": "llm_disabled",
+      "provenance": "extracted",
       "findings": [],
       "display_name": "Abstract agrees with the tables",
       "description": "Matches numbers stated in the abstract to the cells they refer to.",
@@ -111,26 +118,31 @@
     {
       "what": "Table tab:ablation",
       "reason": "table_structure_not_parsed",
-      "detail": "No full-width rule separates a header from the body."
+      "detail": "No full-width rule separates a header from the body.",
+      "siglum": ""
     },
     {
       "what": "Column “Score” in tab:main",
       "reason": "metric_direction_unknown",
-      "detail": "No arrow in the header and the metric is not in the lookup."
+      "detail": "No arrow in the header and the metric is not in the lookup.",
+      "siglum": ""
     },
     {
       "what": "Abstract agrees with the tables",
       "reason": "llm_disabled",
-      "detail": "Language model extraction is turned off for this run."
+      "detail": "Language model extraction is turned off for this run.",
+      "siglum": ""
     },
     {
       "what": "Reference 14",
       "reason": "reference_not_indexed",
-      "detail": "Present in neither Crossref nor OpenAlex."
+      "detail": "Present in neither Crossref nor OpenAlex.",
+      "siglum": ""
     }
   ],
   "tables": [],
   "tables_parsed": 3,
+  "amendments": [],
   "started_at": "2026-08-01T12:00:00Z",
   "finished_at": "2026-08-01T12:00:09Z"
 }

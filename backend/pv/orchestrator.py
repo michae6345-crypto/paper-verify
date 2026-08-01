@@ -51,6 +51,7 @@ from pydantic import BaseModel, Field
 
 from .checks import registry
 from .ingest import ingest, ingest_directory
+from .siglum import assign as assign_sigla
 from .models import (
     Artifact,
     CheckContext,
@@ -486,7 +487,7 @@ class Orchestrator:
         the ones that have not."""
         state = self.state(run_id)
         checkable = state.checkable_tables
-        return RunReport(
+        report = RunReport(
             arxiv_id=state.arxiv_id,
             title=state.title,
             checks=list(state.results),
@@ -496,6 +497,15 @@ class Orchestrator:
             started_at=state.started_at,
             finished_at=state.finished_at,
         )
+        # Sigla are assigned here rather than by a checker, because a mark is only
+        # meaningful once the whole report exists: it numbers rows across every
+        # check and then continues through the not-checked list. Assigning it
+        # per check would restart the sequence and give two rows the same mark.
+        #
+        # A partial report gets partial sigla, and a row's mark can move as later
+        # checks land. That is correct: a siglum is navigation within one reading
+        # of one report, not identity. `fingerprint` is what survives.
+        return assign_sigla(report)
 
     def manifest_names(self, run_id: RunId) -> list[str]:
         """The check names this run intends to execute. Known before planning

@@ -10,11 +10,12 @@
       "fingerprint": "431da820c3dbbcc1f2c875025bbe1fb1236304aa1ac2a6f3b048c7751fcb989d",
       "verdict": "matches",
       "reason": null,
+      "provenance": "extracted",
       "findings": [],
       "display_name": "Bolded value is the best in its block",
       "description": "Checks that each bolded number is the best value in its column, comparing only within the same rule-delimited block of the table.",
       "duration_ms": 0,
-      "created_at": "2026-08-01T11:48:06.844242Z"
+      "created_at": "2026-08-01T12:26:12.814789Z"
     },
     {
       "checker": "row_arithmetic",
@@ -23,9 +24,11 @@
       "fingerprint": "bc1b670b2e9bdf976355081f6bceec0030a73827d5793727781183ffd32321e2",
       "verdict": "within_tolerance",
       "reason": null,
+      "provenance": "extracted",
       "findings": [
         {
           "severity": "low",
+          "siglum": "a",
           "claimed": "71.0",
           "computed": "70.944",
           "delta": "+0.056",
@@ -45,8 +48,8 @@
       ],
       "display_name": "Average columns match their row",
       "description": "Checks that a column labelled average, mean or overall equals the mean of the other numbers in the same row, to the precision they were printed at.",
-      "duration_ms": 1,
-      "created_at": "2026-08-01T11:48:06.846163Z"
+      "duration_ms": 2,
+      "created_at": "2026-08-01T12:26:12.817957Z"
     }
   ],
   "not_checked": [],
@@ -5955,6 +5958,7 @@
     }
   ],
   "tables_parsed": 8,
-  "started_at": "2026-08-01T11:48:05.759252Z",
-  "finished_at": "2026-08-01T11:48:06.846280Z"
+  "amendments": [],
+  "started_at": "2026-08-01T12:26:11.493745Z",
+  "finished_at": "2026-08-01T12:26:12.818539Z"
 }
