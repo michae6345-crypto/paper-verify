@@ -57,11 +57,25 @@ export const PAPERS = 10;
  */
 export const TABLES = 103;
 
-/** Cells parsed across all 113 tabulars, nested ones included. */
-export const CELLS = 7034;
+/**
+ * Cells in the 103 tables above.
+ *
+ * This was 7034, counted across all 113 tabulars with the nested ones included.
+ * That figure was true when it was measured and became wrong when `is_nested`
+ * landed and the runner stopped passing layout tabulars to the checks. The
+ * comment describing it stayed accurate while the page stopped being: a reader
+ * sees "103 tables" and "7,034 cells" together and reads the second as counting
+ * the first.
+ *
+ * Both numbers now describe the same set of tables.
+ */
+export const CELLS = 7014;
 
-/** `pytest --collect-only` at the commit this site was built from. */
-export const TESTS = 394;
+/**
+ * Tests passing at the commit this site was built from. A snapshot, and it goes
+ * stale on the next commit, so do not lead with it.
+ */
+export const TESTS = 645;
 
 /**
  * Findings on the corpus that the ground truth says should not exist.

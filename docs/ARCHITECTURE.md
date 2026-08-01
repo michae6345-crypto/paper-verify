@@ -296,7 +296,9 @@ jobs:
         with: {python-version: "3.12"}
       - run: pip install -e backend[dev]
       - run: ruff check . && mypy backend/pv
-      - run: pytest -q                      # 391 tests, network-free
+      - run: pytest -q                      # network-free; a jump in runtime
+                                            # means something started making
+                                            # requests
       - run: python fixtures/make_reports.py --verify   # <- the gate
 ```
 
