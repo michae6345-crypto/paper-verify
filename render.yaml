@@ -1,0 +1,39 @@
+# Render blueprint for the backend. Chosen over Vercel because the API needs a
+# process that stays alive: SSE streaming, multi-second LaTeX parsing, and a
+# 3-second arXiv rate limit are all hostile to serverless functions.
+#
+# The frontend deploys separately on Vercel — see docs/DEPLOY.md.
+
+services:
+  - type: web
+    name: paper-verify-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /runs
+    envVars:
+      # Set to the deployed frontend origin. Comma-separated for several.
+      - key: PV_CORS_ORIGINS
+        sync: false
+      # Identifies us to arXiv, Crossref and OpenAlex. They ask for a real
+      # address, and Crossref/OpenAlex give a faster pool in return.
+      - key: CONTACT_EMAIL
+        sync: false
+      # Raises the GitHub limit from 60/hour to 5,000 for repository lookups.
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: ARXIV_CACHE_DIR
+        value: /data/.arxivcache
+      - key: HTTP_CACHE_DIR
+        value: /data/.httpcache
+      - key: QUEUE_BACKEND
+        value: inline
+      - key: LLM_ENABLED
+        value: "false"
+    disk:
+      # Without this the caches are lost on every deploy and we re-fetch from
+      # arXiv on the next run. 1GB holds the validation corpus comfortably.
+      name: caches
+      mountPath: /data
+      sizeGB: 1
