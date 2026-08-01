@@ -318,6 +318,10 @@ class RunReport(BaseModel):
     schema_version: int = SCHEMA_VERSION
     checks: list[CheckResult] = Field(default_factory=list)
     not_checked: list[NotChecked] = Field(default_factory=list)
+    # The parsed tables, so the document pane can render what the checks examined
+    # and give every cell the DOM id its anchor points at. Without this the gutter
+    # has nothing to align to. Excludes nested layout tabulars.
+    tables: list[Table] = Field(default_factory=list)
     tables_parsed: int = 0
     started_at: datetime | None = None
     finished_at: datetime | None = None

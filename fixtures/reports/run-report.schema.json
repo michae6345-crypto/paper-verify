@@ -90,6 +90,91 @@
       "title": "Anchor",
       "type": "object"
     },
+    "Cell": {
+      "description": "One `tabular` cell after macro expansion and cleanup.\n\n`value` is None when the cell holds no parseable number \u2014 including empty\ncells, which in ML tables mean \"not reported\", never zero.",
+      "properties": {
+        "row": {
+          "title": "Row",
+          "type": "integer"
+        },
+        "col": {
+          "title": "Col",
+          "type": "integer"
+        },
+        "raw_latex": {
+          "title": "Raw Latex",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "values": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Values",
+          "type": "array"
+        },
+        "is_bold": {
+          "default": false,
+          "title": "Is Bold",
+          "type": "boolean"
+        },
+        "bold_source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bold Source"
+        },
+        "colspan": {
+          "default": 1,
+          "title": "Colspan",
+          "type": "integer"
+        },
+        "rowspan": {
+          "default": 1,
+          "title": "Rowspan",
+          "type": "integer"
+        },
+        "block": {
+          "default": 0,
+          "title": "Block",
+          "type": "integer"
+        },
+        "is_header": {
+          "default": false,
+          "title": "Is Header",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "row",
+        "col",
+        "raw_latex",
+        "text"
+      ],
+      "title": "Cell",
+      "type": "object"
+    },
     "CheckResult": {
       "description": "One check's terminal result. Append-only \u2014 never mutated.\n\nPending/running are UI states derived from the run manifest, not stored here.",
       "properties": {
@@ -165,6 +250,67 @@
       ],
       "title": "CheckResult",
       "type": "object"
+    },
+    "Column": {
+      "properties": {
+        "index": {
+          "title": "Index",
+          "type": "integer"
+        },
+        "header": {
+          "default": "",
+          "title": "Header",
+          "type": "string"
+        },
+        "metric": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metric"
+        },
+        "direction": {
+          "$ref": "#/$defs/Direction",
+          "default": "unknown"
+        },
+        "direction_source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Direction Source"
+        },
+        "is_spacer": {
+          "default": false,
+          "title": "Is Spacer",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "index"
+      ],
+      "title": "Column",
+      "type": "object"
+    },
+    "Direction": {
+      "description": "Whether a higher or lower value is better for a metric column.",
+      "enum": [
+        "higher_is_better",
+        "lower_is_better",
+        "unknown"
+      ],
+      "title": "Direction",
+      "type": "string"
     },
     "Finding": {
       "properties": {
@@ -283,6 +429,81 @@
       "title": "Severity",
       "type": "string"
     },
+    "Table": {
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "caption": {
+          "default": "",
+          "title": "Caption",
+          "type": "string"
+        },
+        "anchor": {
+          "$ref": "#/$defs/Anchor"
+        },
+        "columns": {
+          "items": {
+            "$ref": "#/$defs/Column"
+          },
+          "title": "Columns",
+          "type": "array"
+        },
+        "cells": {
+          "items": {
+            "$ref": "#/$defs/Cell"
+          },
+          "title": "Cells",
+          "type": "array"
+        },
+        "n_rows": {
+          "default": 0,
+          "title": "N Rows",
+          "type": "integer"
+        },
+        "n_cols": {
+          "default": 0,
+          "title": "N Cols",
+          "type": "integer"
+        },
+        "latex_source": {
+          "default": "",
+          "title": "Latex Source",
+          "type": "string"
+        },
+        "header_source": {
+          "default": "none",
+          "title": "Header Source",
+          "type": "string"
+        },
+        "is_nested": {
+          "default": false,
+          "title": "Is Nested",
+          "type": "boolean"
+        },
+        "parse_warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Parse Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "anchor"
+      ],
+      "title": "Table",
+      "type": "object"
+    },
     "Verdict": {
       "enum": [
         "matches",
@@ -323,6 +544,13 @@
         "$ref": "#/$defs/NotChecked"
       },
       "title": "Not Checked",
+      "type": "array"
+    },
+    "tables": {
+      "items": {
+        "$ref": "#/$defs/Table"
+      },
+      "title": "Tables",
       "type": "array"
     },
     "tables_parsed": {

@@ -145,6 +145,7 @@ def run_paper(
         title=document.title,
         checks=results,
         not_checked=collect_not_checked(document, tables, results),
+        tables=checkable,
         tables_parsed=len(checkable),
         started_at=started,
         finished_at=_now(),
