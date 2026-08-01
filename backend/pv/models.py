@@ -168,6 +168,14 @@ class Table(BaseModel):
     n_rows: int = 0
     n_cols: int = 0
     latex_source: str = ""
+    # How the header row was established: "rule" | "inferred" | "none".
+    # Mirrors Column.direction_source. Deliberately NOT a parse_warning — a
+    # warning here would suppress the very checks the inference exists to recover.
+    header_source: str = "none"
+    # True for a tabular nested inside another table's cell. Authors use these to
+    # stack two lines of text, not to present data: DenseNet has seven. They carry
+    # no findings, and counting them makes `tables_parsed` overstate the paper.
+    is_nested: bool = False
     # Set when the parser could not fully resolve the structure. Checks must
     # return unverifiable/TABLE_STRUCTURE_NOT_PARSED rather than guess.
     parse_warnings: list[str] = Field(default_factory=list)

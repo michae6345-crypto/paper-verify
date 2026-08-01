@@ -97,6 +97,10 @@ that silently produces a confident accusation.**
   "Is Attention All You Need?", which would attribute another paper's retraction.
 - Comparing a bolded value against the whole column instead of its block → a false
   `diverges` on the Transformer paper.
+- Reading `all` in a column header as "average" → six false `diverges` on ELMo, whose
+  "All layers" column is a grouping. This one came from a *specification*, not code.
+- Letting `\includegraphics[width=.83\linewidth]` reach the number scanner → a figure
+  layout dimension reported as a data value.
 
 Whenever a step narrows or normalises data, ask what it discards and whether a verdict
 could rest on the discarded part. If it could, the answer is `unverifiable` with a

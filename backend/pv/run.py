@@ -62,7 +62,11 @@ def collect_not_checked(
 
     # 2. Tables the parser could not fully resolve. A check that evaluated three
     # tables and skipped a fourth still reports `matches`; the fourth lands here.
+    # Nested tabulars are line-break helpers, not data — reporting them as
+    # unparsed would fill the section with noise the user cannot act on.
     for table in tables:
+        if table.is_nested:
+            continue
         if table.parse_warnings:
             out.append(
                 NotChecked(
@@ -133,7 +137,11 @@ def run_paper(
         )
 
     tables = parse_document(document)
-    ctx = CheckContext(document=document, tables=tables, llm_enabled=llm_enabled)
+    # A tabular nested in another table's cell is a line-break helper, not data.
+    # The checks never see one, and it never counts towards `tables_parsed` — a
+    # paper whose real content is four tables should not report eleven.
+    checkable = [t for t in tables if not t.is_nested]
+    ctx = CheckContext(document=document, tables=checkable, llm_enabled=llm_enabled)
     results = registry.run_all(ctx, names=list(checks))
 
     return RunReport(
@@ -141,7 +149,7 @@ def run_paper(
         title=document.title,
         checks=results,
         not_checked=collect_not_checked(document, tables, results),
-        tables_parsed=len(tables),
+        tables_parsed=len(checkable),
         started_at=started,
         finished_at=_now(),
     )
