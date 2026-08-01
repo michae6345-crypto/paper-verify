@@ -6,17 +6,21 @@
     {
       "checker": "bold_extreme",
       "checker_version": "1.0.0",
+      "policy_version": "",
+      "fingerprint": "",
       "verdict": "matches",
       "reason": null,
       "findings": [],
       "display_name": "Bolded value is the best in its block",
       "description": "Checks that each bolded number is the best value in its column, comparing only within the same rule-delimited block of the table.",
       "duration_ms": 0,
-      "created_at": "2026-08-01T07:52:22.575902Z"
+      "created_at": "2026-08-01T08:52:35.267255Z"
     },
     {
       "checker": "row_arithmetic",
       "checker_version": "1.0.0",
+      "policy_version": "",
+      "fingerprint": "",
       "verdict": "within_tolerance",
       "reason": null,
       "findings": [
@@ -42,7 +46,7 @@
       "display_name": "Average columns match their row",
       "description": "Checks that a column labelled average, mean or overall equals the mean of the other numbers in the same row, to the precision they were printed at.",
       "duration_ms": 0,
-      "created_at": "2026-08-01T07:52:22.576422Z"
+      "created_at": "2026-08-01T08:52:35.267748Z"
     }
   ],
   "not_checked": [],
@@ -6336,6 +6340,6 @@
     }
   ],
   "tables_parsed": 8,
-  "started_at": "2026-08-01T07:52:21.599680Z",
-  "finished_at": "2026-08-01T07:52:22.576431Z"
+  "started_at": "2026-08-01T08:52:34.300598Z",
+  "finished_at": "2026-08-01T08:52:35.267756Z"
 }

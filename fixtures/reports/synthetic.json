@@ -6,6 +6,8 @@
     {
       "checker": "bold_extreme",
       "checker_version": "1",
+      "policy_version": "",
+      "fingerprint": "",
       "verdict": "diverges",
       "reason": null,
       "findings": [
@@ -36,6 +38,8 @@
     {
       "checker": "row_arithmetic",
       "checker_version": "1",
+      "policy_version": "",
+      "fingerprint": "",
       "verdict": "within_tolerance",
       "reason": null,
       "findings": [
@@ -66,6 +70,8 @@
     {
       "checker": "dead_links",
       "checker_version": "1",
+      "policy_version": "",
+      "fingerprint": "",
       "verdict": "matches",
       "reason": null,
       "findings": [],
@@ -77,6 +83,8 @@
     {
       "checker": "citation_existence",
       "checker_version": "1",
+      "policy_version": "",
+      "fingerprint": "",
       "verdict": "unverifiable",
       "reason": "reference_not_indexed",
       "findings": [],
@@ -88,6 +96,8 @@
     {
       "checker": "abstract_vs_table",
       "checker_version": "1",
+      "policy_version": "",
+      "fingerprint": "",
       "verdict": "not_attempted",
       "reason": "llm_disabled",
       "findings": [],

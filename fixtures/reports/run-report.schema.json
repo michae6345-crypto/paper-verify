@@ -186,6 +186,16 @@
           "title": "Checker Version",
           "type": "string"
         },
+        "policy_version": {
+          "default": "",
+          "title": "Policy Version",
+          "type": "string"
+        },
+        "fingerprint": {
+          "default": "",
+          "title": "Fingerprint",
+          "type": "string"
+        },
         "verdict": {
           "$ref": "#/$defs/Verdict"
         },

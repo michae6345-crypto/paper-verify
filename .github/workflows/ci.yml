@@ -1,0 +1,63 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pydantic httpx TexSoup fastapi uvicorn sse-starlette pytest pytest-asyncio
+
+      # 391 tests, network-free. If this job ever starts making requests it will
+      # show up as a jump in runtime long before arXiv blocks us.
+      - name: tests
+        run: pytest -q
+
+      # The corpus gate (docs/ARCHITECTURE.md §15.3). Regenerates reports for the
+      # ten committed papers and diffs them against fixtures/reports/.
+      #
+      # This is the only thing standing between a well-intentioned change and a
+      # different set of public accusations about named researchers. Six false
+      # positives have been caught in this codebase so far; each one would have
+      # been a paper wrongly marked as diverging. If this step fails, the
+      # question is not "how do I make CI pass" but "did the checker regress".
+      #
+      # Timing fields are excluded from the comparison — the gate is about
+      # verdicts and evidence, not how long a parse took.
+      - name: corpus gate
+        run: python fixtures/make_reports.py --verify
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+
+      - name: types match the contract
+        # Generated types are derived from models.py via the JSON schema. If this
+        # drifts, the frontend is compiling against a contract the backend no
+        # longer has.
+        run: |
+          npm run types:generate
+          git diff --exit-code src/types || {
+            echo "Generated types are stale. Run 'npm run types:generate' and commit."
+            exit 1
+          }
+
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npm run build

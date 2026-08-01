@@ -212,13 +212,46 @@ class Artifact(BaseModel):
     lookup_error: str | None = None
 
 
+ClaimKind = Literal["abstract_number", "body_number", "comparative", "citation", "link"]
+
+
 class Claim(BaseModel):
-    kind: Literal["abstract_number", "body_number", "comparative", "citation"]
+    """One checkable assertion in a paper.
+
+    Mined deterministically by `pv.claims.mine`. Checkers evaluate claims rather
+    than re-scanning the document, which is what turns a run into rows worth
+    keeping instead of a report that is discarded.
+    """
+
+    kind: ClaimKind
     locator: str
     verbatim: str
     anchor: Anchor
     value: float | None = None
     normalized: dict = Field(default_factory=dict)
+    # sha256 over (kind, anchor.dom_id, verbatim, value). The identity of the
+    # claim itself, independent of when or how it was checked — §14.1's
+    # "same inputs, same verdict, forever" rests on this being stable.
+    content_hash: str = ""
+
+
+class Observation(BaseModel):
+    """What a checker measured. Carries no judgement (§14.1, invariant 2).
+
+    Splitting this from CheckResult is what lets a tolerance policy be revised
+    and replayed over stored observations, instead of re-running every check on
+    every paper.
+    """
+
+    claim_id: str  # Claim.content_hash
+    checker: str
+    checker_version: str
+    status: Literal["ok", "not_applicable", "insufficient_data", "error"]
+    # e.g. {"claimed": 87.4, "computed": 84.1, "unit": "pp"}
+    measured: dict = Field(default_factory=dict)
+    provenance: list[Anchor] = Field(default_factory=list)
+    reason: ReasonCode | None = None
+    detail: str = ""
 
 
 class MacroDef(BaseModel):
@@ -294,6 +327,13 @@ class CheckResult(BaseModel):
 
     checker: str
     checker_version: str
+    # Which tolerance policy produced this verdict. Part of the identity of the
+    # judgement: revising the policy must produce a new row, never edit this one.
+    policy_version: str = ""
+    # sha256 over (claim_id, checker, checker_version, policy_version,
+    # artifact_commit) — see pv.fingerprint. Re-running looks these up and
+    # executes only the misses, so accuracy compounds without reprocessing.
+    fingerprint: str = ""
     verdict: Verdict
     reason: ReasonCode | None = None
     findings: list[Finding] = Field(default_factory=list)

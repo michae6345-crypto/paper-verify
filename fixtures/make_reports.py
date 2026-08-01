@@ -22,6 +22,8 @@ Two kinds of file:
 
 from __future__ import annotations
 
+import argparse
+import difflib
 import json
 import sys
 from datetime import datetime, timezone
@@ -169,7 +171,91 @@ def synthetic() -> RunReport:
     )
 
 
+def _render_all() -> dict[str, str]:
+    """Every fixture's JSON, keyed by filename. Pure — writes nothing."""
+    out: dict[str, str] = {}
+    for arxiv_id in REAL:
+        d = PAPERS / arxiv_id
+        if not d.is_dir():
+            continue
+        report = run_paper(
+            arxiv_id, from_directory=str(d), checks=("bold_extreme", "row_arithmetic")
+        )
+        out[f"{arxiv_id}.json"] = report.model_dump_json(indent=2)
+    out["synthetic.json"] = synthetic().model_dump_json(indent=2)
+    out["run-report.schema.json"] = json.dumps(RunReport.model_json_schema(), indent=2)
+    return out
+
+
+# Fields that change on every run and say nothing about what we would accuse a
+# researcher of. The gate compares verdicts and evidence, not wall-clock timing —
+# otherwise it fails on every commit and gets switched off, which is worse than
+# not having it.
+_VOLATILE = {"started_at", "finished_at", "created_at", "duration_ms"}
+
+
+def _stable(payload: str) -> str:
+    """Strip volatile fields so the diff is about findings, not timing."""
+
+    def scrub(node):
+        if isinstance(node, dict):
+            return {k: scrub(v) for k, v in node.items() if k not in _VOLATILE}
+        if isinstance(node, list):
+            return [scrub(v) for v in node]
+        return node
+
+    return json.dumps(scrub(json.loads(payload)), indent=2, sort_keys=True)
+
+
+def verify() -> int:
+    """Regenerate in memory and diff against what is committed.
+
+    The corpus gate (§15.3). Any change to what the system would accuse a
+    researcher of fails the build unless the expected files move in the same
+    commit. This is the only thing standing between an autonomous agent
+    "improving" a checker and a different set of public accusations.
+    """
+    drifted = []
+    for name, fresh in _render_all().items():
+        path = OUT / name
+        if not path.exists():
+            print(f"  MISSING  {name} — not committed")
+            drifted.append(name)
+            continue
+        committed = path.read_text(encoding="utf-8")
+        if _stable(committed) == _stable(fresh):
+            print(f"  ok       {name}")
+            continue
+        drifted.append(name)
+        print(f"  DRIFTED  {name}")
+        diff = difflib.unified_diff(
+            _stable(committed).splitlines(), _stable(fresh).splitlines(),
+            fromfile=f"committed/{name}", tofile=f"regenerated/{name}", lineterm="", n=2,
+        )
+        for line in list(diff)[:60]:
+            print(f"      {line}")
+
+    if drifted:
+        print(
+            f"\n{len(drifted)} fixture(s) drifted. The checker now produces different"
+            " output than what is committed.\nIf the change is intended, run"
+            " `python fixtures/make_reports.py` and commit the result in the same"
+            " change. If it is not, the checker regressed."
+        )
+        return 1
+    print("\nNo drift. The corpus produces exactly what is committed.")
+    return 0
+
+
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--verify", action="store_true",
+        help="diff regenerated reports against the committed ones and fail on drift",
+    )
+    if parser.parse_args().verify:
+        return verify()
+
     OUT.mkdir(parents=True, exist_ok=True)
     written = []
 
