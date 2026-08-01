@@ -24,6 +24,7 @@ if str(_BACKEND) not in sys.path:
 
 from pv.ingest import (
     assemble,
+    default_cache_dir,
     expand,
     extract_abstract,
     extract_macros,
@@ -35,6 +36,8 @@ from pv.ingest import (
     macro_defs,
     macro_table,
     normalize_arxiv_id,
+    repo_root,
+    resolve_cache_dir,
     source_hash,
 )
 from pv.ingest.fetch import is_safe_member_name, unpack
@@ -515,6 +518,125 @@ def test_rate_limiter_enforces_three_seconds(monkeypatch):
     limiter.wait()
     limiter.wait()
     assert slept and slept[-1] > 2.5
+
+
+# --------------------------------------------------------------------------
+# Cache location. The cache must not depend on the working directory: it did
+# once, and running from `backend/` silently re-fetched every paper from arXiv
+# while looking exactly like an ordinary cache miss.
+# --------------------------------------------------------------------------
+
+
+@pytest.fixture
+def no_cache_env(monkeypatch):
+    """The unconfigured default, whatever the developer's own environment says."""
+    monkeypatch.delenv("ARXIV_CACHE_DIR", raising=False)
+
+
+def test_default_cache_dir_is_absolute(no_cache_env):
+    assert default_cache_dir().is_absolute()
+
+
+def test_default_cache_dir_is_the_same_from_any_directory(no_cache_env, monkeypatch, tmp_path):
+    from_root = default_cache_dir()
+    monkeypatch.chdir(_BACKEND)
+    assert default_cache_dir() == from_root
+    monkeypatch.chdir(tmp_path)
+    assert default_cache_dir() == from_root
+
+
+def test_default_cache_dir_sits_at_the_repository_root(no_cache_env):
+    """The git root, not `backend/`. `backend/pyproject.toml` is also a root
+    marker, and picking it would orphan the cache already on disk."""
+    assert default_cache_dir() == repo_root() / ".arxivcache"
+    assert (repo_root() / ".git").exists()
+    assert repo_root() == _BACKEND.parent
+
+
+def test_env_var_overrides_the_default(monkeypatch, tmp_path):
+    monkeypatch.setenv("ARXIV_CACHE_DIR", str(tmp_path / "elsewhere"))
+    assert default_cache_dir() == tmp_path / "elsewhere"
+
+
+def test_a_relative_env_var_anchors_to_the_repository_root(monkeypatch, tmp_path):
+    monkeypatch.setenv("ARXIV_CACHE_DIR", "cachedir")
+    monkeypatch.chdir(tmp_path)
+    assert default_cache_dir() == (repo_root() / "cachedir").resolve()
+
+
+def test_an_explicit_relative_cache_dir_stays_relative_to_cwd(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    assert resolve_cache_dir("mycache") == (tmp_path / "mycache").resolve()
+
+
+def test_the_same_cache_is_used_from_a_different_working_directory(monkeypatch, tmp_path):
+    """The regression test for the bug itself.
+
+    Populate the cache once, then run again from a different directory with the
+    network wired to explode. A second fetch means we are re-downloading a paper
+    we already hold, which is how you get an arXiv ban.
+    """
+    from pv.ingest import fetch as fetch_mod
+
+    monkeypatch.setenv("ARXIV_CACHE_DIR", str(tmp_path / "cache"))
+    payload = gzip.compress(b"\\documentclass{article}\n\\title{Cached}\nbody")
+    monkeypatch.setattr(fetch_mod, "_download", lambda *a, **k: (payload, ""))
+    first = fetch_source("1706.03762")
+    assert not first.from_cache
+
+    def explode(*args, **kwargs):  # pragma: no cover - must not run
+        raise AssertionError("re-fetched a paper that was already cached")
+
+    monkeypatch.setattr(fetch_mod, "_download", explode)
+    for where in (_BACKEND, _BACKEND / "pv", tmp_path):
+        monkeypatch.chdir(where)
+        again = fetch_source("1706.03762")
+        assert again.from_cache, f"cache missed when run from {where}"
+        assert again.files == first.files
+
+
+def test_offline_works_from_a_different_working_directory(monkeypatch, tmp_path):
+    """`--offline` on a cached paper must succeed anywhere, not report
+    network_error because it looked in the wrong place."""
+    from pv.ingest import fetch as fetch_mod
+    from pv.ingest import ingest as ingest_paper
+
+    monkeypatch.setenv("ARXIV_CACHE_DIR", str(tmp_path / "cache"))
+    payload = gzip.compress(b"\\documentclass{article}\n\\title{Cached}\nbody")
+    monkeypatch.setattr(fetch_mod, "_download", lambda *a, **k: (payload, ""))
+    ingest_paper("1706.03762")
+
+    monkeypatch.chdir(_BACKEND)
+    offline = ingest_paper("1706.03762", allow_network=False)
+    assert offline.ok
+    assert offline.reason is None
+    assert offline.from_cache
+    assert offline.document.title == "Cached"
+
+
+def test_ingest_and_fetch_default_to_the_same_cache(monkeypatch, tmp_path):
+    from pv.ingest import fetch as fetch_mod
+    from pv.ingest import ingest as ingest_paper
+
+    monkeypatch.setenv("ARXIV_CACHE_DIR", str(tmp_path / "cache"))
+    payload = gzip.compress(b"\\documentclass{article}\nbody")
+    monkeypatch.setattr(fetch_mod, "_download", lambda *a, **k: (payload, ""))
+    ingest_paper("1706.03762")
+    assert (tmp_path / "cache" / "1706.03762" / "meta.json").exists()
+
+    def explode(*args, **kwargs):  # pragma: no cover - must not run
+        raise AssertionError("fetch_source did not see ingest's cache")
+
+    monkeypatch.setattr(fetch_mod, "_download", explode)
+    assert fetch_source("1706.03762").from_cache
+
+
+def test_offline_miss_names_the_directory_it_looked_in(monkeypatch, tmp_path):
+    """A silent miss is what made this bug invisible for so long."""
+    monkeypatch.setenv("ARXIV_CACHE_DIR", str(tmp_path / "cache"))
+    out = fetch_source("1234.56789", allow_network=False)
+    assert out.reason is ReasonCode.NETWORK_ERROR
+    assert str(tmp_path / "cache") in out.detail
 
 
 def test_load_directory_never_reaches_the_network():

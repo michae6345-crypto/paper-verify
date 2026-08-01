@@ -10,13 +10,14 @@ import argparse
 import sys
 from pathlib import Path
 
-from .fetch import DEFAULT_CACHE_DIR
+from .fetch import default_cache_dir, resolve_cache_dir
 from .pipeline import IngestResult, ingest, ingest_directory
 
 
-def summarize(result: IngestResult) -> str:
+def summarize(result: IngestResult, cache_dir: Path | None = None) -> str:
     doc = result.document
     lines: list[str] = []
+
     lines.append(f"arXiv id      {doc.arxiv_id}{doc.version or ''}")
     lines.append(f"Title         {doc.title or '(not found)'}")
     lines.append(f"Source hash   {doc.source_hash or '(none)'}")
@@ -27,6 +28,10 @@ def summarize(result: IngestResult) -> str:
     else:
         origin = "local directory"
     lines.append(f"Source        {origin}")
+    if cache_dir is not None:
+        # Printed always: a cache miss that silently re-fetches is the failure
+        # mode we care about, and it looks identical to a hit without this.
+        lines.append(f"Cache dir     {cache_dir}")
     if doc.fetched_at is not None:
         lines.append(f"Fetched at    {doc.fetched_at.isoformat()}")
 
@@ -68,7 +73,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("arxiv_id", nargs="?", help="e.g. 1706.03762 or 1706.03762v5")
     parser.add_argument("--dir", type=Path, help="read an already-extracted source tree instead")
-    parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE_DIR)
+    parser.add_argument(
+        "--cache-dir",
+        type=Path,
+        default=None,
+        help=f"defaults to $ARXIV_CACHE_DIR, else {default_cache_dir()}",
+    )
     parser.add_argument(
         "--offline",
         action="store_true",
@@ -76,17 +86,19 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
+    cache_dir: Path | None = None
     if args.dir is not None:
         result = ingest_directory(args.dir, arxiv_id=args.arxiv_id or args.dir.name)
     elif args.arxiv_id:
+        cache_dir = resolve_cache_dir(args.cache_dir)
         result = ingest(
-            args.arxiv_id, cache_dir=args.cache_dir, allow_network=not args.offline
+            args.arxiv_id, cache_dir=cache_dir, allow_network=not args.offline
         )
     else:
         parser.error("give an arXiv id or --dir")
         return 2
 
-    print(summarize(result))
+    print(summarize(result, cache_dir))
     return 0 if result.ok else 1
 
 

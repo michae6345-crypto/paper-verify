@@ -9,7 +9,15 @@ is ever called.
 """
 
 from .assemble import AssembledSource, Segment, assemble, find_main_file
-from .fetch import FetchResult, fetch_source, load_directory, normalize_arxiv_id
+from .fetch import (
+    FetchResult,
+    default_cache_dir,
+    fetch_source,
+    load_directory,
+    normalize_arxiv_id,
+    repo_root,
+    resolve_cache_dir,
+)
 from .macros import Macro, expand, extract_macros, macro_table
 from .metadata import extract_abstract, extract_title
 from .pipeline import (
@@ -30,6 +38,7 @@ __all__ = [
     "Segment",
     "assemble",
     "build",
+    "default_cache_dir",
     "expand",
     "extract_abstract",
     "extract_macros",
@@ -43,5 +52,7 @@ __all__ = [
     "macro_defs",
     "macro_table",
     "normalize_arxiv_id",
+    "repo_root",
+    "resolve_cache_dir",
     "source_hash",
 ]

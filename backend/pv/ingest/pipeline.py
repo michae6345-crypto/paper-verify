@@ -14,7 +14,7 @@ from pathlib import Path
 from pv.models import FileSpan, MacroDef, ReasonCode, SourceDocument
 
 from .assemble import AssembledSource, assemble
-from .fetch import DEFAULT_CACHE_DIR, FetchResult, fetch_source, load_directory
+from .fetch import FetchResult, fetch_source, load_directory
 from .macros import Macro, extract_macros, macro_table
 from .metadata import extract_abstract, extract_title
 
@@ -76,10 +76,14 @@ def _declined(
 def ingest(
     arxiv_id: str,
     *,
-    cache_dir: str | Path = DEFAULT_CACHE_DIR,
+    cache_dir: str | Path | None = None,
     allow_network: bool = True,
 ) -> IngestResult:
-    """Fetch (or read from cache) and assemble one paper."""
+    """Fetch (or read from cache) and assemble one paper.
+
+    `cache_dir` defaults to `default_cache_dir()`, which is absolute and does
+    not depend on the working directory.
+    """
     fetched = fetch_source(arxiv_id, cache_dir=cache_dir, allow_network=allow_network)
     return build(fetched)
 

@@ -33,8 +33,13 @@ from pv.models import ReasonCode
 
 ARXIV_SOURCE_URL = "https://arxiv.org/e-print/{arxiv_id}"
 MIN_REQUEST_INTERVAL_S = 3.0
-DEFAULT_CACHE_DIR = Path(".arxivcache")
 DEFAULT_TIMEOUT_S = 60.0
+
+CACHE_DIR_ENV = "ARXIV_CACHE_DIR"
+CACHE_DIR_NAME = ".arxivcache"
+# Markers for the repository root, in priority order — `.git` before
+# `pyproject.toml`. See `repo_root`; the two disagree in this layout.
+_ROOT_MARKERS = (".git", "pyproject.toml")
 
 # Files worth keeping out of a tarball. Everything else (figures, .bbl blobs)
 # is ignored: we only ever parse text.
@@ -99,6 +104,43 @@ class _RateLimiter:
 _LIMITER = _RateLimiter()
 
 
+def repo_root() -> Path:
+    """The project root, found by walking up from this file — never from `cwd`.
+
+    `.git` is checked before `pyproject.toml` and the two disagree here: the
+    pyproject lives in `backend/`, while `.gitignore` and the existing cache
+    live at the git root. Taking the first marker found would put the cache in
+    `backend/` and orphan everything already downloaded.
+
+    Falls back to the directory containing the `pv` package, which is still
+    stable, so an installed copy with no repository markers behaves predictably.
+    """
+    here = Path(__file__).resolve()
+    for marker in _ROOT_MARKERS:
+        for parent in here.parents:
+            if (parent / marker).exists():
+                return parent
+    return here.parents[2]  # .../backend, the parent of the `pv` package
+
+
+def default_cache_dir() -> Path:
+    """Where cached e-prints live, as an absolute path.
+
+    `ARXIV_CACHE_DIR` wins if set; a relative value there is anchored to the
+    repository root, not to `cwd`. Otherwise `<repo root>/.arxivcache`.
+
+    This must not depend on the working directory. It did once, and the failure
+    was silent and the worst kind: running from `backend/` found no cache, so
+    every run re-fetched from arXiv while looking exactly like a cache miss.
+    Read at call time, so the environment can change between runs.
+    """
+    configured = os.environ.get(CACHE_DIR_ENV, "").strip()
+    if configured:
+        path = Path(configured).expanduser()
+        return path if path.is_absolute() else (repo_root() / path).resolve()
+    return repo_root() / CACHE_DIR_NAME
+
+
 def normalize_arxiv_id(raw: str) -> tuple[str, str | None]:
     """Split `1706.03762v5` into ("1706.03762", "v5"). Raises on nonsense."""
     raw = raw.strip()
@@ -120,20 +162,32 @@ def cache_key(arxiv_id: str, version: str | None) -> str:
     return f"{arxiv_id}{version or ''}".replace("/", "_")
 
 
+def resolve_cache_dir(cache_dir: str | Path | None = None) -> Path:
+    """Absolute cache directory. `None` means "use the configured default"."""
+    if cache_dir is None:
+        return default_cache_dir()
+    return Path(cache_dir).expanduser().resolve()
+
+
 def fetch_source(
     arxiv_id: str,
     *,
-    cache_dir: str | Path = DEFAULT_CACHE_DIR,
+    cache_dir: str | Path | None = None,
     allow_network: bool = True,
     timeout: float = DEFAULT_TIMEOUT_S,
 ) -> FetchResult:
     """Return the LaTeX source for `arxiv_id`, from cache when present.
 
+    `cache_dir` defaults to `default_cache_dir()` and is made absolute before
+    use, so the same cache is found from any working directory. An explicit
+    relative path is the caller's own choice and stays relative to `cwd`.
+
     Set `allow_network=False` to assert that nothing may hit the network — used
     by the test suite, which must run entirely offline.
     """
     ident, version = normalize_arxiv_id(arxiv_id)
-    root = Path(cache_dir) / cache_key(ident, version)
+    cache_dir = resolve_cache_dir(cache_dir)
+    root = cache_dir / cache_key(ident, version)
 
     cached = load_cached(root, ident, version)
     if cached is not None:
@@ -144,10 +198,10 @@ def fetch_source(
             arxiv_id=ident,
             version=version,
             reason=ReasonCode.NETWORK_ERROR,
-            detail="not cached and network access is disabled",
+            detail=f"not cached under {cache_dir} and network access is disabled",
         )
 
-    payload, detail = _download(ident, version, cache_dir=Path(cache_dir), timeout=timeout)
+    payload, detail = _download(ident, version, cache_dir=cache_dir, timeout=timeout)
     if payload is None:
         return FetchResult(
             arxiv_id=ident,
