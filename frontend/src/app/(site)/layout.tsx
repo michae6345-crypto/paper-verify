@@ -3,6 +3,7 @@ import { Fragment_Mono, Instrument_Serif, Inter } from "next/font/google";
 
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
+import { SmoothScroll } from "@/components/site/smooth-scroll";
 
 /**
  * The marketing route group (ARCHITECTURE §16). It sits beside the app and
@@ -60,8 +61,9 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
   return (
     <div
       data-site=""
-      className={`${instrumentSerif.variable} ${inter.variable} ${fragmentMono.variable} flex min-h-dvh flex-col`}
+      className={`${instrumentSerif.variable} ${inter.variable} ${fragmentMono.variable} relative flex min-h-dvh flex-col`}
     >
+      <SmoothScroll />
       <SiteHeader />
       <main className="flex-1">{children}</main>
       <SiteFooter />

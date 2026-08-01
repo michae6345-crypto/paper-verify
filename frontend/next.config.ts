@@ -19,7 +19,16 @@ const nextConfig: NextConfig = {
        * `/runs/[id]` are not matched here and keep the dark chrome.
        */
       beforeFiles: [{ source: "/", destination: "/framer/index.html" }],
-      afterFiles: [],
+
+      /**
+       * `/preview` is the React port while it is being built.
+       *
+       * The rewrite above owns `/`, so until it is deleted the ported page has
+       * no address of its own and nobody can look at it. This gives it one. It
+       * goes away in the same commit that deletes the capture, and it is
+       * `afterFiles` so it can never shadow a real route.
+       */
+      afterFiles: [{ source: "/preview", destination: "/" }],
       fallback: [],
     };
   },
