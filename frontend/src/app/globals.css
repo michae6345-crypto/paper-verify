@@ -83,8 +83,18 @@
 
   /* Marginal ink: sigla, line numbers, apparatus marks. Warm grey against cool
      chrome, the way a pencil note sits on a printed page. The only warm value
-     in the system, and a neutral rather than an orange. */
-  --siglum: #8a7f6d;
+     in the system, and a neutral rather than an orange.
+
+     DESIGN_PLAN.md specifies #8A7F6D. A siglum is read text, not decoration: it
+     is how a reader moves between the four places a claim appears, so it has to
+     clear 4.5:1 on every dark surface it lands on, not just the darkest one.
+
+     There are four. #8A7F6D failed three of them; #8f8371, measured only against
+     --field-deep, still failed --chrome-panel at 4.41 and --chrome-raised at
+     3.95, and --chrome-panel is where the ledger's margin slot sits. This value
+     clears all four: deep 5.87, base 5.66, panel 5.20, raised 4.66. Same hue,
+     same chroma, still reads as pencil rather than ink. */
+  --siglum: #9a907e;
   /* The same ink with enough weight to clear 4.5:1 on --field-paper, where the
      dark-field value reads at 3.8:1. One mark, two inks, exactly as the grid.
      Also the secondary text colour on light fields. */

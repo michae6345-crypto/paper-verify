@@ -52,14 +52,14 @@ export function SiteFooter() {
           </p>
           <p
             className="mt-2 max-w-[44ch]"
-            style={{ color: "var(--chrome-faint)", fontSize: "13px", lineHeight: 1.6 }}
+            style={{ color: "var(--chrome-dim)", fontSize: "13px", lineHeight: 1.6 }}
           >
             A residual is the difference between an observed value and a predicted one, which is
             what this computes.
           </p>
           <p
             className="mt-3 max-w-[44ch]"
-            style={{ color: "var(--chrome-faint)", fontSize: "13px", lineHeight: 1.6 }}
+            style={{ color: "var(--chrome-dim)", fontSize: "13px", lineHeight: 1.6 }}
           >
             residual checks whether an ML paper&rsquo;s own numbers agree with each other, and
             reports discrepancies with evidence. It does not judge whether a paper is good, novel,
@@ -73,7 +73,7 @@ export function SiteFooter() {
             <p className="t-label">Status</p>
             <p
               className="mt-2 max-w-[44ch]"
-              style={{ color: "var(--chrome-faint)", fontSize: "13px", lineHeight: 1.6 }}
+              style={{ color: "var(--chrome-dim)", fontSize: "13px", lineHeight: 1.6 }}
             >
               In development. Four of the seven specified checks are implemented and validated
               against the corpus. Runs are held in
