@@ -67,6 +67,9 @@ class ReasonCode(str, Enum):
     # URLs, no bibliography. Pairs with Verdict.NOT_ATTEMPTED. A normal outcome,
     # not a failure, and it must not read as one.
     NO_APPLICABLE_CLAIMS = "no_applicable_claims"
+    # The submitted identifier is not a well-formed arXiv id. Distinct from
+    # NO_LATEX_SOURCE, which means a real paper that ships no LaTeX.
+    INVALID_PAPER_ID = "invalid_paper_id"
 
 
 class Direction(str, Enum):
