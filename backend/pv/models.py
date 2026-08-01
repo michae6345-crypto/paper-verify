@@ -49,6 +49,12 @@ class ReasonCode(str, Enum):
     CELL_SPANS_COLUMNS = "cell_spans_columns"
     NO_NUMERIC_VALUES = "no_numeric_values"
     NETWORK_ERROR = "network_error"
+    # Check 3: the stated average cannot be reproduced by the unweighted mean, but a
+    # plausible weighting or subset could produce it, so we cannot call it wrong.
+    # The comparison is still attached as evidence — see CheckResult.findings.
+    AVERAGE_DENOMINATOR_AMBIGUOUS = "average_denominator_ambiguous"
+    # The checker itself raised. Never fails the run.
+    CHECKER_ERROR = "checker_error"
 
 
 class Direction(str, Enum):
@@ -108,7 +114,15 @@ class Cell(BaseModel):
     raw_latex: str
     # Cleaned text with spacing macros (\rule, \vspace) and \citep{...} removed.
     text: str
+    # The cell's single value, when it has exactly one. None for empty cells
+    # ("not reported", never zero) and for cells holding several numbers.
     value: float | None = None
+    # Every number in the cell, in order. A cell may legitimately hold more than
+    # one: BERT's GLUE table writes MNLI matched/mismatched as "86.7/85.9", and
+    # its Average column is the mean of nine values across eight columns.
+    # Reading only the first produces five false divergences on that table.
+    # Invariant: when len(values) == 1, value == values[0].
+    values: list[float] = Field(default_factory=list)
     is_bold: bool = False
     # How the bold was expressed: textbf | mathbf | boldmath | bf | macro:<name>
     bold_source: str | None = None
@@ -159,6 +173,25 @@ class Claim(BaseModel):
     normalized: dict = Field(default_factory=dict)
 
 
+class MacroDef(BaseModel):
+    """A \\newcommand/\\def definition. `n_args` is what a flat name->body dict
+    cannot express, and bold detection needs it: \\mbf takes an argument, so
+    expanding it without consuming that argument corrupts the cell."""
+
+    name: str  # without the leading backslash
+    body: str
+    n_args: int = 0
+
+
+class FileSpan(BaseModel):
+    """Where one source file landed inside `assembled_latex`, so a character
+    offset can be turned back into "results.tex, line 41" for a human locator."""
+
+    file_name: str
+    start: int
+    end: int
+
+
 class SourceDocument(BaseModel):
     """Output of the ingest stage: one paper's LaTeX, fully assembled."""
 
@@ -166,13 +199,23 @@ class SourceDocument(BaseModel):
     version: str | None = None
     title: str = ""
     abstract: str = ""
-    # All \input/\include resolved into one string.
+    # All \input/\include resolved into one string. Only files reachable from the
+    # \documentclass file — tarballs routinely carry stale .tex from other papers.
     assembled_latex: str = ""
-    # name -> expansion, from \newcommand/\def. Needed for bold detection.
+    # Flat name -> body, kept for convenience. Loses argument counts.
     macros: dict[str, str] = Field(default_factory=dict)
+    # Authoritative macro table. Prefer this for expansion.
+    macro_defs: dict[str, MacroDef] = Field(default_factory=dict)
+    # Offset map for `assembled_latex`, in order.
+    segments: list[FileSpan] = Field(default_factory=list)
     source_hash: str = ""
     fetched_at: datetime | None = None
     file_names: list[str] = Field(default_factory=list)
+    # Set when the paper was ingested but something is missing — e.g. a PDF-only
+    # submission yields a valid document with NO_LATEX_SOURCE. The runner copies
+    # this into the run's `not_checked` list.
+    ingest_reason: ReasonCode | None = None
+    ingest_detail: str = ""
 
 
 # --------------------------------------------------------------------------
