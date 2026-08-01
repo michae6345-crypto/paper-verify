@@ -560,8 +560,19 @@ def test_openapi_covers_every_endpoint(client):
         "/runs",
         "/runs/{run_id}",
         "/runs/{run_id}/report",
+        # The permalink surface. Redacted by default: §14.8 holds any
+        # high-severity divergence out of it until a person releases it.
+        "/runs/{run_id}/report/public",
         "/runs/{run_id}/stream",
         "/runs/{run_id}/artifact",
+        # The author response flow. Behaviour is covered by tests/test_amendments.py
+        # and tests/test_review.py; this list only asserts the surface exists.
+        "/runs/{run_id}/findings",
+        "/runs/{run_id}/amendments",
+        "/runs/{run_id}/amendments/{fingerprint}/recheck",
+        "/runs/{run_id}/review",
+        "/runs/{run_id}/review/{fingerprint}/release",
+        "/runs/{run_id}/review/{fingerprint}/suppress",
         "/papers/{arxiv_id}/repositories",
     }
 

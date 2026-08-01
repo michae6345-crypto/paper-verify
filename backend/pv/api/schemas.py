@@ -23,8 +23,9 @@ from typing import Union
 
 from pydantic import BaseModel, Field
 
-from ..models import Artifact, CheckResult, RunReport, Verdict
+from ..models import Amendment, Artifact, CheckResult, RunReport, Severity, Verdict
 from ..orchestrator import RunStage
+from ..review import ReviewState, SuppressionReason
 
 
 class RunStatus(str, Enum):
@@ -169,6 +170,175 @@ class DoneEvent(BaseModel):
     run: Run
 
 
+# --------------------------------------------------------------------------
+# Amendments (brief Part 2, item 1)
+#
+# `Amendment` itself is the contract type and travels unchanged. What is added
+# here is only what the transport needs: the fingerprint in the path, and the
+# fresh `CheckResult` a recheck produced — which is not stored on the run, because
+# a recheck is a second look and not a second verdict.
+# --------------------------------------------------------------------------
+
+
+class CreateAmendmentRequest(BaseModel):
+    """An author's contest of one finding.
+
+    `finding_fingerprint` identifies the judgement, not the row: it is a §14.5
+    fingerprint over the finding's content, the checker, the checker version and
+    the policy version. Improve the checker and the fingerprint changes, so this
+    objection correctly stops applying to a judgement it was never made about.
+    `pv.amendments.identity.finding_fingerprint` derives it from the report, so a
+    client computes the same value from the same bytes without either side
+    storing it.
+    """
+
+    finding_fingerprint: str
+    # The author's own words. Shown verbatim next to the finding, never
+    # paraphrased and never summarised — it is the half of the record that is not
+    # ours.
+    author_statement: str
+    # What the author says the value should be. A string, matching
+    # `Finding.claimed`, because the paper's own formatting is part of the claim.
+    corrected_value: str | None = None
+
+
+class FindingIndex(BaseModel):
+    """Every finding in a report, keyed so a rendered row can find its identity.
+
+    A `RunReport` carries no per-finding fingerprint — `Finding` has no such field
+    on the contract, and it is derived rather than stored (see
+    `pv.amendments.identity`). The frontend needs it anyway, to say *which*
+    judgement a Contest affordance is contesting.
+
+    Deriving it a second time in TypeScript is the option not taken. This
+    codebase already has two modules implementing the same four LaTeX primitives
+    in two different ways because nothing imports both (CLAUDE.md); a second
+    implementation of a hash that decides which objection attaches to which
+    accusation would be that mistake in the one place it must not be made. There
+    is one implementation, in Python, and this endpoint serves its output.
+
+    `by_row` is keyed `"<anchor.dom_id>:<checker>"`, which is the identity the
+    ledger already builds each row on. A key that two findings would share is
+    **omitted** rather than resolved to either of them: an ambiguous key would let
+    a Contest button attach an author's statement to the wrong finding, and there
+    is no reading of that which is acceptable. Such findings are still in
+    `fingerprints`, addressable by whoever can disambiguate them.
+    """
+
+    run_id: str
+    # Fingerprint -> the row key it belongs to, in report order.
+    fingerprints: list[str] = Field(default_factory=list)
+    by_row: dict[str, str] = Field(default_factory=dict)
+
+
+class AmendmentList(BaseModel):
+    """The amendment history for a report, oldest first.
+
+    Every row, not the latest per finding: a reader has to be able to see the
+    objection, the recheck and the outcome as a sequence. `current` is the
+    superseding view — the standing amendment per fingerprint — which is what a
+    Discrepancy row consults to know it has been contested.
+    """
+
+    run_id: str
+    amendments: list[Amendment] = Field(default_factory=list)
+    current: dict[str, Amendment] = Field(default_factory=dict)
+
+
+class RecheckResponse(BaseModel):
+    """What a second look produced.
+
+    `executed` is false on a §14.5 cache hit: the checker has not changed since
+    the run, so the stored verdict *is* the answer and nothing was executed.
+    Saying we re-ran it would be a claim about work we did not do.
+
+    `result` is returned, never stored. The run is the record of what we found
+    when we looked; a recheck is a separate event and the two must stay legible
+    as separate events.
+    """
+
+    run_id: str
+    amendment: Amendment
+    executed: bool
+    # True when the contested comparison is still reported. Null when we could not
+    # establish it — never defaulted to false, because a false all-clear sent to
+    # an author is the worst outcome this flow has.
+    still_found: bool | None = None
+    result: CheckResult | None = None
+    # One sentence, safe to show an author verbatim.
+    note: str = ""
+
+
+# --------------------------------------------------------------------------
+# Review gate (§14.8)
+# --------------------------------------------------------------------------
+
+
+class ReviewItem(BaseModel):
+    """One finding the gate holds, with enough context to decide without opening
+    the report."""
+
+    fingerprint: str
+    state: ReviewState
+    checker: str
+    checker_version: str
+    policy_version: str = ""
+    severity: Severity = Severity.HIGH
+    siglum: str = ""
+    locator: str = ""
+    claimed: str | None = None
+    computed: str | None = None
+    delta: str | None = None
+    verbatim: str = ""
+    explanation: str = ""
+    reason: SuppressionReason | None = None
+    note: str = ""
+    decided_at: datetime | None = None
+    decided_by: str = ""
+
+
+class ReviewQueueResponse(BaseModel):
+    run_id: str
+    arxiv_id: str
+    # In report order. Released findings stay in the list: this is the record of
+    # what was reviewed, not only of what is outstanding.
+    items: list[ReviewItem] = Field(default_factory=list)
+    held: int = 0
+
+
+class SuppressRequest(BaseModel):
+    """Why this finding must not be published. The reason is required — a
+    suppression with no reason is an untraceable deletion, and every suppression
+    is written into `fixtures/` as a negative fixture keyed on it."""
+
+    reason: SuppressionReason
+    note: str = ""
+    decided_by: str = ""
+
+
+class ReleaseRequest(BaseModel):
+    note: str = ""
+    decided_by: str = ""
+
+
+class PublicReport(BaseModel):
+    """A report as a permalink shows it (§14.8).
+
+    High-severity divergences are withheld until a person has read them, and a
+    check whose findings are all withheld is removed entirely rather than left
+    asserting a verdict whose evidence is not on the page.
+
+    `notice` is the one line the page shows when something is being withheld.
+    Empty when nothing is — the common case, and a page that always carried the
+    sentence would make every clean report look qualified.
+    """
+
+    run_id: str
+    report: RunReport
+    held: int = 0
+    notice: str = ""
+
+
 StreamPayload = Union[RunManifest, CheckEvent, StateEvent, DoneEvent]
 """What `data:` holds on the stream, by event name:
 `manifest` -> RunManifest, `check` -> CheckEvent, `state` -> StateEvent,
@@ -176,11 +346,20 @@ StreamPayload = Union[RunManifest, CheckEvent, StateEvent, DoneEvent]
 
 
 __all__ = [
+    "AmendmentList",
     "CheckDescriptor",
     "CheckEvent",
     "ConfirmArtifactRequest",
+    "CreateAmendmentRequest",
     "CreateRunRequest",
     "DoneEvent",
+    "FindingIndex",
+    "PublicReport",
+    "RecheckResponse",
+    "ReleaseRequest",
+    "ReviewItem",
+    "ReviewQueueResponse",
+    "SuppressRequest",
     "RunStage",
     "StateEvent",
     "Run",

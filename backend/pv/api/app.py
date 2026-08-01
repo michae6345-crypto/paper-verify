@@ -25,20 +25,40 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException, Path, Query, Reques
 from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette.sse import EventSourceResponse
 
+from ..amendments import AmendmentStore, recheck_finding
+from ..amendments.identity import fingerprints_in
+from ..amendments.recheck import FindingNotInRun
 from ..checks.repos import find_repositories, find_repository_candidates
-from ..models import Artifact, RunReport
+from ..models import Amendment, Artifact, RunReport
 from ..orchestrator import RunNotFound, RunNotWaiting, get_orchestrator
+from ..review import (
+    ReleaseRequiresReview,
+    ReviewEntry,
+    ReviewQueue,
+    ReviewState,
+    held_notice,
+    redact,
+)
 from . import jobs
 from .config import Settings
 from .schemas import (
+    AmendmentList,
     ConfirmArtifactRequest,
+    CreateAmendmentRequest,
     CreateRunRequest,
     DoneEvent,
+    FindingIndex,
+    PublicReport,
+    RecheckResponse,
+    ReleaseRequest,
+    ReviewItem,
+    ReviewQueueResponse,
     Run,
     RunList,
     RunManifest,
     StreamEvent,
     StreamPayload,
+    SuppressRequest,
 )
 from .store import Event, RunStore
 
@@ -62,6 +82,13 @@ store = RunStore(max_runs=settings.max_runs)
 # same run the background job is driving. The state store behind it is what makes
 # a run survive a restart (`PV_STATE_DIR`).
 orchestrator = get_orchestrator()
+# Append-only, and process-local like the run store: both hold the shape their
+# Postgres table will hold. An amendment is never edited, including by us.
+amendments = AmendmentStore()
+# §14.8. Holds only decisions; what is *waiting* is derived from the report each
+# time it is asked for, so a finding cannot be held in a list that has fallen out
+# of step with what the run produced. Absence of a decision means held.
+review = ReviewQueue()
 
 app.add_middleware(
     CORSMiddleware,
@@ -129,10 +156,45 @@ async def get_run(run_id: str = Path(...)) -> Run:
     return _record_or_404(run_id).envelope()
 
 
+def _report_with_amendments(run_id: str) -> RunReport:
+    """The stored report, with the amendment log attached.
+
+    `RunReport.amendments` is on the contract; the run store does not know about
+    the amendment store, so they are joined here. Attached to a fresh copy each
+    time — the amendments are a separate append-only log and must not be written
+    back into the run's record of what it found.
+    """
+    report = _record_or_404(run_id).report()
+    report.amendments = amendments.history(run_id)
+    return report
+
+
 @app.get("/runs/{run_id}/report", response_model=RunReport, tags=["runs"])
 async def get_report(run_id: str = Path(...)) -> RunReport:
-    """The bare `RunReport` — the same object the CLI prints and §5.5 renders."""
-    return _record_or_404(run_id).report()
+    """The bare `RunReport` — the same object the CLI prints and §5.5 renders.
+
+    This is the full report, including findings the §14.8 gate is still holding.
+    It is the working surface, not the permalink: `GET /runs/{id}/report/public`
+    is what a shared URL serves.
+    """
+    return _report_with_amendments(run_id)
+
+
+@app.get("/runs/{run_id}/report/public", response_model=PublicReport, tags=["runs"])
+async def get_public_report(run_id: str = Path(...)) -> PublicReport:
+    """The report as a permalink shows it (§14.8).
+
+    Any finding with `verdict: diverges` and `severity: high` is withheld until a
+    person releases it, and a check whose findings are all withheld is removed
+    rather than left asserting a verdict whose evidence is not on the page.
+
+    Redaction is the default and requires no configuration: a finding with no
+    review decision recorded against it is held. There is no setting under which
+    an unread high-severity divergence appears here.
+    """
+    report = _report_with_amendments(run_id)
+    public, held = redact(report, review, run_id)
+    return PublicReport(run_id=run_id, report=public, held=held, notice=held_notice(held))
 
 
 @app.post("/runs/{run_id}/artifact", response_model=Run, tags=["runs"])
@@ -214,6 +276,280 @@ async def stream_run(request: Request, run_id: str = Path(...)) -> EventSourceRe
 
 
 # --------------------------------------------------------------------------
+# Amendments — the author response flow (brief Part 2, item 1)
+#
+# What happens when we are wrong about someone in public. Every route here is
+# append-only: nothing edits or deletes the finding it answers, and nothing edits
+# an amendment either. A resolution is a new row that supersedes the one before
+# it in the reader's view, and both stay on the record — an amendment is someone
+# else's words about us, and there is no defensible version of editing those.
+# --------------------------------------------------------------------------
+
+
+@app.post(
+    "/runs/{run_id}/amendments",
+    response_model=Amendment,
+    status_code=201,
+    tags=["amendments"],
+)
+async def create_amendment(
+    body: CreateAmendmentRequest, run_id: str = Path(...)
+) -> Amendment:
+    """Contest one finding. A normal action, not a complaint form.
+
+    `finding_fingerprint` identifies the judgement rather than a row: it is a
+    §14.5 fingerprint over the finding's content, the checker, the checker version
+    and the policy version. **That is the point.** Bump a checker version or a
+    tolerance policy and every fingerprint under it changes, so this statement
+    correctly stops applying to a judgement it was never made about — we can
+    improve a check without silently carrying an author's objection onto a reading
+    of their paper they have never seen.
+
+    404 when no finding in this run carries that fingerprint. That is usually not
+    a client error: it is what a stale permalink looks like after the check that
+    produced the finding was improved.
+    """
+    report = _record_or_404(run_id).report()
+    located = fingerprints_in(report).get(body.finding_fingerprint)
+    if located is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "No finding in this run carries that fingerprint. The check that "
+                "produced it may have changed since this page was opened."
+            ),
+        )
+    _check, finding = located
+    return amendments.append(
+        run_id,
+        Amendment(
+            finding_fingerprint=body.finding_fingerprint,
+            # `Claim.content_hash` is the right value here, but a `RunReport`
+            # ships `CheckResult` and `Finding` only — no claims — so there is no
+            # content hash on the wire to record. The anchor is what a reader can
+            # go and look at, and it is honest about being a locator rather than a
+            # claim id. Replace this the day the report carries claims.
+            claim_id=finding.anchor.dom_id,
+            author_statement=body.author_statement,
+            corrected_value=body.corrected_value,
+            status="open",
+        ),
+    )
+
+
+@app.get("/runs/{run_id}/findings", response_model=FindingIndex, tags=["amendments"])
+async def get_finding_index(run_id: str = Path(...)) -> FindingIndex:
+    """The fingerprint of every finding in this run, so a rendered row can say
+    which judgement it is offering to contest.
+
+    `Finding` carries no fingerprint on the contract — it is derived, not stored.
+    Deriving it a second time in the browser is the option not taken: a second
+    implementation of the hash that decides which objection attaches to which
+    accusation is the one place this codebase's duplicate-primitive habit must not
+    reach. There is one implementation, in Python, and this serves its output.
+
+    `by_row` is keyed `"<dom_id>:<checker>"` — the identity the ledger already
+    builds each row on. A key two findings would share is omitted rather than
+    resolved to either of them; attaching an author's statement to the wrong
+    finding is not a trade-off worth making, and the fingerprint is still listed.
+    """
+    report = _record_or_404(run_id).report()
+    index = fingerprints_in(report)
+
+    seen: dict[str, int] = {}
+    keys: dict[str, str] = {}
+    for fp, (check, finding) in index.items():
+        key = f"{finding.anchor.dom_id}:{check.checker}"
+        seen[key] = seen.get(key, 0) + 1
+        keys[fp] = key
+
+    by_row = {key: fp for fp, key in keys.items() if seen[key] == 1}
+    return FindingIndex(run_id=run_id, fingerprints=list(index), by_row=by_row)
+
+
+@app.get("/runs/{run_id}/amendments", response_model=AmendmentList, tags=["amendments"])
+async def list_amendments(run_id: str = Path(...)) -> AmendmentList:
+    """The amendment history for a report, oldest first.
+
+    Every row, including superseded ones: a reader has to be able to follow the
+    objection, the recheck and the outcome as a sequence. `current` is the
+    superseding view — the standing amendment per fingerprint — which is what a
+    Discrepancy row consults to know it has been contested.
+    """
+    _record_or_404(run_id)
+    return AmendmentList(
+        run_id=run_id,
+        amendments=amendments.history(run_id),
+        current=amendments.current(run_id),
+    )
+
+
+@app.post(
+    "/runs/{run_id}/amendments/{fingerprint}/recheck",
+    response_model=RecheckResponse,
+    tags=["amendments"],
+)
+async def recheck_amendment(
+    run_id: str = Path(...), fingerprint: str = Path(...)
+) -> RecheckResponse:
+    """Run the contested claim again and record what it produced.
+
+    Reuses §14.5 rather than re-running the paper: the fingerprint is looked up
+    first, and only a miss executes. A checker whose version has not moved since
+    the run is a cache hit — the verdict is a function of the claim, the checker
+    version and the policy version, so executing would reproduce the stored row —
+    and the response says so with `executed: false` rather than claiming work we
+    did not do. A miss re-runs exactly one check against the document and tables
+    the run already holds. Nothing is fetched and nothing is re-parsed.
+
+    The recheck writes no verdict. `result` is returned, never appended to the
+    run: the run is the record of what we found when we looked, and a second look
+    is a separate event. What is stored is a new amendment row carrying
+    `recheck_result_fingerprint`.
+    """
+    _record_or_404(run_id)
+    previous = amendments.latest(run_id, fingerprint)
+    if previous is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No amendment has been filed against that finding in this run.",
+        )
+
+    try:
+        outcome = recheck_finding(orchestrator, run_id, fingerprint)
+    except (RunNotFound, FindingNotInRun):
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "The run state for this report is no longer available, so the "
+                "claim could not be checked again."
+            ),
+        ) from None
+
+    # §7: `resolved` is not a judgement about who was right. It means the contested
+    # comparison is no longer reported, which is the only thing we can state.
+    status = "resolved" if outcome.still_found is False else "recheck_requested"
+    amendment = amendments.supersede(
+        run_id,
+        previous,
+        status=status,
+        recheck_result_fingerprint=outcome.result_fingerprint or None,
+        resolution_note=outcome.note,
+    )
+    return RecheckResponse(
+        run_id=run_id,
+        amendment=amendment,
+        executed=outcome.executed,
+        still_found=outcome.still_found,
+        result=outcome.result,
+        note=outcome.note,
+    )
+
+
+# --------------------------------------------------------------------------
+# Review gate (§14.8)
+#
+# One person reading a short list, at current scale. Built now because
+# retrofitting a review gate after something has been published is impossible,
+# and because `docs/DEPLOY.md` flags public-by-default permalinks as unresolved.
+# --------------------------------------------------------------------------
+
+
+def _review_item(entry: ReviewEntry) -> ReviewItem:
+    return ReviewItem(
+        fingerprint=entry.fingerprint,
+        state=entry.state,
+        checker=entry.checker,
+        checker_version=entry.checker_version,
+        policy_version=entry.policy_version,
+        siglum=entry.siglum,
+        locator=entry.locator,
+        claimed=entry.claimed,
+        computed=entry.computed,
+        delta=entry.delta,
+        verbatim=entry.verbatim,
+        explanation=entry.explanation,
+        reason=entry.reason,
+        note=entry.note,
+        decided_at=entry.decided_at,
+        decided_by=entry.decided_by,
+    )
+
+
+@app.get("/runs/{run_id}/review", response_model=ReviewQueueResponse, tags=["review"])
+async def get_review_queue(run_id: str = Path(...)) -> ReviewQueueResponse:
+    """Everything in this run the gate holds, in report order.
+
+    Released findings stay in the list with `state: released`. The queue is the
+    record of what was reviewed, not only of what is outstanding — a list that
+    empties as decisions are made cannot answer "who released this, and when".
+    """
+    record = _record_or_404(run_id)
+    report = record.report()
+    items = [_review_item(e) for e in review.pending(run_id, report)]
+    return ReviewQueueResponse(
+        run_id=run_id,
+        arxiv_id=record.arxiv_id,
+        items=items,
+        held=sum(1 for i in items if i.state is not ReviewState.RELEASED),
+    )
+
+
+@app.post(
+    "/runs/{run_id}/review/{fingerprint}/release",
+    response_model=ReviewItem,
+    tags=["review"],
+)
+async def release_finding(
+    body: ReleaseRequest, run_id: str = Path(...), fingerprint: str = Path(...)
+) -> ReviewItem:
+    """A person has read this finding and it may appear on the permalink."""
+    report = _record_or_404(run_id).report()
+    try:
+        entry = review.release(
+            run_id, report, fingerprint, by=body.decided_by, note=body.note
+        )
+    except ReleaseRequiresReview as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from None
+    return _review_item(entry)
+
+
+@app.post(
+    "/runs/{run_id}/review/{fingerprint}/suppress",
+    response_model=ReviewItem,
+    tags=["review"],
+)
+async def suppress_finding(
+    body: SuppressRequest, run_id: str = Path(...), fingerprint: str = Path(...)
+) -> ReviewItem:
+    """This finding is wrong. Never publish it, and never produce it again.
+
+    The reason is required, and the second half of that sentence is what it buys:
+    the suppression is written into `fixtures/suppressions/` as a negative
+    fixture, so a false positive we caught once becomes a permanent regression
+    test rather than a decision somebody remembers. `tests/test_review.py` reads
+    that directory.
+
+    Suppressing does not delete the finding. The run's record of what it found is
+    unchanged and remains readable at `GET /runs/{id}/report`; what changes is
+    that it is never published.
+    """
+    report = _record_or_404(run_id).report()
+    try:
+        entry = review.suppress(
+            run_id,
+            report,
+            fingerprint,
+            reason=body.reason,
+            note=body.note,
+            by=body.decided_by,
+        )
+    except ReleaseRequiresReview as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from None
+    return _review_item(entry)
+
+
+# --------------------------------------------------------------------------
 # Papers
 # --------------------------------------------------------------------------
 
@@ -257,4 +593,12 @@ async def health() -> RunManifest:
     return RunManifest(run_id="", arxiv_id="", checks=jobs.manifest_checks())
 
 
-__all__ = ["app", "settings", "store", "DoneEvent", "StreamEvent"]
+__all__ = [
+    "app",
+    "amendments",
+    "review",
+    "settings",
+    "store",
+    "DoneEvent",
+    "StreamEvent",
+]
