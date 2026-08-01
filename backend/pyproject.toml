@@ -13,6 +13,12 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "pytest-asyncio>=0.23"]
+# The Postgres store (§14.9 step 5). An extra rather than a dependency: with no
+# DATABASE_URL the process runs entirely on the in-memory stores, and the test
+# suite is network-free and driver-free. `psycopg` 3.2 is the floor —
+# `Connection.notifies(timeout=...)` is what lets one listener connection add a
+# channel without dropping the ones it already holds (§15.1).
+db = ["psycopg[binary,pool]>=3.2"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
