@@ -722,10 +722,38 @@ def test_every_check_module_declares_the_interface():
         assert callable(module.run)
 
 
-def test_discovery_tolerates_modules_that_do_not_exist_yet():
-    found = {m.CHECKER_NAME for m in registry.discover(("bold_extreme", "not_written_yet"))}
-    assert found == {"bold_extreme"}
+def test_discovery_returns_one_entry_per_name_even_when_a_module_is_absent():
+    """§14.0's most urgent gap. A check that vanishes with no row and no reason is
+    the recurring defect of this codebase applied to the check list itself."""
+    found = registry.discover(("bold_extreme", "not_written_yet"))
+    assert [m.CHECKER_NAME for m in found] == ["bold_extreme", "not_written_yet"]
+    assert isinstance(found[1], registry.MissingChecker)
     assert {"bold_extreme", "row_arithmetic"} <= {m.CHECKER_NAME for m in registry.discover()}
+
+
+def test_a_missing_module_is_reported_as_not_attempted_never_skipped():
+    result = registry.run_all(context(), ("bold_extreme", "not_written_yet"))
+    assert [r.checker for r in result] == ["bold_extreme", "not_written_yet"]
+    missing = result[1]
+    assert missing.verdict is Verdict.NOT_ATTEMPTED
+    assert missing.reason is ReasonCode.CHECKER_ERROR
+    assert "could not be loaded" in missing.description
+
+
+def test_a_module_without_the_checker_interface_is_reported_too():
+    """`repos` proposes repositories and exposes no `run`. Asking for it by name
+    is a misconfiguration, and a misconfiguration must be visible."""
+    found = registry.discover(("repos",))
+    assert isinstance(found[0], registry.MissingChecker)
+    result = registry.run_check(found[0], context())
+    assert result.verdict is Verdict.NOT_ATTEMPTED
+    assert result.reason is ReasonCode.CHECKER_ERROR
+
+
+def test_repos_is_not_listed_as_a_check():
+    """It never produces a verdict, so listing it would manufacture a false
+    checker_error row for a module working exactly as designed."""
+    assert "repos" not in registry.CHECK_MODULES
 
 
 def test_run_all_returns_one_result_per_check_with_ui_metadata():
