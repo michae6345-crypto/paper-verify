@@ -42,3 +42,5 @@ next-env.d.ts
 
 # browser automation output
 .playwright-mcp/
+
+.vercel
