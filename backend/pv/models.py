@@ -63,6 +63,10 @@ class ReasonCode(str, Enum):
     # there is no single value to be the best of. Never skip such a cell silently —
     # if we decline to judge it, the report has to say so.
     CELL_HAS_MULTIPLE_VALUES = "cell_has_multiple_values"
+    # The paper contains nothing this check applies to — no average columns, no
+    # URLs, no bibliography. Pairs with Verdict.NOT_ATTEMPTED. A normal outcome,
+    # not a failure, and it must not read as one.
+    NO_APPLICABLE_CLAIMS = "no_applicable_claims"
 
 
 class Direction(str, Enum):

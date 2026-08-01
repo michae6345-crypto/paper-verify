@@ -91,6 +91,36 @@ right and is still guessing.
 
 ---
 
+## Case 4 — ELMo, `table:alternate_weights` (1802.05365) — the check 3 keyword trap
+
+```
+Task & Baseline & Last Only & \multicolumn{2}{c}{All layers} \\
+     &          &           & $\lambda$=1 & $\lambda$=0.001 \\ \hline
+SQuAD & 80.8 & 84.7 & 85.0 & \textbf{85.2} \\
+SNLI  & 88.1 & 89.1 & 89.3 & \textbf{89.5} \\
+SRL   & 81.6 & 84.1 & 84.6 & \textbf{84.8} \\
+```
+
+**Expected: `not_attempted` — this table has no average column.**
+
+"All layers" means *using all layers of the biLM*, contrasted with "Last Only". The
+orchestrator's original spec listed `all` as an average-column keyword, so the checker
+treated both λ sub-columns as averages, took the mean of Baseline and Last Only
+(80.8, 84.7 → 82.75), and emitted **six `diverges` findings** against the paper.
+
+Rules that follow:
+
+- `all` is never an average keyword on its own. It labels a grouping — "all layers",
+  "all tasks", "all data" — far more often than an aggregate. Keep `avg`, `average`,
+  `mean`; treat `overall` as weaker evidence.
+- An average column is a single column. A candidate that is one of several sub-columns
+  under a shared `\multicolumn` header is a grouping, not an aggregate.
+- Averages of a row normally sit at the end of the row, after the values they average.
+
+This is the third instance of the same defect shape and the first one introduced by an
+instruction rather than by an implementation. The spec is as capable of producing a
+false accusation as the code is.
+
 ## Structural hazards found in the corpus
 
 Each of these appears in a real paper above and breaks a naive parser:
