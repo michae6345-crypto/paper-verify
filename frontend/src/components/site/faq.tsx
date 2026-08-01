@@ -1,111 +1,97 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { Card, Container, Mono, PrimaryLink } from "@/components/site/ui";
+import { Reveal } from "@/components/site/reveal";
+import { SectionTag } from "@/components/site/section-tag";
+
 /**
- * §16 §8. Lead with the hard ones. A FAQ that opens on pricing is a FAQ that is
- * avoiding something.
+ * Questions worth asking.
  *
  * Native `<details>`, so the accordion works with JavaScript off and keeps the
- * platform's keyboard and screen-reader behaviour. The only transition is a
- * 120ms colour change on the summary.
+ * platform's keyboard and screen-reader behaviour for free. The reference builds
+ * its accordion out of a Framer component with a height tween; the only motion
+ * here is a 120ms colour change on the summary, which is the whole of what an
+ * accordion needs.
+ *
+ * The seven questions and their answers are the reference's, verbatim. The one
+ * change is the apostrophe in "researcher's", which the capture holds as a
+ * mojibake byte.
  */
 
 const FAQS: { q: string; a: ReactNode }[] = [
   {
-    q: "What if you're wrong?",
-    a: (
-      <>
-        <p>
-          Then we want to hear it immediately, and the report is built so you can say so:{" "}
-          <span style={{ color: "var(--ink)" }}>Report this as incorrect</span> sits beside
-          every finding, one click away.
-        </p>
-        <p>
-          Six false findings have been caught so far, all before shipping, and all written down:
-          reading <code className="t-num">86.7/85.9</code> as one number, comparing a bolded value
-          against its whole column instead of its block, treating an &ldquo;All layers&rdquo;
-          column header as an average. Each one is now a test. They are in{" "}
-          <code className="t-num">fixtures/GROUND_TRUTH.md</code> under the heading &ldquo;every
-          case below is a false positive we must not produce&rdquo;.
-        </p>
-        <p>
-          And no high-severity divergence reaches a public permalink unreviewed. A person reads it
-          first; suppressing it requires a reason code, and the suppression is written back into
-          the fixtures as a negative test so the same mistake cannot recur silently.
-        </p>
-      </>
-    ),
-  },
-  {
-    q: "Is this AI detection?",
-    a: (
-      <>
-        <p>
-          No. It does not estimate whether a paper was written by a model, and it never will. That
-          question has no reliable answer, and accusing someone on the strength of a guess is the
-          thing this product exists to avoid.
-        </p>
-        <p>
-          What it does is arithmetic on numbers the authors printed themselves: is the bolded value
-          the best one in its block, does the average column equal the mean of its row, do the
-          links resolve, do the references exist.
-        </p>
-      </>
-    ),
-  },
-  {
-    q: "Do you contact authors?",
+    q: "Who is this for?",
     a: (
       <p>
-        No. Nothing is sent to anyone. A run produces a report for whoever asked for it, and
-        high-severity divergences are held back from public permalinks until a person has reviewed
-        them.
+        Two people. An author, before submitting, who wants the numbers in the paper checked and a
+        report to attach. A reviewer or area chair, who would otherwise redo the arithmetic in a
+        table by hand, or skip it. It verifies numbers, not content, so it does not replace review.
+        It takes one mechanical part off it.
+      </p>
+    ),
+  },
+  {
+    q: "What if you are wrong?",
+    a: (
+      <p>
+        Every finding carries a contest action one click away. Contested findings are recorded and
+        rechecked, and the recheck is deterministic, so a corrected input produces a corrected
+        verdict. Contesting a finding does not suppress it: if it did, contesting would become the
+        way to bury a true finding. Any high-severity diverges finding is held for human review
+        before it appears publicly.
       </p>
     ),
   },
   {
     q: "Does a language model decide any of this?",
     a: (
-      <>
-        <p>
-          Never. A model may extract structure (which cells are in this table, which sentence
-          refers to which cell), and a verdict is then computed by deterministic Python from that
-          structure. No model-derived structure can produce a divergence on its own; it has to be
-          confirmed by recomputation, or the result is unverifiable.
-        </p>
-        <p>
-          All four checks that exist today run without calling a model at all. A probabilistic
-          verdict published about a named researcher is not a feature we are missing.
-        </p>
-      </>
+      <p>
+        No. A language model never produces a verdict. Models extract structure only, such as which
+        cells are in a table and which claim refers to which cell. Every verdict is computed by
+        deterministic Python from that structure. The four checks in the first release call no
+        model at all.
+      </p>
+    ),
+  },
+  {
+    q: "Is this AI detection?",
+    a: (
+      <p>
+        No. It says nothing about how a paper was written. It reads the numbers the paper states
+        and recomputes them.
+      </p>
     ),
   },
   {
     q: "Why does so much come back unverifiable?",
     a: (
-      <>
-        <p>
-          Because the alternative is guessing. When a step in the pipeline discards something a
-          verdict might rest on, the answer is unverifiable with the reason attached, and the
-          comparison is shown anyway. That covers a table whose rows do not match its column spec,
-          a column whose metric direction is not stated, and an average whose denominator is not
-          written down.
-        </p>
-        <p>
-          A run where half the checks come back unverifiable with clear reasons is working as
-          intended. The list of what was not checked is a first-class part of the report, not an
-          error state.
-        </p>
-      </>
+      <p>
+        Because saying nothing beats saying something wrong about a named researcher&rsquo;s work.
+        When a table cannot be read without discarding something a verdict might rest on, the check
+        returns unverifiable with a stated reason and attaches the comparison as evidence, so you
+        still see the numbers. A run that declines to answer often is working as intended.
+      </p>
     ),
   },
   {
-    q: "What does it cost, and what do you keep?",
+    q: "What does it check?",
     a: (
       <p>
-        Nothing yet. It is not a paid product. Papers are fetched from arXiv&rsquo;s public
-        e-print endpoint at one request every three seconds and cached, so the same paper is never
-        pulled twice. Runs are currently held in memory and do not survive a restart, which is
-        also why there is no permalink you can rely on yet.
+        Four things. That each bolded value is the best in its rule-delimited block. That a column
+        labelled average matches the mean of its row. That the URLs printed in the paper still
+        resolve. That every reference in the bibliography exists. Anything beyond those four is on
+        the roadmap and is not running.
+      </p>
+    ),
+  },
+  {
+    q: "Where do the numbers come from?",
+    a: (
+      <p>
+        The LaTeX source, not the PDF. A paper is often many files joined by <Mono>input</Mono> and{" "}
+        <Mono>include</Mono>, with macros defined in one file and used in another, so the source is
+        resolved and the macro table built before anything is parsed.
       </p>
     ),
   },
@@ -113,43 +99,76 @@ const FAQS: { q: string; a: ReactNode }[] = [
 
 export function Faq() {
   return (
-    <div className="mt-12 max-w-[74ch]">
-      {FAQS.map((item) => (
-        <details
-          key={item.q}
-          className="group border-t py-1"
-          style={{ borderColor: "var(--grid)" }}
-        >
-          <summary
-            className="cursor-pointer list-none py-4 transition-colors marker:content-none"
-            style={{
-              fontFamily: "var(--font-doc), ui-serif, Georgia, serif",
-              color: "var(--ink)",
-              fontSize: "20px",
-              lineHeight: 1.4,
-              transitionDuration: "var(--dur-fast)",
-            }}
-          >
-            <span className="flex items-baseline gap-4">
-              <span
-                aria-hidden="true"
-                className="t-num shrink-0"
-                style={{ color: "var(--mark)", fontSize: "13px" }}
+    <section id="faq" className="scroll-mt-20 py-14 three:py-[120px]">
+      <Container>
+        <SectionTag tag="FAQ" heading="Questions worth asking" />
+
+        <div className="mt-10 flex flex-col gap-6 three:mt-12 three:flex-row three:items-start three:gap-10">
+          <Reveal className="three:w-[380px] three:shrink-0">
+            <Card className="flex flex-col gap-6 p-8">
+              <h3
+                style={{
+                  fontSize: "20px",
+                  fontWeight: 400,
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1.6,
+                  color: "var(--site-ink)",
+                }}
               >
-                <span className="group-open:hidden">+</span>
-                <span className="hidden group-open:inline">−</span>
-              </span>
-              <span>{item.q}</span>
-            </span>
-          </summary>
-          <div
-            className="flex flex-col gap-3 pt-1 pb-6 pl-[30px]"
-            style={{ color: "var(--ink-dim)", fontSize: "15px", lineHeight: 1.65 }}
-          >
-            {item.a}
-          </div>
-        </details>
-      ))}
-    </div>
+                Every finding has a contest action one click away.
+              </h3>
+              <PrimaryLink href="/check" className="self-start">
+                Check a paper
+              </PrimaryLink>
+              <p className="site-body" style={{ fontSize: "14px" }}>
+                Contested findings are recorded and rechecked. The recheck is deterministic, so a
+                corrected input produces a corrected verdict. See{" "}
+                <Link href="/reports/1810.04805" style={{ color: "var(--site-ink)" }}>
+                  a finished report
+                </Link>
+                .
+              </p>
+            </Card>
+          </Reveal>
+
+          <Reveal delay={0.08} className="min-w-0 three:flex-1">
+            <div>
+              {FAQS.map((item) => (
+                <details
+                  key={item.q}
+                  className="group border-b"
+                  style={{ borderColor: "var(--site-line)" }}
+                >
+                  <summary
+                    className="flex cursor-pointer list-none items-baseline justify-between gap-6 py-5 transition-colors marker:content-none"
+                    style={{
+                      fontSize: "clamp(17px, 1.5vw, 20px)",
+                      fontWeight: 400,
+                      letterSpacing: "-0.02em",
+                      lineHeight: 1.6,
+                      color: "var(--site-ink)",
+                      transitionDuration: "var(--dur-fast)",
+                    }}
+                  >
+                    <span>{item.q}</span>
+                    <span
+                      aria-hidden="true"
+                      className="site-mono shrink-0"
+                      style={{ fontSize: "16px", color: "var(--site-muted)" }}
+                    >
+                      <span className="group-open:hidden">+</span>
+                      <span className="hidden group-open:inline">&minus;</span>
+                    </span>
+                  </summary>
+                  <div className="site-body max-w-[70ch] pb-6" style={{ fontSize: "15px" }}>
+                    {item.a}
+                  </div>
+                </details>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </Container>
+    </section>
   );
 }

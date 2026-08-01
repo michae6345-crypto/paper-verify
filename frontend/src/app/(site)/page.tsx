@@ -1,5 +1,6 @@
 import { Checks } from "@/components/site/checks";
 import { Decides } from "@/components/site/decides";
+import { Faq } from "@/components/site/faq";
 import { Hero } from "@/components/site/hero";
 import { Intro } from "@/components/site/intro";
 import { Measured } from "@/components/site/measured";
@@ -24,6 +25,7 @@ export default function SitePage() {
       <Checks />
       <Decides />
       <Measured />
+      <Faq />
     </>
   );
 }
