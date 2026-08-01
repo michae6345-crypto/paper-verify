@@ -25,7 +25,15 @@ There is no worktree isolation. The only thing preventing lost work is this map.
 | B — Table parser | `backend/pv/parse/**`, `tests/test_parse.py` | contract |
 | C — Checks 1 & 3 | `backend/pv/checks/bold_extreme.py`, `backend/pv/checks/row_arithmetic.py`, `backend/pv/checks/registry.py`, `tests/test_checks_arith.py` | contract (not B's code) |
 | D — Links & citations | `backend/pv/checks/links.py`, `backend/pv/checks/citations.py`, `backend/pv/checks/repos.py`, `backend/pv/adapters/http.py`, `tests/test_links.py` | contract |
-| E — Frontend | `frontend/**` | contract → generated types |
+| E — Design system & shell | `frontend/**` except the paths below | contract → generated types |
+| F — Gutter & document pane | `frontend/components/gutter/**`, `frontend/components/document/**`, `frontend/components/verdict/**` | E's tokens and shell |
+| G — API & streaming | `backend/pv/api/**`, `tests/test_api.py` | contract, `run.py` |
+
+Wave 2 note: E and F both work in `frontend/`. E lays the foundation — tokens, shell,
+type generation — and F fills the gutter, document pane, and verdict detail. F must not
+start before E's tokens exist, and must not edit E's shell or token files. This is the
+same keystone problem the backend had: everything depends on the contract, so the
+contract goes first and the parallel work meets at it.
 
 ## Interface points
 
