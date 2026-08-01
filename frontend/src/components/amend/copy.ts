@@ -22,8 +22,9 @@ import type { Amendment } from "@/types/run-report";
 export const CONTEST_ACTION = "Contest this finding";
 
 export const CONTEST_INTRO =
-  "Say what this check got wrong. Your statement is published with the finding, " +
-  "in your words, and the finding stays on the record next to it.";
+  "Say what this check got wrong. A person reads every statement before it is " +
+  "shown on this page, and once it is shown it appears in your words, with the " +
+  "finding still on the record next to it.";
 
 export const STATEMENT_LABEL = "What we got wrong";
 export const STATEMENT_PLACEHOLDER =
@@ -39,17 +40,36 @@ export const SENDING = "Sending";
 export const RECHECK_ACTION = "Check this claim again";
 
 /**
- * Shown once a statement is recorded. It promises exactly what happens and
- * nothing more: we do not promise a correction, a retraction, or a timeline.
+ * Shown once a statement is recorded.
+ *
+ * It promises exactly what happens and nothing more. In particular it does not
+ * say the statement is now published, because it is not: there is no auth layer,
+ * so every statement lands in the §14.8 review queue and a person reads it before
+ * it appears. An earlier draft of this string said "shown with this finding from
+ * now on", which was a promise the gate does not keep — and a false promise made
+ * to someone who has just been told in public that their numbers do not add up is
+ * about the worst sentence this product could print.
+ *
+ * No correction is promised, no retraction, and no timeline.
  */
 export const CONTEST_RECEIVED =
-  "Recorded. Your statement is shown with this finding from now on.";
+  "Recorded. A person will read your statement before it is shown on this page. " +
+  "The finding stays as it is either way.";
 
 export const HISTORY_TITLE = "Amendments";
 
+/**
+ * Deliberately not "statements from the paper's authors". There is no auth layer
+ * (`backend/pv/amendments/submitter.py`), so we cannot say who sent one — and
+ * writing an attribution we cannot stand behind onto a page carrying a named
+ * researcher's name is the failure this whole flow exists to avoid. A person
+ * reads each one before it appears here, which is what makes the section
+ * publishable at all, and the sentence says so.
+ */
 export const HISTORY_BLURB =
-  "Statements from the paper's authors about findings in this report, oldest " +
-  "first. An amendment never removes a finding; both stay on the record.";
+  "Statements about findings in this report, oldest first, each one read by a " +
+  "person before it was shown. An amendment never removes a finding; both stay " +
+  "on the record.";
 
 export const HISTORY_EMPTY = "No statements have been made about this report.";
 

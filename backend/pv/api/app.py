@@ -28,12 +28,14 @@ from sse_starlette.sse import EventSourceResponse
 from ..amendments import AmendmentStore, recheck_finding
 from ..amendments.identity import fingerprints_in
 from ..amendments.recheck import FindingNotInRun
+from ..amendments.submitter import submitter_of
 from ..checks.repos import find_repositories, find_repository_candidates
 from ..models import Amendment, Artifact, RunReport
 from ..orchestrator import RunNotFound, RunNotWaiting, get_orchestrator
 from ..review import (
     ReleaseRequiresReview,
     ReviewEntry,
+    ReviewKind,
     ReviewQueue,
     ReviewState,
     held_notice,
@@ -46,6 +48,7 @@ from .schemas import (
     ConfirmArtifactRequest,
     CreateAmendmentRequest,
     CreateRunRequest,
+    DeclineAmendmentRequest,
     DoneEvent,
     FindingIndex,
     PublicReport,
@@ -193,8 +196,15 @@ async def get_public_report(run_id: str = Path(...)) -> PublicReport:
     an unread high-severity divergence appears here.
     """
     report = _report_with_amendments(run_id)
-    public, held = redact(report, review, run_id)
-    return PublicReport(run_id=run_id, report=public, held=held, notice=held_notice(held))
+    public, withheld = redact(report, review, run_id)
+    return PublicReport(
+        run_id=run_id,
+        report=public,
+        held_findings=withheld.findings,
+        held_amendments=withheld.amendments,
+        held=withheld.total,
+        notice=held_notice(withheld),
+    )
 
 
 @app.post("/runs/{run_id}/artifact", response_model=Run, tags=["runs"])
@@ -293,7 +303,7 @@ async def stream_run(request: Request, run_id: str = Path(...)) -> EventSourceRe
     tags=["amendments"],
 )
 async def create_amendment(
-    body: CreateAmendmentRequest, run_id: str = Path(...)
+    body: CreateAmendmentRequest, request: Request, run_id: str = Path(...)
 ) -> Amendment:
     """Contest one finding. A normal action, not a complaint form.
 
@@ -305,10 +315,34 @@ async def create_amendment(
     improve a check without silently carrying an author's objection onto a reading
     of their paper they have never seen.
 
+    **This endpoint is unauthenticated, and what that means is deliberate.**
+    There is no auth layer in this system, so anyone who can reach this can file a
+    statement against any finding on any paper. Two consequences are designed for
+    rather than hoped away:
+
+    - Nothing recorded here claims to know who sent it. The request carries no
+      name field; identity is derived from the request by
+      `pv.amendments.submitter`, which today returns "not identified" for
+      everyone. A self-declared name printed beside a statement on a named
+      researcher's page would be an attribution nobody could defend.
+    - **Filing this changes nothing a reader sees.** The statement lands in the
+      §14.8 review queue alongside high-severity divergences and stays off the
+      public permalink until a person reads it, and holding it back leaves the
+      contested finding exactly where it was. If a contest could suppress a
+      finding, anyone could bury a true one by objecting to it.
+
+    An amendment from an unknown party is a signal for a human to look at, never
+    an automatic correction. Attaching an auth layer later changes `submitter_of`
+    and the release policy; it does not change this endpoint's shape.
+
     404 when no finding in this run carries that fingerprint. That is usually not
     a client error: it is what a stale permalink looks like after the check that
     produced the finding was improved.
     """
+    # Read from the transport, never from the body. Unused today because there is
+    # nothing on a request we are willing to treat as an identity — see
+    # `pv.amendments.submitter`.
+    _submitter = submitter_of(request)
     report = _record_or_404(run_id).report()
     located = fingerprints_in(report).get(body.finding_fingerprint)
     if located is None:
@@ -458,7 +492,11 @@ async def recheck_amendment(
 def _review_item(entry: ReviewEntry) -> ReviewItem:
     return ReviewItem(
         fingerprint=entry.fingerprint,
+        kind=entry.kind,
         state=entry.state,
+        statement=entry.statement,
+        submitter=entry.submitter,
+        contests=entry.contests,
         checker=entry.checker,
         checker_version=entry.checker_version,
         policy_version=entry.policy_version,
@@ -480,19 +518,100 @@ def _review_item(entry: ReviewEntry) -> ReviewItem:
 async def get_review_queue(run_id: str = Path(...)) -> ReviewQueueResponse:
     """Everything in this run the gate holds, in report order.
 
-    Released findings stay in the list with `state: released`. The queue is the
+    Two kinds, in one list. `finding` is §14.8's: a claim we would make about a
+    named researcher. `amendment` is a statement an unidentified sender has made
+    about us on that researcher's page — there is no auth layer, so every one of
+    them lands here. Findings first, because an amendment cannot be judged without
+    the finding it answers.
+
+    Released items stay in the list with `state: released`. The queue is the
     record of what was reviewed, not only of what is outstanding — a list that
     empties as decisions are made cannot answer "who released this, and when".
     """
     record = _record_or_404(run_id)
-    report = record.report()
+    report = _report_with_amendments(run_id)
     items = [_review_item(e) for e in review.pending(run_id, report)]
+    outstanding = [i for i in items if i.state is not ReviewState.RELEASED]
     return ReviewQueueResponse(
         run_id=run_id,
         arxiv_id=record.arxiv_id,
         items=items,
-        held=sum(1 for i in items if i.state is not ReviewState.RELEASED),
+        held=len(outstanding),
+        held_findings=sum(1 for i in outstanding if i.kind is ReviewKind.FINDING),
+        held_amendments=sum(1 for i in outstanding if i.kind is ReviewKind.AMENDMENT),
     )
+
+
+@app.post(
+    "/runs/{run_id}/review/amendments/{fingerprint}/release",
+    response_model=ReviewItem,
+    tags=["review"],
+)
+async def release_amendment(
+    body: ReleaseRequest, run_id: str = Path(...), fingerprint: str = Path(...)
+) -> ReviewItem:
+    """A person has read this statement and it may appear on the permalink.
+
+    `fingerprint` is the amendment's own — `pv.amendments.identity.
+    amendment_fingerprint`, over what the statement says and when it arrived.
+    Not the finding's: a finding and the statement contesting it are two separate
+    decisions, and releasing one must never release the other.
+
+    Per row, not per thread. A recheck appends a superseding row carrying our
+    sentence alongside theirs, and that row is text nobody has read yet.
+    """
+    report = _report_with_amendments(run_id)
+    try:
+        entry = review.release(
+            run_id,
+            report,
+            fingerprint,
+            kind=ReviewKind.AMENDMENT,
+            by=body.decided_by,
+            note=body.note,
+        )
+    except ReleaseRequiresReview as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from None
+    return _review_item(entry)
+
+
+@app.post(
+    "/runs/{run_id}/review/amendments/{fingerprint}/decline",
+    response_model=ReviewItem,
+    tags=["review"],
+)
+async def decline_amendment(
+    body: DeclineAmendmentRequest, run_id: str = Path(...), fingerprint: str = Path(...)
+) -> ReviewItem:
+    """This statement is not published on the paper's page.
+
+    Not the same act as suppressing a finding, and it uses a different vocabulary
+    for a reason: suppressing says we read a paper wrong, declining says nothing
+    about the paper at all. `authorship_unverified` is expected to be the common
+    outcome until there is an auth layer, and it is not a judgement about the
+    sender or about whether the statement is true.
+
+    Writes **no negative fixture.** A fixture is a regression test against our own
+    checker; a statement we did not publish is not a checker defect and must not
+    be filed as though we had fixed one.
+
+    Deletes nothing. The amendment stays in the append-only log and remains
+    readable at `GET /runs/{id}/amendments`; what changes is that the permalink
+    does not carry it. The finding it contests is untouched either way.
+    """
+    report = _report_with_amendments(run_id)
+    try:
+        entry = review.decline(
+            run_id,
+            report,
+            fingerprint,
+            reason=body.reason,
+            note=body.note,
+            by=body.decided_by,
+        )
+    except ReleaseRequiresReview as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from None
+    return _review_item(entry)
 
 
 @app.post(

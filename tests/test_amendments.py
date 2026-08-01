@@ -28,8 +28,10 @@ from pv.amendments.identity import (
 )
 from pv.amendments.recheck import FindingNotInRun, recheck_finding
 from pv.amendments.store import AmendmentStore
+from pv.amendments.submitter import UNKNOWN, Submitter, requires_review, submitter_of
 from pv.api import app as app_module
 from pv.api.config import Settings
+from pv.api.schemas import CreateAmendmentRequest
 from pv.api.store import RunStore
 from pv.models import (
     Amendment,
@@ -180,6 +182,37 @@ def test_locate_finding_returns_none_rather_than_raising():
     """None is a normal answer: it is what a stale permalink looks like after the
     check that produced the finding was improved."""
     assert locate_finding(a_report(), "0" * 64) is None
+
+
+# --------------------------------------------------------------------------
+# Who filed it
+# --------------------------------------------------------------------------
+
+
+def test_nobody_is_identified_and_nothing_pretends_otherwise():
+    """There is no auth layer. The honest value is "we do not know", and the label
+    a reviewer sees has to say that rather than showing something that reads like
+    a name."""
+    submitter = submitter_of(request=None)
+    assert submitter.verified is False
+    assert submitter.identity == ""
+    assert submitter.source == "none"
+    assert submitter.label == "Sender not identified"
+
+
+def test_an_unverified_sender_always_requires_review():
+    """The policy the review gate reads, in one place, so that turning it into
+    "verified authors publish immediately" is a change there and nowhere else."""
+    assert requires_review(UNKNOWN) is True
+    assert requires_review(Submitter(identity="0000-0002", verified=True, source="orcid")) is False
+
+
+def test_the_request_body_carries_no_name_field():
+    """A client-supplied name is not an identity. A field that looks like one is
+    worse than none: it invites the UI to print an attribution beside a statement
+    on a named researcher's page that nobody could defend."""
+    fields = set(CreateAmendmentRequest.model_fields)
+    assert fields == {"finding_fingerprint", "author_statement", "corrected_value"}
 
 
 # --------------------------------------------------------------------------

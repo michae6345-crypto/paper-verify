@@ -33,6 +33,29 @@ fixture under `fixtures/suppressions/`, so the mistake becomes a permanent
 regression test rather than a decision someone remembers. A suppression with no
 fixture behind it is just a deletion, and this codebase has already demonstrated
 that the same class of defect recurs.
+
+## The queue has two sources, and they are not symmetrical
+
+§14.8 names one: a finding *we* assert about a named researcher. There is a
+second, which the architecture does not name because the amendment flow did not
+exist when it was written: a statement *someone else* asserts about us, on a page
+carrying a named researcher's name. There is no auth layer
+(`pv.amendments.submitter`), so anyone can send one. Both must be read by a
+person before they are public, and both land here.
+
+What they must **not** share is the effect of being held:
+
+    A held finding is withheld.
+    A held amendment is withheld — and the finding it contests stays exactly
+    where it was.
+
+The asymmetry is the whole point. If contesting a finding suppressed it, then
+anyone who could reach the endpoint could erase any finding from any public
+report by objecting to it, and the flow built to protect authors from a false
+accusation would become the mechanism for burying a true one. So an amendment
+never changes what a report says. It is a signal for a person to look at, and
+until a person has looked, the permalink shows what the run found and nothing
+else.
 """
 
 from __future__ import annotations
@@ -44,7 +67,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 
-from .models import CheckResult, Finding, RunReport, Severity, Verdict
+from .models import Amendment, CheckResult, Finding, RunReport, Severity, Verdict
 
 # Where suppressions land. Sibling of fixtures/reports/, which holds what the
 # system *does* say; this holds what it must never say again.
@@ -53,6 +76,24 @@ SUPPRESSIONS_DIR = Path(__file__).resolve().parents[2] / "fixtures" / "suppressi
 
 def _now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+class ReviewKind(str, Enum):
+    """What sort of thing is waiting, because the two are not interchangeable.
+
+    `finding`   something we assert about a named researcher. Held means the
+                claim is withheld from the permalink.
+    `amendment` something an unidentified sender asserts about us, on a page
+                carrying that researcher's name. Held means the *statement* is
+                withheld; the finding it contests is untouched.
+
+    Keeping these distinct in one enum rather than in two queues is deliberate:
+    one reviewer, one list, one place where "what is waiting" is answered. A
+    second queue is a second thing to forget to read.
+    """
+
+    FINDING = "finding"
+    AMENDMENT = "amendment"
 
 
 class ReviewState(str, Enum):
@@ -98,6 +139,41 @@ class SuppressionReason(str, Enum):
     NOT_A_DISCREPANCY = "not_a_discrepancy"
 
 
+class AmendmentDeclineReason(str, Enum):
+    """Why a statement is not published. Required, for the same reason a
+    suppression's is: an unexplained decision not to publish someone's words is
+    exactly the thing this flow exists to make impossible.
+
+    A separate vocabulary from `SuppressionReason` on purpose. Those say we read a
+    paper wrong. These say nothing about the paper at all — declining to publish a
+    statement is never a finding that the statement is untrue, and the enum must
+    not let anyone imply that it is. `AUTHORSHIP_UNVERIFIED` is expected to be the
+    common one until there is an auth layer.
+    """
+
+    # We cannot establish that this came from an author of the paper. The default
+    # outcome today, and not a judgement about the sender or the statement.
+    AUTHORSHIP_UNVERIFIED = "authorship_unverified"
+    # The statement does not address the comparison the finding makes.
+    NOT_ABOUT_THE_FINDING = "not_about_the_finding"
+    # The sender asked us to withdraw it.
+    WITHDRAWN_BY_SENDER = "withdrawn_by_sender"
+    # Content we will not host on a page carrying someone's name.
+    NOT_PUBLISHABLE = "not_publishable"
+
+
+DECLINE_LABEL: dict[AmendmentDeclineReason, str] = {
+    AmendmentDeclineReason.AUTHORSHIP_UNVERIFIED: (
+        "We could not confirm this came from an author of the paper"
+    ),
+    AmendmentDeclineReason.NOT_ABOUT_THE_FINDING: (
+        "The statement does not address this comparison"
+    ),
+    AmendmentDeclineReason.WITHDRAWN_BY_SENDER: "The sender withdrew it",
+    AmendmentDeclineReason.NOT_PUBLISHABLE: "We will not publish this on the paper's page",
+}
+
+
 # Shown to a reviewer next to each option. Sentence case, active voice, and about
 # what we got wrong rather than about what the author did.
 SUPPRESSION_LABEL: dict[SuppressionReason, str] = {
@@ -122,18 +198,27 @@ class ReviewEntry:
     run_id: str
     arxiv_id: str
     fingerprint: str
-    checker: str
-    checker_version: str
-    policy_version: str
-    siglum: str
-    locator: str
-    claimed: str | None
-    computed: str | None
-    delta: str | None
-    verbatim: str
-    explanation: str
+    kind: ReviewKind = ReviewKind.FINDING
+    checker: str = ""
+    checker_version: str = ""
+    policy_version: str = ""
+    siglum: str = ""
+    locator: str = ""
+    claimed: str | None = None
+    computed: str | None = None
+    delta: str | None = None
+    verbatim: str = ""
+    explanation: str = ""
+    # Amendment entries only: the statement, and what we can say about who sent
+    # it. `submitter` is a label from `pv.amendments.submitter`, never a name a
+    # client supplied — printing a self-declared name beside a statement on a
+    # named researcher's page is the failure this whole seam exists to prevent.
+    statement: str = ""
+    submitter: str = ""
+    # The judgement this statement contests. Lets a reviewer see both halves.
+    contests: str = ""
     state: ReviewState = ReviewState.HELD
-    reason: SuppressionReason | None = None
+    reason: SuppressionReason | AmendmentDeclineReason | None = None
     note: str = ""
     decided_at: datetime | None = None
     decided_by: str = ""
@@ -144,6 +229,7 @@ def _entry(run_id: str, arxiv_id: str, check: CheckResult, finding: Finding, fp:
         run_id=run_id,
         arxiv_id=arxiv_id,
         fingerprint=fp,
+        kind=ReviewKind.FINDING,
         checker=check.checker,
         checker_version=check.checker_version,
         policy_version=check.policy_version,
@@ -154,6 +240,26 @@ def _entry(run_id: str, arxiv_id: str, check: CheckResult, finding: Finding, fp:
         delta=finding.delta,
         verbatim=finding.verbatim,
         explanation=finding.explanation,
+    )
+
+
+def _amendment_entry(
+    run_id: str, arxiv_id: str, amendment: Amendment, fp: str, submitter: str
+) -> ReviewEntry:
+    return ReviewEntry(
+        run_id=run_id,
+        arxiv_id=arxiv_id,
+        fingerprint=fp,
+        kind=ReviewKind.AMENDMENT,
+        locator=amendment.claim_id,
+        statement=amendment.author_statement,
+        claimed=amendment.corrected_value,
+        submitter=submitter,
+        contests=amendment.finding_fingerprint,
+        # Our own sentence about a recheck, if there was one — kept in the field
+        # that already means "the system's sentence", and visibly apart from
+        # `statement`, which is theirs. `note` is the reviewer's and stays free.
+        explanation=amendment.resolution_note,
     )
 
 
@@ -172,26 +278,37 @@ class ReviewQueue:
     """
 
     suppressions_dir: Path = SUPPRESSIONS_DIR
-    _decisions: dict[tuple[str, str], ReviewEntry] = field(default_factory=dict)
+    # Keyed by (run, kind, fingerprint). The kind is in the key because a finding
+    # and the amendment contesting it are two separate decisions, and releasing
+    # one must never release the other.
+    _decisions: dict[tuple[str, ReviewKind, str], ReviewEntry] = field(default_factory=dict)
 
     # -- reads ------------------------------------------------------------
 
-    def state_of(self, run_id: str, fingerprint: str) -> ReviewState:
-        entry = self._decisions.get((run_id, fingerprint))
+    def state_of(
+        self, run_id: str, fingerprint: str, kind: ReviewKind = ReviewKind.FINDING
+    ) -> ReviewState:
+        entry = self._decisions.get((run_id, kind, fingerprint))
         return entry.state if entry is not None else ReviewState.HELD
 
-    def is_public(self, run_id: str, fingerprint: str) -> bool:
-        return self.state_of(run_id, fingerprint) is ReviewState.RELEASED
+    def is_public(
+        self, run_id: str, fingerprint: str, kind: ReviewKind = ReviewKind.FINDING
+    ) -> bool:
+        return self.state_of(run_id, fingerprint, kind) is ReviewState.RELEASED
 
     def pending(self, run_id: str, report: RunReport) -> list[ReviewEntry]:
         """Everything in this run the gate holds, decided or not, in report order.
 
-        A released finding stays in the list with `state: released`. The queue is
-        the record of what was reviewed, not only of what is outstanding — a list
-        that empties as decisions are made loses the ability to answer "who
-        released this, and when".
+        Findings first, then amendments — the order a reviewer needs them in, since
+        an amendment cannot be judged without the finding it answers.
+
+        A released item stays in the list with `state: released`. The queue is the
+        record of what was reviewed, not only of what is outstanding — a list that
+        empties as decisions are made loses the ability to answer "who released
+        this, and when".
         """
-        from .amendments.identity import finding_fingerprint
+        from .amendments.identity import amendment_fingerprint, finding_fingerprint
+        from .amendments.submitter import UNKNOWN
 
         out: list[ReviewEntry] = []
         for check in report.checks:
@@ -199,8 +316,21 @@ class ReviewQueue:
                 if not is_gated(check, finding):
                     continue
                 fp = finding_fingerprint(check, finding)
-                decided = self._decisions.get((run_id, fp))
+                decided = self._decisions.get((run_id, ReviewKind.FINDING, fp))
                 out.append(decided or _entry(run_id, report.arxiv_id, check, finding, fp))
+
+        # Every amendment, not only the standing one per finding. Each row carries
+        # text nobody has read — a superseding row from a recheck adds our sentence
+        # to theirs — so each is its own decision.
+        for amendment in report.amendments or []:
+            fp = amendment_fingerprint(amendment)
+            decided = self._decisions.get((run_id, ReviewKind.AMENDMENT, fp))
+            out.append(
+                decided
+                or _amendment_entry(
+                    run_id, report.arxiv_id, amendment, fp, UNKNOWN.label
+                )
+            )
         return out
 
     def held_count(self, run_id: str, report: RunReport) -> int:
@@ -208,25 +338,69 @@ class ReviewQueue:
 
     # -- writes -----------------------------------------------------------
 
-    def _locate(self, run_id: str, report: RunReport, fingerprint: str) -> ReviewEntry:
+    def _locate(
+        self,
+        run_id: str,
+        report: RunReport,
+        fingerprint: str,
+        kind: ReviewKind = ReviewKind.FINDING,
+    ) -> ReviewEntry:
         for entry in self.pending(run_id, report):
-            if entry.fingerprint == fingerprint:
+            if entry.fingerprint == fingerprint and entry.kind is kind:
                 return entry
         raise ReleaseRequiresReview(
-            f"No finding held for review in run {run_id} carries that fingerprint."
+            f"Nothing held for review in run {run_id} carries that fingerprint."
         )
 
     def release(
-        self, run_id: str, report: RunReport, fingerprint: str, *, by: str = "", note: str = ""
+        self,
+        run_id: str,
+        report: RunReport,
+        fingerprint: str,
+        *,
+        kind: ReviewKind = ReviewKind.FINDING,
+        by: str = "",
+        note: str = "",
     ) -> ReviewEntry:
         """A person has read this and it may be published."""
-        entry = self._locate(run_id, report, fingerprint)
+        entry = self._locate(run_id, report, fingerprint, kind)
         entry.state = ReviewState.RELEASED
         entry.reason = None
         entry.note = note
         entry.decided_at = _now()
         entry.decided_by = by
-        self._decisions[(run_id, fingerprint)] = entry
+        self._decisions[(run_id, kind, fingerprint)] = entry
+        return entry
+
+    def decline(
+        self,
+        run_id: str,
+        report: RunReport,
+        fingerprint: str,
+        *,
+        reason: AmendmentDeclineReason,
+        note: str = "",
+        by: str = "",
+    ) -> ReviewEntry:
+        """This statement is not published on the paper's page.
+
+        Not the same act as suppressing a finding, and deliberately not the same
+        method. Declining writes **no negative fixture**: a fixture records a
+        judgement *we* made and withdrew, and is a regression test against our own
+        checker. A statement we did not publish says nothing about a checker and
+        must not be filed as though it were a defect we fixed.
+
+        It deletes nothing either. The amendment stays in the append-only log and
+        remains readable at `GET /runs/{id}/amendments`; what changes is that the
+        permalink does not carry it.
+        """
+        entry = self._locate(run_id, report, fingerprint, ReviewKind.AMENDMENT)
+        entry.state = ReviewState.SUPPRESSED
+        entry.reason = reason
+        entry.note = note
+        entry.decided_at = _now()
+        entry.decided_by = by
+        self._decisions[(run_id, ReviewKind.AMENDMENT, fingerprint)] = entry
         return entry
 
     def suppress(
@@ -247,13 +421,13 @@ class ReviewQueue:
         writes a negative fixture fixes the class of defect, because the fixture
         is a test that fails the day the same reading comes back.
         """
-        entry = self._locate(run_id, report, fingerprint)
+        entry = self._locate(run_id, report, fingerprint, ReviewKind.FINDING)
         entry.state = ReviewState.SUPPRESSED
         entry.reason = reason
         entry.note = note
         entry.decided_at = _now()
         entry.decided_by = by
-        self._decisions[(run_id, fingerprint)] = entry
+        self._decisions[(run_id, ReviewKind.FINDING, fingerprint)] = entry
         if write_fixture:
             write_negative_fixture(entry, directory=self.suppressions_dir)
         return entry
@@ -264,24 +438,52 @@ class ReviewQueue:
 # --------------------------------------------------------------------------
 
 
-def redact(report: RunReport, queue: ReviewQueue, run_id: str) -> tuple[RunReport, int]:
-    """The public view of a report, and how many findings it is withholding.
+@dataclass(frozen=True)
+class Withheld:
+    """What a public report is not showing, counted by kind.
+
+    Two numbers rather than one because they mean opposite things to a reader:
+    a withheld finding is something we might yet say about this paper, and a
+    withheld statement is something someone else has said about us.
+    """
+
+    findings: int = 0
+    amendments: int = 0
+
+    @property
+    def total(self) -> int:
+        return self.findings + self.amendments
+
+    def __bool__(self) -> bool:
+        return self.total > 0
+
+
+def redact(report: RunReport, queue: ReviewQueue, run_id: str) -> tuple[RunReport, Withheld]:
+    """The public view of a report, and what it is withholding.
 
     Returns a copy. The stored report is never modified: it is the record of what
     the run found, and the gate governs publication, not the record.
 
-    A check whose findings are *all* held loses the whole `CheckResult`, verdict
-    included. Keeping the row and dropping its evidence would publish "this
-    paper's numbers diverge" with nothing behind it — a confident accusation
-    standing on data we deliberately withheld, which is the recurring defect in
-    this codebase wearing a different hat. A check with some findings held keeps
-    the rest: the verdict is still supported by what remains on the page.
+    **Findings.** A check whose findings are *all* held loses the whole
+    `CheckResult`, verdict included. Keeping the row and dropping its evidence
+    would publish "this paper's numbers diverge" with nothing behind it — a
+    confident accusation standing on data we deliberately withheld, which is the
+    recurring defect in this codebase wearing a different hat. A check with some
+    findings held keeps the rest: the verdict is still supported by what remains.
+
+    **Amendments.** Withheld until read, and — this is the part that matters —
+    withholding one changes nothing else. The findings above are computed without
+    reference to whether anything contests them. There is no auth layer
+    (`pv.amendments.submitter`), so if a contest could suppress a finding, anyone
+    who could reach the endpoint could erase any finding from any public report by
+    objecting to it. The flow built to protect authors from a false accusation
+    would become the mechanism for burying a true one.
     """
-    from .amendments.identity import finding_fingerprint
+    from .amendments.identity import amendment_fingerprint, finding_fingerprint
 
     public = report.model_copy(deep=True)
     kept: list[CheckResult] = []
-    held = 0
+    held_findings = 0
 
     for check in public.checks:
         gated = [f for f in check.findings if is_gated(check, f)]
@@ -296,32 +498,66 @@ def redact(report: RunReport, queue: ReviewQueue, run_id: str) -> tuple[RunRepor
             if queue.is_public(run_id, finding_fingerprint(check, finding)):
                 visible.append(finding)
             else:
-                held += 1
+                held_findings += 1
         if not visible:
             continue  # the whole check goes; its verdict has no evidence left
         check.findings = visible
         kept.append(check)
 
     public.checks = kept
-    return public, held
+
+    published: list[Amendment] = []
+    held_amendments = 0
+    for amendment in public.amendments or []:
+        if queue.is_public(run_id, amendment_fingerprint(amendment), ReviewKind.AMENDMENT):
+            published.append(amendment)
+        else:
+            held_amendments += 1
+    public.amendments = published
+
+    return public, Withheld(findings=held_findings, amendments=held_amendments)
 
 
 # §7: sentence case, active voice, and no suggestion that anything went wrong.
-# A held finding is one a person has not read yet, which is a normal state of a
+# A held item is one a person has not read yet, which is the normal state of a
 # fresh run and must not read as an error or as a hint of something scandalous.
 HELD_NOTICE = (
-    "Some findings in this report are being read by a person before they are "
-    "shown here."
+    "Some findings in this report are being read by a person before they are shown here."
+)
+
+# Written so that neither reading is available to someone scanning it: not "an
+# author has objected" (we do not know that anyone here is an author) and not "a
+# statement was rejected" (nothing has been decided). It says only what is true —
+# something arrived and has not been read.
+HELD_AMENDMENT_NOTICE = (
+    "Statements about this report are being read by a person before they are shown here."
 )
 
 
-def held_notice(held: int) -> str:
-    """The one line a public report shows when it is withholding something."""
-    if held <= 0:
-        return ""
-    if held == 1:
-        return "One finding in this report is being read by a person before it is shown here."
-    return HELD_NOTICE
+def held_notice(held: Withheld | int) -> str:
+    """The one line a public report shows when it is withholding something.
+
+    Accepts a plain count for the finding-only case, so a caller that has one
+    number does not have to construct a `Withheld` to ask.
+    """
+    counts = Withheld(findings=held) if isinstance(held, int) else held
+
+    sentences: list[str] = []
+    if counts.findings == 1:
+        sentences.append(
+            "One finding in this report is being read by a person before it is shown here."
+        )
+    elif counts.findings > 1:
+        sentences.append(HELD_NOTICE)
+
+    if counts.amendments == 1:
+        sentences.append(
+            "A statement about this report is being read by a person before it is shown here."
+        )
+    elif counts.amendments > 1:
+        sentences.append(HELD_AMENDMENT_NOTICE)
+
+    return " ".join(sentences)
 
 
 # --------------------------------------------------------------------------
@@ -387,12 +623,17 @@ def read_negative_fixtures(directory: Path = SUPPRESSIONS_DIR) -> list[dict]:
 
 
 __all__ = [
+    "AmendmentDeclineReason",
+    "DECLINE_LABEL",
+    "HELD_AMENDMENT_NOTICE",
     "HELD_NOTICE",
     "ReleaseRequiresReview",
     "ReviewEntry",
+    "ReviewKind",
     "ReviewQueue",
     "ReviewState",
     "SUPPRESSION_LABEL",
+    "Withheld",
     "SUPPRESSIONS_DIR",
     "SuppressionReason",
     "fixture_name",

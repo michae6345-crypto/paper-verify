@@ -69,9 +69,26 @@
  * The review gate (§14.8) has no component in this directory. Its surface is an
  * operator's queue, not a reader's, and putting a suppress control anywhere near
  * a report page is how one gets pressed by accident. It is served by
- * `GET /runs/{id}/review` and the two decision endpoints, and the redaction it
+ * `GET /runs/{id}/review` and the decision endpoints, and the redaction it
  * enforces is already applied server-side by `GET /runs/{id}/report/public` —
  * a public page needs no client-side gate logic, and must not have one.
+ *
+ * ## What a submitted statement does, and does not, do
+ *
+ * There is no auth layer, so anyone who can reach the endpoint can file a
+ * statement against any finding. Two consequences shape the copy in `copy.ts`
+ * and must survive any edit to it:
+ *
+ * - **A statement is not published on arrival.** It lands in the review queue
+ *   next to high-severity divergences and a person reads it first. `ContestForm`
+ *   says exactly that on success; it must never say the statement is now shown.
+ * - **A statement changes nothing else.** The finding it contests stays where it
+ *   was, whatever happens to the statement — otherwise anyone could erase a
+ *   finding by objecting to it.
+ *
+ * Nothing here attributes a statement to a person. `AmendmentHistory` renders no
+ * name and `CreateAmendmentRequest` carries no name field, because a name we
+ * were told is not a name we can print beside a claim about someone's paper.
  */
 
 export { AmendmentHistory } from "./amendment-history";

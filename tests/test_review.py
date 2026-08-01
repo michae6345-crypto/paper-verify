@@ -14,24 +14,38 @@ What this suite is protecting, in order of how badly it would hurt to lose:
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
-from pv.amendments.identity import finding_fingerprint
+from pv.amendments.identity import amendment_fingerprint, finding_fingerprint
 from pv.amendments.store import AmendmentStore
 from pv.api import app as app_module
 from pv.api.config import Settings
 from pv.api.store import RunStore
-from pv.models import Anchor, CheckResult, Finding, ReasonCode, RunReport, Severity, Verdict
+from pv.models import (
+    Amendment,
+    Anchor,
+    CheckResult,
+    Finding,
+    ReasonCode,
+    RunReport,
+    Severity,
+    Verdict,
+)
 from pv.review import (
+    DECLINE_LABEL,
     SUPPRESSION_LABEL,
     SUPPRESSIONS_DIR,
+    AmendmentDeclineReason,
     ReleaseRequiresReview,
+    ReviewKind,
     ReviewQueue,
     ReviewState,
     SuppressionReason,
+    Withheld,
     held_notice,
     is_gated,
     read_negative_fixtures,
@@ -139,8 +153,8 @@ def test_a_finding_nobody_has_decided_on_is_held(queue):
 
 def test_a_held_finding_is_not_on_the_public_report(queue):
     report = a_report()
-    public, held = redact(report, queue, "run")
-    assert held == 1
+    public, withheld = redact(report, queue, "run")
+    assert withheld.findings == 1
     assert public.checks == []
 
 
@@ -156,8 +170,8 @@ def test_a_check_keeps_the_findings_that_are_not_held(queue):
     """The verdict is still supported by what remains on the page, so the row
     stays."""
     check = a_check([a_finding(), a_finding("tab:main/r9/c3", severity=Severity.LOW)])
-    public, held = redact(a_report(check), queue, "run")
-    assert held == 1
+    public, withheld = redact(a_report(check), queue, "run")
+    assert withheld.findings == 1
     assert len(public.checks) == 1
     assert [f.anchor.dom_id for f in public.checks[0].findings] == ["tab:main/r9/c3"]
 
@@ -167,8 +181,8 @@ def test_releasing_a_finding_puts_it_on_the_public_report(queue):
     fp = finding_fingerprint(report.checks[0], report.checks[0].findings[0])
     queue.release("run", report, fp, by="reviewer")
 
-    public, held = redact(report, queue, "run")
-    assert held == 0
+    public, withheld = redact(report, queue, "run")
+    assert withheld.findings == 0
     assert len(public.checks) == 1
     assert public.checks[0].findings[0].claimed == "87.4"
 
@@ -178,8 +192,8 @@ def test_a_suppressed_finding_stays_off_the_public_report(queue):
     fp = finding_fingerprint(report.checks[0], report.checks[0].findings[0])
     queue.suppress("run", report, fp, reason=SuppressionReason.COMPARISON_SET_WRONG)
 
-    public, held = redact(report, queue, "run")
-    assert held == 1
+    public, withheld = redact(report, queue, "run")
+    assert withheld.findings == 1
     assert public.checks == []
 
 
@@ -195,8 +209,8 @@ def test_redaction_never_touches_the_stored_report(queue):
 
 def test_a_report_with_nothing_to_hold_passes_through_unchanged(queue):
     report = a_report(a_clean_check())
-    public, held = redact(report, queue, "run")
-    assert held == 0
+    public, withheld = redact(report, queue, "run")
+    assert withheld.findings == 0
     assert public.model_dump_json() == report.model_dump_json()
 
 
@@ -215,6 +229,174 @@ def test_deciding_on_a_finding_the_gate_does_not_hold_is_refused(queue):
     fp = finding_fingerprint(report.checks[0], report.checks[0].findings[0])
     with pytest.raises(ReleaseRequiresReview):
         queue.release("run", report, fp)
+
+
+# --------------------------------------------------------------------------
+# Amendments in the gate
+#
+# There is no auth layer (`pv.amendments.submitter`), so anyone who can reach the
+# endpoint can file a statement against any finding on any paper. These are the
+# tests that make that survivable.
+# --------------------------------------------------------------------------
+
+
+def a_contested_report(statement: str = "The table is right.") -> tuple[RunReport, str]:
+    """A report with one high-severity divergence and one statement against it."""
+    report = a_report()
+    fp = finding_fingerprint(report.checks[0], report.checks[0].findings[0])
+    report.amendments = [
+        Amendment(finding_fingerprint=fp, author_statement=statement, status="open")
+    ]
+    return report, fp
+
+
+def test_a_statement_from_an_unknown_party_is_not_on_the_public_report(queue):
+    report, _fp = a_contested_report()
+    public, withheld = redact(report, queue, "run")
+    assert withheld.amendments == 1
+    assert public.amendments == []
+
+
+def test_contesting_a_finding_does_not_suppress_it(queue):
+    """**The one that matters.** With no auth layer, if a contest could hide a
+    finding then anyone who could reach the endpoint could erase any finding from
+    any public report by objecting to it — and the flow built to protect authors
+    from a false accusation would become the mechanism for burying a true one.
+
+    A released finding stays released no matter what is said about it."""
+    report, fp = a_contested_report()
+    queue.release("run", report, fp, by="reviewer")
+
+    public, withheld = redact(report, queue, "run")
+    assert withheld.findings == 0
+    assert len(public.checks) == 1
+    assert public.checks[0].findings[0].claimed == "87.4"
+    # The statement is the only thing withheld.
+    assert withheld.amendments == 1
+    assert public.amendments == []
+
+
+def test_a_held_finding_and_its_amendment_are_two_decisions(queue):
+    """Releasing one must never release the other. They are different claims by
+    different parties, and only one of them is ours."""
+    report, fp = a_contested_report()
+    afp = amendment_fingerprint(report.amendments[0])
+
+    queue.release("run", report, afp, kind=ReviewKind.AMENDMENT, by="reviewer")
+    public, withheld = redact(report, queue, "run")
+
+    assert withheld.amendments == 0
+    assert len(public.amendments) == 1
+    # The finding was never released, so it is still withheld.
+    assert withheld.findings == 1
+    assert public.checks == []
+
+
+def test_a_released_statement_appears_beside_a_released_finding(queue):
+    report, fp = a_contested_report()
+    afp = amendment_fingerprint(report.amendments[0])
+    queue.release("run", report, fp, by="reviewer")
+    queue.release("run", report, afp, kind=ReviewKind.AMENDMENT, by="reviewer")
+
+    public, withheld = redact(report, queue, "run")
+    assert not withheld
+    assert len(public.checks) == 1
+    assert public.amendments[0].author_statement == "The table is right."
+
+
+def test_every_amendment_row_is_its_own_decision(queue):
+    """A recheck appends a superseding row carrying our sentence alongside theirs.
+    That row is text nobody has read, so releasing the first does not release it."""
+    report, fp = a_contested_report()
+    first = report.amendments[0]
+    report.amendments.append(
+        first.model_copy(
+            update={
+                "status": "recheck_requested",
+                "resolution_note": "Checked again at row_arithmetic v2.",
+                "submitted_at": datetime(2026, 8, 2, tzinfo=timezone.utc),
+            }
+        )
+    )
+    queue.release(
+        "run", report, amendment_fingerprint(first), kind=ReviewKind.AMENDMENT
+    )
+
+    public, withheld = redact(report, queue, "run")
+    assert withheld.amendments == 1
+    assert len(public.amendments) == 1
+
+
+def test_declining_a_statement_keeps_it_off_the_permalink(queue):
+    report, _fp = a_contested_report()
+    afp = amendment_fingerprint(report.amendments[0])
+    queue.decline(
+        "run", report, afp, reason=AmendmentDeclineReason.AUTHORSHIP_UNVERIFIED
+    )
+
+    public, withheld = redact(report, queue, "run")
+    assert withheld.amendments == 1
+    assert public.amendments == []
+
+
+def test_declining_a_statement_writes_no_negative_fixture(queue, tmp_path):
+    """A fixture is a regression test against our own checker. A statement we did
+    not publish is not a checker defect and must not be filed as though we had
+    fixed one."""
+    report, _fp = a_contested_report()
+    afp = amendment_fingerprint(report.amendments[0])
+    queue.decline("run", report, afp, reason=AmendmentDeclineReason.NOT_PUBLISHABLE)
+    assert not (tmp_path / "suppressions").exists()
+
+
+def test_declining_a_statement_does_not_delete_it(queue):
+    """Append-only. The permalink stops carrying it; the log still does."""
+    report, _fp = a_contested_report()
+    before = list(report.amendments)
+    queue.decline(
+        "run",
+        report,
+        amendment_fingerprint(report.amendments[0]),
+        reason=AmendmentDeclineReason.WITHDRAWN_BY_SENDER,
+    )
+    assert report.amendments == before
+
+
+def test_an_amendment_fingerprint_does_not_move_when_a_checker_does():
+    """A finding's identity carries the checker version so improving a check
+    detaches an objection. An amendment's must not: re-queueing every statement
+    because we renumbered something would silently unpublish statements a person
+    had already read and released."""
+    amendment = Amendment(
+        finding_fingerprint="a" * 64,
+        author_statement="The table is right.",
+        submitted_at=datetime(2026, 8, 1, tzinfo=timezone.utc),
+    )
+    moved = amendment.model_copy(update={"finding_fingerprint": "a" * 64})
+    assert amendment_fingerprint(amendment) == amendment_fingerprint(moved)
+
+
+def test_two_statements_saying_different_things_do_not_collide():
+    at = datetime(2026, 8, 1, tzinfo=timezone.utc)
+    one = Amendment(finding_fingerprint="a" * 64, author_statement="x", submitted_at=at)
+    two = Amendment(finding_fingerprint="a" * 64, author_statement="y", submitted_at=at)
+    assert amendment_fingerprint(one) != amendment_fingerprint(two)
+
+
+def test_the_queue_holds_findings_first_then_statements(queue):
+    """A reviewer cannot judge a statement without the finding it answers."""
+    report, _fp = a_contested_report()
+    kinds = [e.kind for e in queue.pending("run", report)]
+    assert kinds == [ReviewKind.FINDING, ReviewKind.AMENDMENT]
+
+
+def test_a_queued_statement_never_carries_a_name_we_were_told(queue):
+    """There is no auth layer. A self-declared name printed beside a statement on
+    a named researcher's page is an attribution nobody could defend."""
+    report, _fp = a_contested_report()
+    entry = queue.pending("run", report)[1]
+    assert entry.submitter == "Sender not identified"
+    assert entry.statement == "The table is right."
 
 
 # --------------------------------------------------------------------------
@@ -264,6 +446,32 @@ def test_the_held_notice_reads_as_a_normal_state():
         assert sentence[0].isupper() and sentence[1:] == sentence[1:]
         for forbidden in ("error", "problem", "misconduct", "failed", "warning"):
             assert forbidden not in sentence.lower()
+
+
+def test_the_notice_names_both_kinds_when_both_are_held():
+    sentence = held_notice(Withheld(findings=2, amendments=1))
+    assert "findings" in sentence
+    assert "statement" in sentence
+
+
+def test_the_notice_never_says_an_author_objected():
+    """We do not know that anyone who sent a statement is an author, and we have
+    not decided anything about it. The line says only that something arrived and
+    has not been read."""
+    sentence = held_notice(Withheld(amendments=3))
+    for forbidden in ("author", "objection", "complaint", "rejected", "disputed"):
+        assert forbidden not in sentence.lower()
+
+
+def test_every_decline_reason_has_a_label_that_judges_no_paper():
+    """Declining to publish a statement says nothing about whether the statement
+    is true, and nothing about the paper. The labels must not let it read as
+    though it did."""
+    for reason in AmendmentDeclineReason:
+        label = DECLINE_LABEL[reason]
+        assert label and label[0].isupper()
+        for forbidden in ("false", "wrong", "invalid", "misconduct", "error"):
+            assert forbidden not in label.lower()
 
 
 def test_every_suppression_reason_has_a_label_about_what_we_got_wrong():
@@ -446,6 +654,8 @@ def test_a_run_with_nothing_to_review_has_an_empty_queue_and_a_full_permalink(cl
         "arxiv_id": "0000.00000",
         "items": [],
         "held": 0,
+        "held_findings": 0,
+        "held_amendments": 0,
     }
     public = client.get(f"/runs/{run_id}/report/public").json()
     assert len(public["report"]["checks"]) == 1
@@ -459,6 +669,123 @@ def test_deciding_on_a_finding_this_run_does_not_hold_is_a_404(client):
 
 def test_the_public_report_of_a_run_we_never_issued_is_a_404(client):
     assert client.get("/runs/nope/report/public").status_code == 404
+
+
+def seed_amendment(client, run_id: str, fp: str, statement: str = "The table is right.") -> str:
+    """File a statement through the endpoint and return its review fingerprint."""
+    response = client.post(
+        f"/runs/{run_id}/amendments",
+        json={"finding_fingerprint": fp, "author_statement": statement},
+    )
+    assert response.status_code == 201
+    return amendment_fingerprint(Amendment.model_validate(response.json()))
+
+
+def test_filing_a_statement_changes_nothing_a_reader_sees(client):
+    """Anyone can reach this endpoint. Until a person has read what arrived, the
+    permalink shows what the run found and nothing else."""
+    run_id, fp = seed_run()
+    client.post(f"/runs/{run_id}/review/{fp}/release", json={})
+    before = client.get(f"/runs/{run_id}/report/public").json()
+
+    seed_amendment(client, run_id, fp)
+    after = client.get(f"/runs/{run_id}/report/public").json()
+
+    assert after["report"]["checks"] == before["report"]["checks"]
+    assert after["report"]["amendments"] == []
+    assert after["held_amendments"] == 1
+    assert after["held_findings"] == 0
+
+
+def test_a_statement_cannot_bury_a_released_finding(client):
+    """The attack this asymmetry closes: with no auth layer, a contest that
+    suppressed a finding would let anyone erase a true one."""
+    run_id, fp = seed_run()
+    client.post(f"/runs/{run_id}/review/{fp}/release", json={})
+    for i in range(3):
+        seed_amendment(client, run_id, fp, statement=f"objection {i}")
+
+    body = client.get(f"/runs/{run_id}/report/public").json()
+    assert body["report"]["checks"][0]["findings"][0]["claimed"] == "87.4"
+    assert body["held_amendments"] == 3
+
+
+def test_a_statement_lands_in_the_same_queue_as_a_divergence(client):
+    run_id, fp = seed_run()
+    afp = seed_amendment(client, run_id, fp)
+
+    body = client.get(f"/runs/{run_id}/review").json()
+    assert body["held_findings"] == 1
+    assert body["held_amendments"] == 1
+    kinds = {i["kind"]: i for i in body["items"]}
+    assert set(kinds) == {"finding", "amendment"}
+    assert kinds["amendment"]["fingerprint"] == afp
+    assert kinds["amendment"]["contests"] == fp
+    assert kinds["amendment"]["submitter"] == "Sender not identified"
+
+
+def test_releasing_a_statement_publishes_it(client):
+    run_id, fp = seed_run()
+    afp = seed_amendment(client, run_id, fp)
+
+    response = client.post(
+        f"/runs/{run_id}/review/amendments/{afp}/release", json={"decided_by": "reviewer"}
+    )
+    assert response.status_code == 200
+    assert response.json()["state"] == "released"
+
+    body = client.get(f"/runs/{run_id}/report/public").json()
+    assert body["held_amendments"] == 0
+    assert body["report"]["amendments"][0]["author_statement"] == "The table is right."
+    # Releasing the statement released nothing else.
+    assert body["held_findings"] == 1
+    assert body["report"]["checks"] == []
+
+
+def test_declining_a_statement_requires_a_reason(client):
+    run_id, fp = seed_run()
+    afp = seed_amendment(client, run_id, fp)
+    assert (
+        client.post(f"/runs/{run_id}/review/amendments/{afp}/decline", json={}).status_code
+        == 422
+    )
+
+
+def test_declining_a_statement_keeps_it_off_the_permalink_and_in_the_log(client, tmp_path):
+    run_id, fp = seed_run()
+    afp = seed_amendment(client, run_id, fp)
+
+    response = client.post(
+        f"/runs/{run_id}/review/amendments/{afp}/decline",
+        json={"reason": "authorship_unverified"},
+    )
+    assert response.status_code == 200
+    assert response.json()["reason"] == "authorship_unverified"
+
+    assert client.get(f"/runs/{run_id}/report/public").json()["report"]["amendments"] == []
+    # Append-only: the working surface still carries it.
+    assert len(client.get(f"/runs/{run_id}/amendments").json()["amendments"]) == 1
+    # A declined statement is not a checker defect and writes no fixture.
+    assert not (tmp_path / "suppressions").exists()
+
+
+def test_a_finding_release_does_not_release_the_statement_against_it(client):
+    run_id, fp = seed_run()
+    seed_amendment(client, run_id, fp)
+    client.post(f"/runs/{run_id}/review/{fp}/release", json={})
+
+    body = client.get(f"/runs/{run_id}/report/public").json()
+    assert len(body["report"]["checks"]) == 1
+    assert body["report"]["amendments"] == []
+    assert body["held_amendments"] == 1
+
+
+def test_releasing_an_amendment_fingerprint_on_the_finding_route_is_a_404(client):
+    """The two routes address two different kinds. Crossing them must not
+    accidentally publish either."""
+    run_id, fp = seed_run()
+    afp = seed_amendment(client, run_id, fp)
+    assert client.post(f"/runs/{run_id}/review/{afp}/release", json={}).status_code == 404
 
 
 def test_an_unverifiable_result_is_never_held(client):

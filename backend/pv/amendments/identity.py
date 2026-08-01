@@ -33,7 +33,7 @@ from __future__ import annotations
 from hashlib import sha256
 
 from ..fingerprint import fingerprint
-from ..models import CheckResult, Finding, RunReport
+from ..models import Amendment, CheckResult, Finding, RunReport
 
 # Same separator as `pv.fingerprint`: it cannot occur in any component, so
 # ("a", "bc") and ("ab", "c") can never collide.
@@ -119,7 +119,42 @@ def fingerprints_in(report: RunReport) -> dict[str, tuple[CheckResult, Finding]]
     return out
 
 
+# --------------------------------------------------------------------------
+# The identity of an amendment
+# --------------------------------------------------------------------------
+
+
+def amendment_fingerprint(amendment: Amendment) -> str:
+    """The identity of one statement, so the review gate can hold it.
+
+    Deliberately **not** built the way a finding's identity is. A finding's
+    fingerprint carries the checker and policy versions, so improving a check
+    detaches an objection to it. An amendment carries neither, because it is not
+    a judgement of ours: it is someone's words, and re-queueing every statement
+    for review because we renumbered a checker would be absurd — and worse, would
+    silently unpublish statements a person had already read and released.
+
+    An amendment is identified by what it says and when it arrived. The log is
+    append-only, so those two together are stable for the life of the row: a
+    superseding row from a recheck carries a later `submitted_at` and is a
+    separate item to review, which is correct — it carries a `resolution_note`
+    nobody has read yet.
+    """
+    return sha256(
+        _SEP.join(
+            [
+                amendment.finding_fingerprint,
+                amendment.submitted_at.isoformat() if amendment.submitted_at else "",
+                amendment.author_statement,
+                amendment.corrected_value or "",
+                amendment.resolution_note,
+            ]
+        ).encode("utf-8")
+    ).hexdigest()
+
+
 __all__ = [
+    "amendment_fingerprint",
     "finding_content_hash",
     "finding_fingerprint",
     "fingerprints_in",

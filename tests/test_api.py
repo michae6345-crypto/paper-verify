@@ -572,6 +572,8 @@ def test_openapi_covers_every_endpoint(client):
         "/runs/{run_id}/amendments/{fingerprint}/recheck",
         "/runs/{run_id}/review",
         "/runs/{run_id}/review/{fingerprint}/release",
+        "/runs/{run_id}/review/amendments/{fingerprint}/release",
+        "/runs/{run_id}/review/amendments/{fingerprint}/decline",
         "/runs/{run_id}/review/{fingerprint}/suppress",
         "/papers/{arxiv_id}/repositories",
     }

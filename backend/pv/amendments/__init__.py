@@ -29,14 +29,18 @@ run does any work, and even then it re-runs one check, not the paper.
 
 from __future__ import annotations
 
-from .identity import finding_fingerprint, locate_finding
+from .identity import amendment_fingerprint, finding_fingerprint, locate_finding
 from .recheck import RecheckOutcome, recheck_finding
 from .store import AmendmentStore
+from .submitter import Submitter, submitter_of
 
 __all__ = [
     "AmendmentStore",
     "RecheckOutcome",
+    "Submitter",
+    "amendment_fingerprint",
     "finding_fingerprint",
     "locate_finding",
     "recheck_finding",
+    "submitter_of",
 ]
