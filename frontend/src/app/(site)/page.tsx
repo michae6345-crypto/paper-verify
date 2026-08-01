@@ -1,3 +1,4 @@
+import { Checks } from "@/components/site/checks";
 import { Hero } from "@/components/site/hero";
 import { Intro } from "@/components/site/intro";
 import { Process } from "@/components/site/process";
@@ -18,6 +19,7 @@ export default function SitePage() {
       <Hero />
       <Intro />
       <Process />
+      <Checks />
     </>
   );
 }
