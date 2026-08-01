@@ -98,7 +98,20 @@ def summarise(report: RunReport) -> str:
     )
 
 
+def _force_utf8_stdout() -> None:
+    """Windows consoles default to cp1252, which cannot encode the verdict glyphs.
+    Without this the corpus run dies with UnicodeEncodeError on the first `○`."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            try:
+                reconfigure(encoding="utf-8", errors="replace")
+            except (ValueError, OSError):  # pragma: no cover - detached/odd streams
+                pass
+
+
 def main(argv: list[str] | None = None) -> int:
+    _force_utf8_stdout()
     p = argparse.ArgumentParser(prog="pv", description="Check a paper's numbers against each other.")
     p.add_argument("arxiv_id", nargs="?", help="arXiv id, e.g. 1706.03762")
     p.add_argument("--fixture", help="run against an on-disk directory instead of fetching")
