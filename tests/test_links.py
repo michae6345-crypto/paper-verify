@@ -18,7 +18,7 @@ if str(ROOT) not in sys.path:
 
 from backend.pv.adapters.http import ErrorKind, FakeClient, HostRateLimiter, ResponseCache, network_error, ok
 from backend.pv.checks import citations, links, repos
-from backend.pv.models import CheckContext, SourceDocument, ReasonCode, Verdict
+from backend.pv.models import Artifact, CheckContext, ReasonCode, SourceDocument, Verdict
 
 FIXTURE = ROOT / "fixtures" / "papers" / "1706.03762"
 
@@ -370,6 +370,7 @@ async def test_unindexed_reference_is_unverifiable_never_a_finding():
     ctx = context("\\bibitem{a}\nA.~Author.\n\\newblock A workshop paper nobody indexed.\n\\newblock 2011.")
     result = await citations.run_async(ctx, client)
     assert result.verdict is Verdict.UNVERIFIABLE
+    assert result.reason is ReasonCode.REFERENCE_NOT_INDEXED
     assert result.findings == []
 
 
@@ -435,12 +436,16 @@ async def test_lookups_include_mailto_for_the_polite_pool(monkeypatch):
 def test_finds_the_transformer_repository(transformer_latex):
     document = SourceDocument(arxiv_id="1706.03762", assembled_latex=transformer_latex)
     candidates = repos.find_repository_candidates(document)
-    assert [c.full_name for c in candidates] == ["tensorflow/tensor2tensor"]
+    assert [c.path for c in candidates] == ["tensorflow/tensor2tensor"]
     top = candidates[0]
-    assert top.host == "github"
-    assert top.near_availability_phrase  # "The code we used ... is available at"
+    assert isinstance(top, Artifact)
+    assert top.kind == "github"
     assert top.confidence >= 0.7
-    assert top.locator.startswith("§7")
+    assert top.found_at.startswith("§7")
+    assert top.anchor is not None and top.anchor.dom_id == "repo/tensorflow/tensor2tensor"
+    assert top.anchor.human_locator == top.found_at
+    # "The code we used ... is available at" is what earns the confidence.
+    assert repos.find_repository_mentions(document)[0].near_availability_phrase
 
 
 def test_repo_in_bibliography_ranks_below_one_in_the_body():
@@ -450,18 +455,20 @@ def test_repo_in_bibliography_ranks_below_one_in_the_body():
         "\\newblock A tool.\n\\newblock \\url{https://github.com/them/theirs}, 2019.\n"
         "\\end{thebibliography}"
     )
-    candidates = repos.find_repository_candidates(SourceDocument(arxiv_id="x", assembled_latex=latex))
-    assert [c.full_name for c in candidates] == ["us/ours", "them/theirs"]
+    document = SourceDocument(arxiv_id="x", assembled_latex=latex)
+    candidates = repos.find_repository_candidates(document)
+    assert [c.path for c in candidates] == ["us/ours", "them/theirs"]
     assert candidates[0].confidence > candidates[1].confidence
-    assert candidates[1].in_bibliography
+    assert repos.find_repository_mentions(document)[1].in_bibliography
 
 
 def test_deep_links_collapse_to_the_repository():
     latex = r"See \url{https://github.com/org/proj/blob/main/train.py} and \url{https://github.com/org/proj}."
-    candidates = repos.find_repository_candidates(SourceDocument(arxiv_id="x", assembled_latex=latex))
-    assert [c.full_name for c in candidates] == ["org/proj"]
-    assert candidates[0].occurrences == 2
+    document = SourceDocument(arxiv_id="x", assembled_latex=latex)
+    candidates = repos.find_repository_candidates(document)
+    assert [c.path for c in candidates] == ["org/proj"]
     assert candidates[0].url == "https://github.com/org/proj"
+    assert repos.find_repository_mentions(document)[0].occurrences == 2
 
 
 def test_non_repository_github_urls_are_ignored():
@@ -481,7 +488,7 @@ async def test_github_metadata_is_attached():
     candidates = await repos.find_repositories(document, client)
     assert candidates[0].stars == 1234
     assert candidates[0].last_commit.year == 2020
-    assert candidates[0].lookup_error == ""
+    assert candidates[0].lookup_error is None
 
 
 @pytest.mark.asyncio

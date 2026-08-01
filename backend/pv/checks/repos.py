@@ -3,9 +3,13 @@
 This is not a check and deliberately exposes no `run(ctx)`: it proposes, the user
 confirms. Nothing here produces a verdict.
 
-For each candidate we record where in the paper the link appeared (`§4.1, footnote 3`),
-because that is what makes the confirmation screen possible to reason about, and a
-confidence score so one row can be preselected.
+The output is `models.Artifact`. Everything used to rank a candidate — how often it
+appears, whether it sits next to a code-availability phrase, whether it is only in
+the bibliography — lives on the internal `RepoMention` and never reaches the
+contract, because none of it is something the UI shows.
+
+For each artifact we record `found_at`, the place in the paper the link appeared
+(`§4.1, footnote 3`), and a confidence score so one row can be preselected.
 
 GitHub metadata is a courtesy, not a requirement: without `GITHUB_TOKEN` the API
 allows 60 requests an hour, so a failed lookup leaves the candidate in place with
@@ -16,14 +20,13 @@ from __future__ import annotations
 
 import os
 import re
+from dataclasses import dataclass, field
 from datetime import datetime
 from urllib.parse import quote
 
-from pydantic import BaseModel, Field
-
 from ..adapters.http import HttpClient, get_http_client, run_sync
-from ..models import SourceDocument
-from .links import ExtractedUrl, describe_location, extract_urls, mask_comments
+from ..models import Anchor, Artifact, SourceDocument
+from .links import ExtractedUrl, extract_urls, mask_comments
 
 GITHUB_API = "https://api.github.com"
 GITLAB_API = "https://gitlab.com/api/v4"
@@ -46,109 +49,120 @@ _AVAILABILITY = re.compile(
 )
 
 
-class RepoCandidate(BaseModel):
-    """One repository link found in the paper, with provenance and metadata.
+@dataclass
+class RepoMention:
+    """Internal: one repository and every place the paper points at it.
 
-    The contract (`models.py`) has no artifact model yet; §10 names an `artifacts`
-    table. When that lands this should collapse into it.
+    The ranking signals are here rather than on `Artifact` because they are inputs
+    to a heuristic, not facts about the repository.
     """
 
     url: str
-    host: str  # github | gitlab | other
-    owner: str = ""
-    name: str = ""
-    full_name: str = ""
-    # Where it appeared, e.g. "§4.1, footnote 3" — shown verbatim in §5.2.
-    locator: str = ""
-    occurrences: int = 1
+    kind: str  # github | gitlab | other
+    owner: str
+    name: str
+    path: str
+    first: ExtractedUrl
+    occurrences: int = 0
     in_abstract: bool = False
     in_footnote: bool = False
     near_availability_phrase: bool = False
     in_bibliography: bool = False
-    is_deep_link: bool = False
-    confidence: float = 0.0
-    stars: int | None = None
-    last_commit: datetime | None = None
-    default_branch: str = ""
-    archived: bool | None = None
-    description: str = ""
-    # Set when metadata could not be fetched. The candidate still stands.
-    lookup_error: str = ""
-    all_locators: list[str] = Field(default_factory=list)
+    is_deep_link: bool = True
+    locators: list[str] = field(default_factory=list)
+
+    @property
+    def found_at(self) -> str:
+        if self.locators:
+            return self.locators[0]
+        return "abstract" if self.in_abstract else "in the body"
+
+    def to_artifact(self) -> Artifact:
+        return Artifact(
+            kind=self.kind,  # type: ignore[arg-type]
+            url=self.url,
+            path=self.path,
+            found_at=self.found_at,
+            anchor=Anchor(
+                kind="link",
+                dom_id=f"repo/{self.path}",
+                char_start=self.first.char_start,
+                char_end=self.first.char_end,
+                human_locator=self.found_at,
+            ),
+            confidence=score_mention(self),
+        )
 
 
 def parse_repo_url(url: str) -> tuple[str, str, str, bool] | None:
-    """(host, owner, name, is_deep_link) for a repository URL, else None."""
+    """(kind, owner, name, is_deep_link) for a repository URL, else None."""
     match = re.match(r"^https?://(?:www\.)?(github\.com|gitlab\.com)/([^/?#]+)/([^/?#]+)(/[^?#]*)?", url)
     if not match:
         return None
-    host = "github" if "github" in match.group(1) else "gitlab"
+    kind = "github" if "github" in match.group(1) else "gitlab"
     owner = match.group(2)
     name = re.sub(r"\.git$", "", match.group(3))
     if owner.lower() in _RESERVED or not name:
         return None
     trailing = (match.group(4) or "").strip("/")
-    return host, owner, name, bool(trailing)
+    return kind, owner, name, bool(trailing)
 
 
-def find_repository_candidates(document: SourceDocument) -> list[RepoCandidate]:
-    """Offline: scan the source for GitHub/GitLab links and score them."""
+def find_repository_mentions(document: SourceDocument) -> list[RepoMention]:
+    """Offline: every GitHub/GitLab repository the source points at, with its signals."""
     latex = document.assembled_latex
     masked = mask_comments(latex)
     bibliography_start = _bibliography_start(masked)
 
-    by_repo: dict[str, RepoCandidate] = {}
+    mentions: dict[str, RepoMention] = {}
     for item in extract_urls(latex):
         parsed = parse_repo_url(item.url)
         if parsed is None:
             continue
-        host, owner, name, deep = parsed
-        full_name = f"{owner}/{name}"
-        candidate = by_repo.get(full_name)
-        if candidate is None:
-            candidate = RepoCandidate(
-                url=f"https://{'github.com' if host == 'github' else 'gitlab.com'}/{full_name}",
-                host=host, owner=owner, name=name, full_name=full_name,
-                locator=item.locator, occurrences=0, is_deep_link=deep,
-            )
-            by_repo[full_name] = candidate
+        kind, owner, name, deep = parsed
+        path = f"{owner}/{name}"
+        mention = mentions.get(path)
+        if mention is None:
+            host = "github.com" if kind == "github" else "gitlab.com"
+            mention = RepoMention(url=f"https://{host}/{path}", kind=kind, owner=owner,
+                                  name=name, path=path, first=item)
+            mentions[path] = mention
 
-        candidate.occurrences += 1
-        candidate.is_deep_link = candidate.is_deep_link and deep
-        if item.locator and item.locator not in candidate.all_locators:
-            candidate.all_locators.append(item.locator)
-        if not candidate.locator:
-            candidate.locator = item.locator
+        mention.occurrences += 1
+        # A repository linked anywhere at its root is not a deep link.
+        mention.is_deep_link = mention.is_deep_link and deep
+        if item.locator and item.locator not in mention.locators:
+            mention.locators.append(item.locator)
         if "footnote" in item.locator:
-            candidate.in_footnote = True
+            mention.in_footnote = True
         if _in_abstract(masked, item.char_start):
-            candidate.in_abstract = True
+            mention.in_abstract = True
         if _near_availability_phrase(masked, item):
-            candidate.near_availability_phrase = True
+            mention.near_availability_phrase = True
         if bibliography_start >= 0 and item.char_start > bibliography_start:
-            candidate.in_bibliography = True
+            mention.in_bibliography = True
 
-    for candidate in by_repo.values():
-        if not candidate.locator:
-            candidate.locator = "abstract" if candidate.in_abstract else "in the body"
-        candidate.confidence = score_candidate(candidate)
-
-    return sorted(by_repo.values(), key=lambda c: (-c.confidence, c.full_name))
+    return sorted(mentions.values(), key=lambda m: (-score_mention(m), m.path))
 
 
-def score_candidate(candidate: RepoCandidate) -> float:
+def find_repository_candidates(document: SourceDocument) -> list[Artifact]:
+    """Offline: §5.2 candidates, best first, without any metadata lookup."""
+    return [mention.to_artifact() for mention in find_repository_mentions(document)]
+
+
+def score_mention(mention: RepoMention) -> float:
     """Heuristic and deterministic. Ranking only — it never decides anything."""
     score = 0.30
-    if candidate.near_availability_phrase:
+    if mention.near_availability_phrase:
         score += 0.30
-    if candidate.in_abstract or candidate.in_footnote:
+    if mention.in_abstract or mention.in_footnote:
         score += 0.15
-    if not candidate.is_deep_link:
+    if not mention.is_deep_link:
         score += 0.10
-    score += min(0.10, 0.05 * (candidate.occurrences - 1))
-    if candidate.in_bibliography:
+    score += min(0.10, 0.05 * (mention.occurrences - 1))
+    if mention.in_bibliography:
         score -= 0.30
-    if candidate.is_deep_link:
+    if mention.is_deep_link:
         score -= 0.15
     return round(max(0.0, min(1.0, score)), 2)
 
@@ -187,41 +201,36 @@ def _github_headers() -> dict[str, str]:
     return headers
 
 
-async def fetch_metadata(client: HttpClient, candidate: RepoCandidate) -> RepoCandidate:
-    if candidate.host == "github":
-        resp = await client.get(f"{GITHUB_API}/repos/{candidate.full_name}", headers=_github_headers())
+async def fetch_metadata(client: HttpClient, artifact: Artifact) -> Artifact:
+    """Attach stars and last-commit date. Any failure sets `lookup_error` and
+    leaves the artifact in the list — the UI simply shows no stars."""
+    if artifact.kind == "github":
+        resp = await client.get(f"{GITHUB_API}/repos/{artifact.path}", headers=_github_headers())
         body = resp.json() if resp.ok else None
         if resp.failed:
-            candidate.lookup_error = f"{(resp.error_kind.value if resp.error_kind else 'error')}: {resp.error_detail}"
+            artifact.lookup_error = f"{(resp.error_kind.value if resp.error_kind else 'error')}: {resp.error_detail}"
         elif resp.status == 404:
-            candidate.lookup_error = "GitHub returned 404 — the repository is private or does not exist"
+            artifact.lookup_error = "GitHub returned 404 — the repository is private or does not exist"
         elif resp.status == 403:
-            candidate.lookup_error = "GitHub rate limit reached — set GITHUB_TOKEN for 5,000 requests an hour"
+            artifact.lookup_error = "GitHub rate limit reached — set GITHUB_TOKEN for 5,000 requests an hour"
         elif isinstance(body, dict):
-            candidate.stars = body.get("stargazers_count")
-            candidate.last_commit = _parse_time(body.get("pushed_at"))
-            candidate.default_branch = body.get("default_branch") or ""
-            candidate.archived = body.get("archived")
-            candidate.description = body.get("description") or ""
+            artifact.stars = body.get("stargazers_count")
+            artifact.last_commit = _parse_time(body.get("pushed_at"))
         else:
-            candidate.lookup_error = f"unexpected GitHub response (HTTP {resp.status})"
-        return candidate
+            artifact.lookup_error = f"unexpected GitHub response (HTTP {resp.status})"
+        return artifact
 
-    if candidate.host == "gitlab":
-        path = quote(candidate.full_name, safe="")
-        resp = await client.get(f"{GITLAB_API}/projects/{path}")
+    if artifact.kind == "gitlab":
+        resp = await client.get(f"{GITLAB_API}/projects/{quote(artifact.path, safe='')}")
         body = resp.json() if resp.ok else None
         if resp.failed:
-            candidate.lookup_error = f"{(resp.error_kind.value if resp.error_kind else 'error')}: {resp.error_detail}"
+            artifact.lookup_error = f"{(resp.error_kind.value if resp.error_kind else 'error')}: {resp.error_detail}"
         elif isinstance(body, dict):
-            candidate.stars = body.get("star_count")
-            candidate.last_commit = _parse_time(body.get("last_activity_at"))
-            candidate.default_branch = body.get("default_branch") or ""
-            candidate.archived = body.get("archived")
-            candidate.description = body.get("description") or ""
+            artifact.stars = body.get("star_count")
+            artifact.last_commit = _parse_time(body.get("last_activity_at"))
         else:
-            candidate.lookup_error = f"GitLab returned HTTP {resp.status}"
-    return candidate
+            artifact.lookup_error = f"GitLab returned HTTP {resp.status}"
+    return artifact
 
 
 def _parse_time(value: object) -> datetime | None:
@@ -233,21 +242,21 @@ def _parse_time(value: object) -> datetime | None:
         return None
 
 
-async def find_repositories(document: SourceDocument, client: HttpClient | None = None) -> list[RepoCandidate]:
-    """Candidates with metadata attached, best first."""
-    candidates = find_repository_candidates(document)
-    if not candidates:
+async def find_repositories(document: SourceDocument, client: HttpClient | None = None) -> list[Artifact]:
+    """§5.2 candidates with metadata attached, best first."""
+    artifacts = find_repository_candidates(document)
+    if not artifacts:
         return []
     owned = client is None
     client = client or get_http_client()
     try:
-        for candidate in candidates:
-            await fetch_metadata(client, candidate)
+        for artifact in artifacts:
+            await fetch_metadata(client, artifact)
     finally:
         if owned:
             await client.aclose()
-    return candidates
+    return artifacts
 
 
-def find_repositories_sync(document: SourceDocument) -> list[RepoCandidate]:
+def find_repositories_sync(document: SourceDocument) -> list[Artifact]:
     return run_sync(find_repositories(document))

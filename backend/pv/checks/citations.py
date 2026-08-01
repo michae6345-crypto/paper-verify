@@ -40,9 +40,9 @@ TITLE_MATCH_THRESHOLD = 0.8
 # produce, so reporting one needs either a DOI match or a near-exact title.
 STRICT_RETRACTION_TITLE_SCORE = 0.95
 
-# There is no ReasonCode for "indexed nowhere" in the contract yet. Set this once
-# the orchestrator adds one; every unindexed-reference result reads it.
-REASON_NOT_INDEXED: ReasonCode | None = None
+# Absence from both indexes is the most common citation outcome and says nothing
+# about the reference. It has its own reason code so §5.5 can say exactly that.
+REASON_NOT_INDEXED: ReasonCode | None = ReasonCode.REFERENCE_NOT_INDEXED
 
 _DOI = re.compile(r"\b10\.\d{4,9}/[-._;()/:A-Za-z0-9]+", re.IGNORECASE)
 _ARXIV = re.compile(r"(?:arXiv[:\s]*|abs/)(\d{4}\.\d{4,5})(v\d+)?", re.IGNORECASE)
