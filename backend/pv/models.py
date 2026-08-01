@@ -59,6 +59,10 @@ class ReasonCode(str, Enum):
     # outcome and NOT evidence of a bad reference — workshop papers, theses, and
     # arXiv-only preprints are routinely absent from both.
     REFERENCE_NOT_INDEXED = "reference_not_indexed"
+    # Check 1: the bolded cell holds several numbers (BERT bolds "86.7/85.9"), so
+    # there is no single value to be the best of. Never skip such a cell silently —
+    # if we decline to judge it, the report has to say so.
+    CELL_HAS_MULTIPLE_VALUES = "cell_has_multiple_values"
 
 
 class Direction(str, Enum):
@@ -178,7 +182,11 @@ class Artifact(BaseModel):
     path: str = ""
     stars: int | None = None
     last_commit: datetime | None = None
+    # Left None until a repository is confirmed: resolving it costs a second
+    # GitHub request per candidate, against a 60/hour unauthenticated budget.
     commit_sha: str | None = None
+    # An archived repository is a meaningful signal when choosing one to run against.
+    archived: bool | None = None
     # Where in the paper the link appeared, e.g. "§4.1, footnote 3".
     found_at: str = ""
     anchor: Anchor | None = None
