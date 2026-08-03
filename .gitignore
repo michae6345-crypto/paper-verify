@@ -30,3 +30,6 @@ graphify-out/*
 # deploy target, the Next.js site is.
 .framer-mcp.py
 .framer-url
+
+# Captured Framer HTML, used as a design reference for the port.
+.framer-capture/
