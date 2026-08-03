@@ -509,6 +509,37 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+  /* The scrubbed landing page, resolved without asking JavaScript.
+   *
+   * Every element the scroll primitives write an inline transform to carries
+   * `data-scrub`, and every drawn path carries `data-scrub-path`. They exist so
+   * this is four declarations rather than a refactor.
+   *
+   * The React primitives already collapse to their final state under reduced
+   * motion, so for most readers this block changes nothing. It is here for the
+   * reader whose JavaScript never arrives — a slow network, a blocked bundle, a
+   * hydration error. The server renders the animated branch, and a `Scrub` whose
+   * window opens above zero renders at `opacity: 0`. Without these rules that
+   * reader gets a document that is technically complete and entirely invisible.
+   *
+   * Deliberately scoped to the reduced-motion query rather than applied to
+   * `.no-js`. A reader who has not asked for reduced motion and does get their
+   * JavaScript should still see the page animate; suppressing it globally to
+   * cover the no-JS case would trade the page's whole motion design for a
+   * fallback. The overlap — no JavaScript AND no reduced-motion preference —
+   * is the one gap left, and closing it needs a server-rendered resting state,
+   * which is a larger change than this file. */
+  [data-scrub] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  [data-scrub-path] {
+    stroke-dasharray: none !important;
+    stroke-dashoffset: 0 !important;
+  }
 }
 
 /* The 1px indeterminate progress line under a running check row (§5.3). */

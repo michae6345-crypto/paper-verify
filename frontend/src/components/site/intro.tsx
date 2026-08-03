@@ -1,12 +1,17 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { motion, useTransform, type MotionValue } from "motion/react";
 
 import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
 import { Container, Card } from "@/components/site/ui";
 import { Reveal } from "@/components/site/reveal";
-import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
+import {
+  Pin,
+  Scrub,
+  useReducedMotionGate,
+  useSectionProgress,
+} from "@/components/site/motion/scrub";
 
 /**
  * The intro: what this refuses to do, and then what it does.
@@ -21,6 +26,13 @@ import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
  * of the track's progress onto its own opacity. Nothing is queued, so a reader
  * who stops halfway stops halfway, one who scrolls back runs it backwards, and
  * one who flicks past gets the whole paragraph rather than a dropped animation.
+ *
+ * The track is `Pin` now rather than a second copy of it written here. Both
+ * branches of the reduced-motion question are `Pin`'s too, and both use
+ * `useReducedMotionGate` rather than `motion`'s `useReducedMotion` — this file
+ * picks between structurally different trees in two places, which is exactly
+ * where that hook renders one thing on the server and another on the client's
+ * first frame and React throws the server's work away.
  *
  * The four verdicts sit under it, because the paragraph ends on what a run
  * produces and those four words are the whole vocabulary it produces it in. They
@@ -63,7 +75,7 @@ function Word({
   word: string;
   index: number;
   count: number;
-  progress: ReturnType<typeof useScroll>["scrollYProgress"];
+  progress: MotionValue<number>;
 }) {
   // The paragraph finishes at 0.85 rather than 1, so the last word is lit while
   // the panel is still pinned instead of on the frame it releases.
@@ -86,17 +98,42 @@ const PARAGRAPH_STYLE = {
   color: "var(--site-ink)",
 } as const;
 
-function TrackedParagraph() {
-  const track = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: track, offset: ["start start", "end end"] });
+/**
+ * The paragraph, on `Pin` rather than on a hand-rolled sticky track.
+ *
+ * This used to build its own: a `h-[260vh]` div holding a `sticky top-0
+ * h-[100dvh]` child, with its own `useScroll` at the same `start start` → `end
+ * end` offsets `Pin` already uses. Two implementations of one mechanic, which is
+ * the failure `CLAUDE.md` records as the reason this repo ended up with two
+ * `latexutil.py` modules — nothing imported both, so no file read revealed it.
+ *
+ * `clip={false}` keeps the comment below this component honest: the frame must
+ * not become a scroll container. `as="div"` because this sits inside
+ * `<section id="intro">` already, and nesting a second sectioning element adds a
+ * rung to the document outline in exchange for a scroll trick.
+ *
+ * `restClass=""` is the reduced-motion frame, and it is empty on purpose. A
+ * paragraph resolved at full ink has a natural height and no reason to be a
+ * screen tall. `Pin` hands its resting children a constant progress of 1, so
+ * every `Word` clamps to full ink with no scroll listener anywhere in the tree —
+ * which is what the deleted branch of this component was doing by hand.
+ */
+function ScrubbedParagraph() {
   const words = SENTENCE.split(" ");
 
   return (
-    <div ref={track} className="relative h-[260vh]">
-      {/* `dvh`, not `vh`: on a phone with a retracting toolbar the two differ by
-          the height of the toolbar, and the panel is the one thing here that must
-          be exactly one viewport. */}
-      <div className="sticky top-0 flex h-[100dvh] items-center justify-center">
+    // `dvh` is inside `Pin`, not here: on a phone with a retracting toolbar
+    // `vh` and `dvh` differ by the height of the toolbar, and the frame is the
+    // one box that must be exactly one viewport.
+    <Pin
+      as="div"
+      height="260vh"
+      clip={false}
+      className="relative"
+      frameClass="flex items-center justify-center"
+      restClass=""
+    >
+      {(progress) => (
         <p className="mx-auto max-w-[940px] text-center" style={PARAGRAPH_STYLE}>
           {words.map((word, i) => (
             <Word
@@ -104,33 +141,13 @@ function TrackedParagraph() {
               word={word}
               index={i}
               count={words.length}
-              progress={scrollYProgress}
+              progress={progress}
             />
           ))}
         </p>
-      </div>
-    </div>
+      )}
+    </Pin>
   );
-}
-
-/**
- * Under reduced motion there is no track, no sticky panel and no scroll
- * subscription — the paragraph is simply a paragraph, at its final ink. The
- * branch is a different component rather than an early return so that the
- * subscription is never opened, not merely ignored.
- */
-function ScrubbedParagraph() {
-  const reduced = useReducedMotion();
-
-  if (reduced) {
-    return (
-      <p className="mx-auto max-w-[940px] text-center" style={PARAGRAPH_STYLE}>
-        {SENTENCE}
-      </p>
-    );
-  }
-
-  return <TrackedParagraph />;
 }
 
 /**
@@ -182,7 +199,10 @@ function ScrubbedVerdicts() {
 }
 
 function VerdictRow() {
-  const reduced = useReducedMotion();
+  // The gate, not `motion`'s own hook: the two branches below render different
+  // trees, and `useReducedMotion` disagrees with the server on the first client
+  // render, so React discards the server markup for this subtree.
+  const reduced = useReducedMotionGate();
 
   if (!reduced) return <ScrubbedVerdicts />;
 

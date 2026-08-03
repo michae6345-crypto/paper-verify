@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion, useTransform, type MotionValue } from "motion/react";
+import { motion, useTransform, type MotionValue } from "motion/react";
 import { useRef } from "react";
 
 import {
@@ -11,7 +11,7 @@ import {
   PAPERS,
   TABLES,
 } from "@/components/site/corpus";
-import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
+import { Scrub, useReducedMotionGate, useSectionProgress } from "@/components/site/motion/scrub";
 import { Card, Container, Mono } from "@/components/site/ui";
 
 /**
@@ -153,7 +153,13 @@ function Rolling({
   progress: MotionValue<number>;
   start: number;
 }) {
-  const reduced = useReducedMotion();
+  // `useReducedMotionGate`, not `useReducedMotion`. This branch returns two
+  // structurally different trees — a bare text node against an `sr-only` span
+  // plus a wheel per digit — and `motion`'s own hook reads `false` on the server
+  // and the real value on the client's first render, so the two disagree and
+  // React throws the server's markup away. The gate agrees with the server on
+  // the first render and swaps in a layout effect before paint.
+  const reduced = useReducedMotionGate();
   if (reduced) return <>{value}</>;
 
   let digit = 0;
