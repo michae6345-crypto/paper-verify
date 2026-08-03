@@ -42,15 +42,23 @@ import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
  *          `SHORT` in `site-header.tsx`, which is the height it holds at for all
  *          but the first 140px of scroll.
  *      40  tag
- *      96  spine band
- *     248  headline: three lines at 72px, the cap this branch applies. Three is
- *          the worst case and it only happens on a narrow viewport; at 1536 the
- *          headline sets in two and this is 166.
- *     150  the band under the headline — the verdict, then the subhead and the
- *          controls, in the same box. Measured content is 138, so 12 spare
+ *     128  spine band: the rule and its five nodes, each carrying a stage name
+ *          and, 24px under it, the artifact that stage produces
+ *     166  headline: two lines at 72px, the cap this branch applies
+ *     150  the band under the headline. Three occupants, never two at once —
+ *          the submitted identifier, then the verdict, then the subhead and the
+ *          controls. Measured content is 138, so 12 spare
  *      60  three gaps
  *    ----
- *     658  against 700.
+ *     608  against 700.
+ *
+ * The headline is two lines everywhere this pins, and that is arithmetic rather
+ * than luck: the measure is `min(1000px, container)` and the size is
+ * `min(72px, 5vw)`, so the characters per line only ever move between about 27
+ * at 1440 and 36 at 1024, and a 46-character headline does not reach three at
+ * either end. Three lines would cost 82 more and land at 690, which still fits,
+ * so the frame survives a longer headline — but only just, and
+ * `scripts/check-viewports.mjs` is what would say so.
  *
  * **Where 700 came from, and why the last two numbers were wrong.** They were
  * derived on paper and never checked against a browser. A real Chromium at a
@@ -86,8 +94,27 @@ import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
  * first paint, no scroll subscription, and no media query listener either.
  */
 
-/** The five stages a run moves through. `RunStage`, minus the waits and the ends. */
-const STAGES = ["resolving", "extracting", "mining", "checking", "adjudicating"] as const;
+/**
+ * The five stages a run moves through, and what each one leaves behind.
+ *
+ * The names are `RunStage` in `backend/pv/orchestrator.py`, minus the states a
+ * run waits in and the ones it ends in.
+ *
+ * The artifacts are §1's "mono list items reveal beneath each stage label". They
+ * are deliberately nouns and not counts: a count on this page would be a claim
+ * about a specific paper, and the hero is not running a specific paper. Every one
+ * of these is a real object the pipeline produces — `ingest` assembles the arXiv
+ * source, `parse` builds the macro table before anything is read, `mining` turns
+ * cells into claims, the checks produce comparisons, and adjudication is the only
+ * step that produces a verdict.
+ */
+const STAGES = [
+  { name: "resolving", artifact: "arxiv source" },
+  { name: "extracting", artifact: "macro table" },
+  { name: "mining", artifact: "claims" },
+  { name: "checking", artifact: "comparisons" },
+  { name: "adjudicating", artifact: "verdicts" },
+] as const;
 
 /** The spine draws across this slice. Every stage window is derived from it. */
 const DRAW_FROM = 0.08;
@@ -101,6 +128,21 @@ function stageWindow(i: number): [number, number] {
   // by more than half, so a fast scroll compresses the sequence into one gesture
   // instead of queueing five.
   return [arrival - 0.02, arrival + 0.1];
+}
+
+/**
+ * The artifact under a stage, which trails its label rather than arriving with
+ * it. §1 has the labels appear as the line reaches them and the mono lists
+ * reveal beneath, and the order is the argument: the stage is what is happening,
+ * the artifact is what it produced, so a stage whose artifact arrives first is a
+ * stage reporting a result it has not computed yet.
+ *
+ * `+0.03` of travel behind the label. Every stage keeps the same offset, so the
+ * five pairs read as one gesture repeated rather than as ten separate events.
+ */
+function artifactWindow(i: number): [number, number] {
+  const [from, to] = stageWindow(i);
+  return [from + 0.03, to + 0.03];
 }
 
 /**
@@ -200,10 +242,17 @@ function Live({
   );
 }
 
-/** The pipeline: a dormant hairline with five nodes on it, and the spine drawn over it. */
+/**
+ * The pipeline: a dormant hairline with five nodes on it, and the spine drawn
+ * over it, each node carrying its stage name and then the artifact it produces.
+ *
+ * `h-32` rather than `h-24`: the artifact line adds 24px under the label, and
+ * the block comment's budget counts 124 for this band. It is measured, not
+ * assumed — `scripts/check-viewports.mjs` fails if the frame stops fitting.
+ */
 function Spine({ progress }: { progress: MotionValue<number> }) {
   return (
-    <div className="relative h-24 w-full" aria-hidden="true">
+    <div className="relative h-32 w-full" aria-hidden="true">
       {/* Dormant, and present on the first frame. The spine is this same path lit. */}
       <div className="absolute inset-x-0 top-10 h-px" style={{ background: "var(--site-line)" }} />
 
@@ -227,9 +276,13 @@ function Spine({ progress }: { progress: MotionValue<number> }) {
 
       {STAGES.map((stage, i) => {
         const [from, to] = stageWindow(i);
+        const [artFrom, artTo] = artifactWindow(i);
         return (
+          // The `-translate-x-1/2` is a static CSS transform on a plain div that
+          // Motion never touches. Every animated transform below it belongs to a
+          // `Scrub`, one per element, so nothing is written twice.
           <div
-            key={stage}
+            key={stage.name}
             className="absolute top-9 -translate-x-1/2"
             style={{
               left: `${((i + 0.5) / STAGES.length) * 100}%`,
@@ -249,15 +302,61 @@ function Spine({ progress }: { progress: MotionValue<number> }) {
             <Scrub progress={progress} from={from} to={to} y={8}>
               <span
                 className="site-mono mt-4 block text-center"
-                style={{ fontSize: "12px", color: "var(--site-muted)" }}
+                style={{ fontSize: "12px", color: "var(--site-ink)" }}
               >
-                {stage}
+                {stage.name}
+              </span>
+            </Scrub>
+
+            <Scrub progress={progress} from={artFrom} to={artTo} y={6}>
+              <span
+                className="site-mono mt-1.5 block text-center"
+                style={{ fontSize: "11px", color: "var(--site-muted)" }}
+              >
+                {stage.artifact}
               </span>
             </Scrub>
           </div>
         );
       })}
     </div>
+  );
+}
+
+/**
+ * What the pipeline is given, at the head of the sequence.
+ *
+ * §1's prompt card, which in the reference "fades and scales in at the left,
+ * carrying a sentence of user intent". Ours carries the only intent this product
+ * takes: an arXiv identifier. `1810.04805` is BERT, and it is in the committed
+ * corpus, so the card is not illustrating with an invented paper.
+ *
+ * It shares the band with the verdict and the copy rather than getting a box of
+ * its own, and the three never overlap in time: the input arrives during the
+ * draw, leaves as the verdict resolves, and the verdict leaves as the copy
+ * lands. One 150px box, three occupants, and the frame never has to be tall
+ * enough to hold more than one.
+ *
+ * The scale is 0.96 -> 1, which is §4's figure. It does not slide in from off
+ * screen, which §4 rules out in the same sentence.
+ */
+function Prompt({ progress }: { progress: MotionValue<number> }) {
+  return (
+    <Scrub progress={progress} from={0.12} to={0.26} y={10} scale={[0.96, 1]}>
+      <span
+        className="inline-flex items-center gap-3 px-5 py-2.5"
+        style={{
+          background: "var(--site-card)",
+          borderRadius: "var(--site-radius-pill)",
+          boxShadow: "var(--site-shadow-halo)",
+        }}
+      >
+        <span style={{ fontSize: "13px", color: "var(--site-muted)" }}>submitted</span>
+        <span className="site-mono" style={{ fontSize: "15px", color: "var(--site-ink)" }}>
+          arXiv:1810.04805
+        </span>
+      </span>
+    </Scrub>
   );
 }
 
@@ -362,13 +461,23 @@ function PinnedHero() {
               AI-native verification for academic conferences
             </h1>
 
-            {/* One box with two occupants. The verdict leaves as the copy arrives,
-                so the frame never has to be tall enough to hold both at once.
+            {/* One box, three occupants, none of them on screen at the same time
+                as another. The input arrives during the draw and leaves as the
+                verdict resolves; the verdict leaves as the copy lands. So the
+                frame never has to be tall enough to hold more than one, which is
+                what keeps this at 150 rather than at the sum of three.
+
                 150, down from 190: the measured contents are 138 — a 44px verdict
                 pill, or a two-line subhead plus a 12px gap plus a 56px control
                 tray, plus 16 of `pt-4` — so 190 was carrying 52px of nothing at
                 the exact point in the budget that decides whether this pins. */}
             <div className="relative h-[150px] w-full">
+              <div className="absolute inset-0 flex items-start justify-center pt-4">
+                <Exit progress={progress} from={0.44} to={0.54}>
+                  <Prompt progress={progress} />
+                </Exit>
+              </div>
+
               <div className="absolute inset-0 flex items-start justify-center pt-4">
                 <Exit progress={progress} from={0.7} to={0.82}>
                   <Result progress={progress} />
