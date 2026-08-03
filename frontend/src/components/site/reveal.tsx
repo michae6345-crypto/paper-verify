@@ -1,7 +1,9 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 import type { ReactNode } from "react";
+
+import { useReducedMotionGate } from "@/components/site/motion/scrub";
 
 /**
  * The page's one reveal.
@@ -16,8 +18,28 @@ import type { ReactNode } from "react";
  * fifth of it is visible instead of waiting for its foot to clear the fold.
  *
  * Under `prefers-reduced-motion` there is no initial state and no variant to
- * transition to: the element renders at its final value on the first paint, and
- * no observer is ever attached. Not a faster animation — no animation.
+ * transition to: the element renders at its final value, and the observer that
+ * would have watched it is never given a chance to fire. Not a faster animation —
+ * no animation.
+ *
+ * The gate is `useReducedMotionGate` from `motion/scrub`, not `useReducedMotion`
+ * from `motion/react`, and the module comment there explains at length why the
+ * difference is not cosmetic. The short version: `useReducedMotion` resolves to
+ * `null` on the server and to the truth on the client's first render, so a
+ * component that picks between two different trees with it renders one thing on
+ * the server and another during hydration. React reconciles hydration on element
+ * type, not on attributes, so the server's `style="opacity:0;transform:
+ * translateY(48px)"` would survive onto a node the client believes has no style
+ * at all — and with nothing left to trigger a re-render, it would stay there.
+ * Every `Reveal` on the page invisible, for precisely the readers who asked for
+ * less motion. The gate reads `false` until a layout effect has run, so server
+ * and hydration agree and the swap lands before the first paint.
+ *
+ * Worth knowing and not fixed here: because the animated branch is what the
+ * server emits, a reader whose JavaScript never arrives gets a page of
+ * `opacity: 0`. That is a `@media (prefers-reduced-motion: reduce)` and
+ * `<noscript>` pair in `globals.css`, which this workstream does not own; it is
+ * in the report.
  */
 export function Reveal({
   children,
@@ -30,7 +52,7 @@ export function Reveal({
   y?: number;
   className?: string;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = useReducedMotionGate();
 
   if (reduced) return <div className={className}>{children}</div>;
 
