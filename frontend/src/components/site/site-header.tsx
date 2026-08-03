@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
+import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
 
+import { useReducedMotionGate } from "@/components/site/motion/scrub";
 import { Container } from "@/components/site/ui";
 
 /**
@@ -126,7 +127,13 @@ function ScrubbedBar({ open, children }: { open: boolean; children: ReactNode })
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
-  const reduced = useReducedMotion();
+  // The gate, not `motion`'s `useReducedMotion`. This picks between two `Bar`
+  // trees, and the two do not agree at scroll 0: the scrubbed one starts at
+  // `height: "80px"` with the wash at 0, the resting one at a numeric 64 with
+  // the wash at 1. `useReducedMotion` reads false on the server and true on a
+  // reduced-motion reader's first client render, so the server sends one and the
+  // client wants the other, and React cannot patch the difference on that node.
+  const reduced = useReducedMotionGate();
 
   // A menu left open behind an anchor jump is a menu covering the thing the
   // user asked for. Escape closes it, and the page behind it is locked while

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { MotionValue, motion, useReducedMotion, useTransform } from "motion/react";
+import { MotionValue, motion, useTransform } from "motion/react";
 
-import { DrawLine, Pin, Scrub } from "@/components/site/motion/scrub";
+import { DrawLine, Pin, Scrub, useReducedMotionGate } from "@/components/site/motion/scrub";
 import { Container, Mono } from "@/components/site/ui";
 import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
 import { VERDICT_LABEL } from "@/lib/verdict";
@@ -1234,7 +1234,14 @@ function StaticApparatus({ data }: { data: ApparatusData }) {
 }
 
 export function ApparatusPanels({ data }: { data: ApparatusData }) {
-  const reduced = useReducedMotion();
+  // The gate, not `motion`'s `useReducedMotion`, even though this branch is safe
+  // today. It is safe by accident: `pinnable` also starts `false`, so both trees
+  // agree on the first render whatever the hook says. That is not a property to
+  // rely on — anyone who lets the pinned branch render without waiting for
+  // `pinnable` reintroduces the hydration mismatch, and nothing here would say
+  // so. `scrub.tsx` documents the hazard; this file should not be the one
+  // exception that looks like a counter-example.
+  const reduced = useReducedMotionGate();
   const pinnable = usePinnable(!reduced);
 
   if (reduced || !pinnable) return <StaticApparatus data={data} />;
