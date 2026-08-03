@@ -67,7 +67,14 @@ export function Roadmap() {
 
         <div className="mt-10 flex flex-col gap-12 three:mt-[60px] three:flex-row three:items-start three:gap-[60px]">
           <Scrub progress={progress} from={0.12} to={0.3} y={40} className="three:flex-1">
-            <Card tone="dark" className="flex h-full flex-col items-start gap-7 p-10">
+            {/* The same elevation as the card in `decides`, because it is the same
+                shape of section: one object and the paragraph that argues with it.
+                Two sections built alike should not sit at two depths. */}
+            <Card
+              tone="dark"
+              elevation="card"
+              className="flex h-full flex-col items-start gap-7 p-10"
+            >
               <h3
                 style={{
                   fontSize: "20px",

@@ -34,6 +34,11 @@ import { SectionTag } from "@/components/site/section-tag";
  * second card's window and before the third's. Moving the card that carries them
  * puts six rows on screen before the card holding them has arrived.
  *
+ * The evidence is also what raises its card off the page. `checks-grid.tsx` reads
+ * the presence of an `evidence` field, not a position, so the elevation follows
+ * the finding wherever the finding goes — but there should stay exactly one of
+ * them. Two cards standing off the page in a 2x2 is a grid with no foreground.
+ *
  * This file reads those reports off disk, so it stays a server component and
  * hands the assembled cards to `checks-grid.tsx`, which is the client half and
  * owns the scroll motion. The split is a rendering boundary and nothing more:

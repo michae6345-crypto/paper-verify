@@ -126,7 +126,12 @@ export function Faq() {
             y={40}
             className="three:w-[380px] three:shrink-0"
           >
-            <Card className="flex flex-col gap-6 p-8">
+            {/* The card stands off the page and the questions beside it do not get
+                a surface at all. They are `<details>`, so a card behind them would
+                grow and shrink every time one opened, and a plane that changes
+                size as you read it is not a plane. Hairlines on the field are the
+                right form for a list that resizes itself. */}
+            <Card elevation="card" className="flex flex-col gap-6 p-8">
               <h3
                 style={{
                   fontSize: "20px",

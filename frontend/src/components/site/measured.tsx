@@ -12,7 +12,7 @@ import {
   TABLES,
 } from "@/components/site/corpus";
 import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
-import { Container, Mono } from "@/components/site/ui";
+import { Card, Container, Mono } from "@/components/site/ui";
 
 /**
  * The measured band: five rows, each a figure and the file it came from.
@@ -41,6 +41,18 @@ import { Container, Mono } from "@/components/site/ui";
  * all until it settles — each slot starts blank and travels to the digit it
  * actually holds, and the slot is a fixed `1ch` in a monospaced tabular face, so
  * nothing reflows while it moves.
+ *
+ * The rows are on a surface now, and it is the quietest one on the page. They sat
+ * directly on the field, which made this the one section with no plane of its own
+ * at all — five hairlines on grey, between two sections that each carry a card.
+ * It rests rather than standing off, deliberately: `decides` and `report` either
+ * side of it are arguments and they lift, and this is the provenance underneath
+ * them. Something has to be the floor or nothing above it is raised.
+ *
+ * The hairline moved from the foot of each row to the head of every row after the
+ * first, which is the same rule the row before it draws and one rule fewer at the
+ * bottom. On the field a trailing rule under the last row closed the band; inside
+ * a card it would be a rule with nothing under it but padding.
  *
  * Not pinned. Pinning needs the section's height to change on mount, once
  * `matchMedia` says the viewport is large enough to hold the contents — and this
@@ -174,40 +186,47 @@ export function Measured() {
     <section ref={section} id="measured" className="scroll-mt-20 py-14 three:py-[120px]">
       <Container>
         <h2 className="sr-only">Measured</h2>
-        <dl className="mx-auto flex w-full max-w-[1200px] flex-col">
-          {ROWS.map((row, i) => {
-            const from = ROW_START + i * ROW_STEP;
-            return (
-              <Scrub key={row.label} progress={progress} from={from} to={from + ROW_SPAN} y={20}>
-                <div
-                  className="flex flex-col gap-2 border-b py-4 two:flex-row two:items-start two:gap-12"
-                  style={{ borderColor: "var(--site-line)" }}
-                >
-                  <dt
-                    className="two:flex-1"
-                    style={{ fontSize: "13px", lineHeight: 1.5, color: "var(--site-ink)" }}
+        <Card
+          elevation="resting"
+          className="mx-auto w-full max-w-[1200px] px-6 py-4 three:px-12 three:py-6"
+        >
+          <dl className="flex w-full flex-col">
+            {ROWS.map((row, i) => {
+              const from = ROW_START + i * ROW_STEP;
+              return (
+                <Scrub key={row.label} progress={progress} from={from} to={from + ROW_SPAN} y={20}>
+                  <div
+                    className={`flex flex-col gap-2 py-4 two:flex-row two:items-start two:gap-12 ${
+                      i === 0 ? "" : "border-t"
+                    }`}
+                    style={{ borderColor: "var(--site-line)" }}
                   >
-                    {row.label}
-                  </dt>
-                  <dd
-                    className="two:flex-1"
-                    style={{ fontSize: "13px", lineHeight: 1.5, color: "var(--site-muted)" }}
-                  >
-                    <Mono>{row.source}</Mono>
-                  </dd>
-                  <dd
-                    className="two:flex-1"
-                    style={{ fontSize: "13px", lineHeight: 1.5, color: "var(--site-ink)" }}
-                  >
-                    <Mono>
-                      <Rolling value={row.value} progress={progress} start={from + ROLL_OFFSET} />
-                    </Mono>
-                  </dd>
-                </div>
-              </Scrub>
-            );
-          })}
-        </dl>
+                    <dt
+                      className="two:flex-1"
+                      style={{ fontSize: "13px", lineHeight: 1.5, color: "var(--site-ink)" }}
+                    >
+                      {row.label}
+                    </dt>
+                    <dd
+                      className="two:flex-1"
+                      style={{ fontSize: "13px", lineHeight: 1.5, color: "var(--site-muted)" }}
+                    >
+                      <Mono>{row.source}</Mono>
+                    </dd>
+                    <dd
+                      className="two:flex-1"
+                      style={{ fontSize: "13px", lineHeight: 1.5, color: "var(--site-ink)" }}
+                    >
+                      <Mono>
+                        <Rolling value={row.value} progress={progress} start={from + ROLL_OFFSET} />
+                      </Mono>
+                    </dd>
+                  </div>
+                </Scrub>
+              );
+            })}
+          </dl>
+        </Card>
       </Container>
     </section>
   );

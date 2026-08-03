@@ -7,6 +7,7 @@ import { Card, Container } from "@/components/site/ui";
 import { Reveal } from "@/components/site/reveal";
 import { SectionTag } from "@/components/site/section-tag";
 import { DrawLine, Scrub, useSectionProgress } from "@/components/site/motion/scrub";
+import { cn } from "@/lib/utils";
 
 /**
  * How a run proceeds.
@@ -22,6 +23,21 @@ import { DrawLine, Scrub, useSectionProgress } from "@/components/site/motion/sc
  * and this is meant to read as a sequence. The scatter is on the `three:`
  * breakpoint only, because below it the cards stack and an offset would just be
  * five cards at five wrong heights.
+ *
+ * The scatter is also where the depth comes from. Five cards at one elevation are
+ * five planes at five heights, which is jitter; the offset has to mean something
+ * or it is noise. So elevation agrees with it: a card the scatter pushes down the
+ * frame sits nearer the reader by the ground-plane convention every flat layout
+ * borrows from, and takes `--site-shadow-card`, while the two the scatter holds
+ * up take the lighter `--site-shadow-raised`. Vertical offset and shadow weight
+ * then describe the same thing instead of contradicting each other.
+ *
+ * Both come off at the same breakpoint, and that is why the shadow is a class here
+ * rather than the `elevation` prop: a prop cannot hold a breakpoint. Below `three:`
+ * every card is at `mt-0` and every card rests, because there is no scatter left
+ * for the elevation to agree with. `elevation="none"` on the `Card` is what keeps
+ * this to one shadow — the prop writes an inline `box-shadow`, which no class can
+ * override, so the two mechanisms cannot both be live at once.
  *
  * ---
  *
@@ -40,31 +56,42 @@ import { DrawLine, Scrub, useSectionProgress } from "@/components/site/motion/sc
  * in both, so reduced motion changes what moves and never where anything sits.
  */
 
-const STAGES: { name: string; description: string; stagger: string }[] = [
+/**
+ * `stagger` is how far down the frame the scatter puts a card, and `elevation` is
+ * the shadow that agrees with it. The two are written next to each other so they
+ * cannot drift: change one offset to zero and its elevation should go back to
+ * resting in the same edit.
+ */
+const STAGES: { name: string; description: string; stagger: string; elevation: string }[] = [
   {
     name: "resolving",
     description: "Find the paper and fetch its source.",
     stagger: "three:mt-[62px]",
+    elevation: "three:site-elevated",
   },
   {
     name: "extracting",
     description: "Resolve the multi-file LaTeX and build the macro table.",
     stagger: "three:mt-0",
+    elevation: "",
   },
   {
     name: "mining",
     description: "Turn every table cell, link and citation into a checkable claim.",
     stagger: "three:mt-[64px]",
+    elevation: "three:site-elevated",
   },
   {
     name: "checking",
     description: "Recompute each claim without deciding anything.",
     stagger: "three:mt-[12px]",
+    elevation: "",
   },
   {
     name: "adjudicating",
     description: "Apply the tolerance policy and assign a verdict.",
     stagger: "three:mt-[48px]",
+    elevation: "three:site-elevated",
   },
 ];
 
@@ -96,7 +123,13 @@ function useRowLayout(enabled: boolean) {
 
 function StageCard({ stage, index }: { stage: (typeof STAGES)[number]; index: number }) {
   return (
-    <Card className="flex h-full flex-col justify-between gap-10 p-8 three:min-h-[454px]">
+    <Card
+      elevation="none"
+      className={cn(
+        "site-resting flex h-full flex-col justify-between gap-10 p-8 three:min-h-[454px]",
+        stage.elevation,
+      )}
+    >
       <p
         style={{
           fontSize: "clamp(44px, 5vw, 72px)",

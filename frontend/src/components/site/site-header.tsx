@@ -33,6 +33,21 @@ import { Container } from "@/components/site/ui";
  * of the document is describing nothing. It sits out of flow either way, so no
  * content moves. `scroll-mt-20` on every section already assumed a bar of this
  * height standing over the anchor targets.
+ *
+ * Its three controls share one elevation, and that is the point of them sharing
+ * it: they are the only elements on the page that are over everything else rather
+ * than in it, so they read as one plane of chrome instead of three pills that
+ * happen to be near each other. At scroll 0 the wash behind them is fully
+ * transparent and they are sitting directly on the hero, which is the case the
+ * shadow is doing the most work in.
+ *
+ * Not the halo, which is what an element that overlaps something usually gets
+ * here. Its first stop is an 8px white ring, and a white ring around the black
+ * control would read as a highlight on the one control the page wants read as
+ * solid. Not `.site-lift` on that control either, for all that it is the same
+ * primary control as the hero's: its widest stop is a 75px blur at 24px down and
+ * across, which on a 64px bar is a shadow cast onto whatever is scrolling past
+ * underneath rather than onto a page that is holding still.
  */
 
 const SECTIONS = [
@@ -133,7 +148,7 @@ export function SiteHeader() {
     <>
       <Link
         href="/"
-        className="flex h-11 items-center px-6"
+        className="site-elevated flex h-11 items-center px-6"
         style={{
           background: "var(--site-card)",
           borderRadius: "var(--site-radius-pill)",
@@ -149,7 +164,7 @@ export function SiteHeader() {
       <div className="flex items-center gap-2">
         <Link
           href="/check"
-          className="hidden h-11 items-center px-6 transition-colors two:flex"
+          className="site-elevated hidden h-11 items-center px-6 transition-colors two:flex"
           style={{
             background: "var(--site-ink)",
             borderRadius: "var(--site-radius-pill)",
@@ -167,7 +182,7 @@ export function SiteHeader() {
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-controls="site-menu"
-          className="flex h-11 w-11 flex-col items-center justify-center gap-[5px]"
+          className="site-elevated flex h-11 w-11 flex-col items-center justify-center gap-[5px]"
           style={{
             background: "var(--site-card)",
             borderRadius: "var(--site-radius-pill)",

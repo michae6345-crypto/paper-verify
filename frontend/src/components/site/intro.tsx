@@ -25,7 +25,18 @@ import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
  * The four verdicts sit under it, because the paragraph ends on what a run
  * produces and those four words are the whole vocabulary it produces it in. They
  * arrive one at a time on their own travel rather than all at once, which is the
- * same argument the paragraph makes about itself.
+ * same argument the paragraph makes about itself. They wear the full halo: they
+ * land over the foot of a paragraph set at 44px, and the ring alone was letting
+ * them sit in that text rather than over it.
+ *
+ * The inverted card at the top is the page's one rhythm break, and it is sized as
+ * a break rather than as a screen. It held `min-h-[560px]` for two lines of copy,
+ * which is a full viewport of black for eight words and reads as a section the
+ * reader has to get past. It is 360 now, with the padding brought down to match,
+ * so the floor is what sets the height at every width rather than the text
+ * floating in the middle of an arbitrary box. It stands off the page rather than
+ * resting on it, because a break in the rhythm that sits at the same depth as
+ * everything else is not a break.
  */
 
 const SENTENCE =
@@ -138,7 +149,7 @@ function VerdictPill({ verdict }: { verdict: (typeof VERDICTS)[number] }) {
       style={{
         background: "var(--site-card)",
         borderRadius: "var(--site-radius-pill)",
-        boxShadow: "0 0 0 8px rgba(255,255,255,0.35)",
+        boxShadow: "var(--site-shadow-halo)",
       }}
     >
       <VerdictGlyph verdict={verdict} size={14} />
@@ -206,7 +217,8 @@ export function Intro() {
       <section id="about" style={{ paddingInline: "var(--site-gutter)" }}>
         <Card
           tone="dark"
-          className="mx-auto flex w-full max-w-[1440px] min-h-[560px] flex-col items-center justify-center gap-6 px-6 py-24 text-center two:px-[120px] two:py-[160px]"
+          elevation="card"
+          className="mx-auto flex w-full max-w-[1440px] min-h-[360px] flex-col items-center justify-center gap-6 px-6 py-16 text-center two:px-[120px] two:py-24"
         >
           <Reveal>
             <h2 className="site-h2 mx-auto max-w-[900px]" style={{ color: "#ffffff" }}>

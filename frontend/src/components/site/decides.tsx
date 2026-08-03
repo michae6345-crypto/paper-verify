@@ -69,8 +69,13 @@ export function Decides() {
 
         <div className="mt-10 flex flex-col gap-12 three:mt-[60px] three:flex-row three:items-start three:gap-[60px]">
           <Scrub progress={progress} from={0.1} to={0.32} y={40} className="three:flex-1">
+            {/* Standing off the page rather than resting on it. This section is a
+                card and a paragraph, not a field of cards, so there is nothing for
+                the card to rest among — it is the one object here and the reader
+                should be able to see that it is in front of the page. */}
             <Card
               tone="dark"
+              elevation="card"
               className="flex h-full flex-col items-start gap-7 p-10 three:min-h-[428px]"
             >
               <h3

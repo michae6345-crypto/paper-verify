@@ -73,7 +73,11 @@ export function Report() {
         <SectionTag tag="The report" heading="What a reviewer opens" />
 
         <Scrub progress={progress} from={0.08} to={0.28} y={40} className="mt-10 three:mt-[60px]">
-          <Card tone="dark" className="p-8 three:p-12">
+          {/* One wide card carrying the whole section, so it stands off the page.
+              The four rows inside it are separated by hairlines and take no
+              elevation of their own: they are rows, not cards, and a shadow under
+              each one would be four objects where the section has one. */}
+          <Card tone="dark" elevation="card" className="p-8 three:p-12">
             <dl className="flex flex-col">
               {PROPERTIES.map((property, i) => {
                 const from = ROW_START + i * ROW_STEP;

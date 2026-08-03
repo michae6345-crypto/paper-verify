@@ -25,6 +25,12 @@ import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
  * out of each corner. The wedge is one SVG from `public/assets/`, rotated four
  * ways, rather than the four near-identical files the capture ships.
  *
+ * The panel itself takes no elevation and cannot. Every stop in every shadow here
+ * is black at some alpha, and the field it would fall on is `--site-ink`, which is
+ * black at full. A light panel on a black field is already two planes; the notched
+ * corners and the wash are what separate them, and a shadow would be a token spent
+ * where nothing can see it.
+ *
  * Social links. The capture's still point at the template's author — an
  * Instagram and an X handle that are not ours, a LinkedIn with no path on it at
  * all, and a mailto written as `https://hello@stfn.co`, which is not a URL. All
@@ -142,8 +148,13 @@ export function SiteFooter() {
 
           <Scrub progress={progress} from={0.22} to={0.34} y={20} className="relative mt-10">
             <div className="flex flex-col items-center justify-between gap-6 two:flex-row">
+              {/* The one element in the footer that needed a shadow. It is a
+                  filled pill with no border, sitting on the white end of the
+                  wash, so it had no edge at all; the links beside it are bordered
+                  and do not need one. They stay unshadowed on purpose — a link
+                  wearing a drop shadow is a link asking to be read as a button. */}
               <p
-                className="px-5 py-2.5"
+                className="site-resting px-5 py-2.5"
                 style={{
                   background: "var(--site-card)",
                   borderRadius: "var(--site-radius-pill)",

@@ -67,19 +67,39 @@ const ROW_STEP = 0.035;
 const NOTE_FROM = 0.36;
 const NOTE_TO = 0.6;
 
+/**
+ * One of the four.
+ *
+ * These were `rgba(255,255,255,0.5)` and no shadow, which is a card that is
+ * neither on the page nor off it: half the field showing through it, and no
+ * elevation to say which side of the field it is on. A translucent pane cannot be
+ * lifted convincingly either, because a shadow under something you can see
+ * through is a contradiction the eye resolves as dirt. So they are opaque now and
+ * they carry the elevation tokens.
+ *
+ * `leads` is the one that quotes a real finding. `71.0` claimed against `70.944`
+ * computed is the only concrete result on the page, and in a 2x2 of otherwise
+ * equal cards nothing says which one to read first. It stands off the page and
+ * the other three rest, which is the whole distinction those two tokens exist to
+ * draw.
+ */
 function CheckCard({
   title,
   description,
+  leads,
   children,
 }: {
   title: string;
   description: string;
+  leads?: boolean;
   children?: ReactNode;
 }) {
   return (
     <div
-      className="flex h-full flex-col items-start gap-4 p-8 three:p-10"
-      style={{ background: "rgba(255,255,255,0.5)", borderRadius: "var(--site-radius-inner)" }}
+      className={`flex h-full flex-col items-start gap-4 p-8 three:p-10 ${
+        leads ? "site-elevated" : "site-resting"
+      }`}
+      style={{ background: "var(--site-card)", borderRadius: "var(--site-radius-inner)" }}
     >
       <h3
         style={{
@@ -146,9 +166,14 @@ function EvidencePanel({
   ];
 
   return (
+    // A well, not a card. This sits inside a card that is already standing off
+    // the page, and a second shadow on top of that one reads as fog rather than
+    // as two levels — so it goes down instead of up. The fill is the page field,
+    // so it reads as punched into the card rather than laid on it, and it was
+    // white on white the moment the card behind it stopped being translucent.
     <div
       className="mt-2 flex w-full flex-col gap-2 p-5"
-      style={{ background: "var(--site-card)", borderRadius: "12px" }}
+      style={{ background: "var(--site-base)", borderRadius: "12px" }}
     >
       {rows.map((row, i) => {
         const from = ROW_START + i * ROW_STEP;
@@ -180,7 +205,11 @@ export function ChecksGrid({ cards, children }: { cards: CardSpec[]; children: R
               y={40}
               blur={6}
             >
-              <CheckCard title={card.title} description={card.description}>
+              <CheckCard
+                title={card.title}
+                description={card.description}
+                leads={Boolean(card.evidence)}
+              >
                 {card.evidence && <EvidencePanel evidence={card.evidence} progress={progress} />}
               </CheckCard>
             </Scrub>

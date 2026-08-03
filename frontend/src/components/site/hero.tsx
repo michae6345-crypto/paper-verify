@@ -212,7 +212,16 @@ function Spine({ progress }: { progress: MotionValue<number> }) {
   );
 }
 
-/** What the pipeline produces at the end of the spine: one verdict, resolving out of blur. */
+/**
+ * What the pipeline produces at the end of the spine: one verdict, resolving out of blur.
+ *
+ * The halo, and the whole of it. This carried the white ring on its own for a
+ * while, which is half of `--site-shadow-halo` — the half that separates the pill
+ * from the spine it is sitting over, without the drop that puts it in front of it.
+ * A ring with no drop reads as a gap in the page rather than an object above it,
+ * and this is the one element in the hero that has to read as the thing produced
+ * rather than as part of the diagram producing it.
+ */
 function Result({ progress }: { progress: MotionValue<number> }) {
   return (
     <Scrub progress={progress} from={0.5} to={0.68} y={12} scale={[0.96, 1]} blur={12}>
@@ -221,7 +230,7 @@ function Result({ progress }: { progress: MotionValue<number> }) {
         style={{
           background: "var(--site-card)",
           borderRadius: "var(--site-radius-pill)",
-          boxShadow: "0 0 0 8px rgba(255,255,255,0.35)",
+          boxShadow: "var(--site-shadow-halo)",
         }}
       >
         <VerdictGlyph verdict="diverges" size={14} />
@@ -256,6 +265,12 @@ function StaticHero() {
             </p>
           </Reveal>
 
+          {/* The tray stays flat, and that is not an oversight. It is 8px of white
+              around the control, which is the ring half of `--site-shadow-halo`
+              built out of a box instead of a shadow, and the control inside it
+              already carries `.site-lift` for the drop half. Putting a shadow on
+              the tray as well would be the composite wearing two, which reads as
+              fog rather than as depth. */}
           <Reveal delay={0.18}>
             <div
               className="flex flex-wrap items-center justify-center gap-3 p-2"
