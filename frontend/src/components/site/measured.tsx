@@ -78,15 +78,36 @@ const ROWS: { label: string; source: string; value: string }[] = [
   },
 ];
 
-/** Where each row starts, and the gap between them. */
-const ROW_START = 0.12;
-const ROW_SPAN = 0.22;
-const ROW_STEP = 0.055;
+/**
+ * Where each row starts, and the gap between them.
+ *
+ * The section is 550px tall, so travel at a 720px viewport is 1270px and the
+ * five rows are 52px apart, which is the 0.041 step. 0.315 is 400px of
+ * scrolling per row, against 279px before.
+ *
+ * This band was already the best-placed motion on the page — driving a browser
+ * through it put every row between 51% and 63% of the screen on the frame it
+ * resolved, which is where an animation can actually be seen. It is the reason
+ * the rest of this directory is now derived the same way rather than tuned by
+ * eye: the numbers that happened to be right and the numbers that were pointing
+ * below the fold looked identical in the source.
+ */
+const ROW_START = 0.129;
+const ROW_SPAN = 0.315;
+const ROW_STEP = 0.041;
 
-/** The digits start rolling once the row carrying them is most of the way in. */
-const ROLL_OFFSET = 0.06;
-const ROLL_SPAN = 0.18;
-const ROLL_STEP = 0.02;
+/**
+ * The digits start rolling once the row carrying them is most of the way in.
+ *
+ * 0.24 is 305px of scrolling for a wheel to travel its ten slots, against 229px,
+ * and the offset is bigger so the roll starts against a row that has already
+ * established itself rather than against one still arriving. The roll is the one
+ * mechanic on this page that is genuinely ours rather than the reference's, and
+ * it was resolving fast enough to read as the number simply being there.
+ */
+const ROLL_OFFSET = 0.1;
+const ROLL_SPAN = 0.24;
+const ROLL_STEP = 0.022;
 
 /**
  * The slots a digit wheel passes through: one blank, then the ten digits.
@@ -200,7 +221,7 @@ export function Measured() {
             {ROWS.map((row, i) => {
               const from = ROW_START + i * ROW_STEP;
               return (
-                <Scrub key={row.label} progress={progress} from={from} to={from + ROW_SPAN} y={20}>
+                <Scrub key={row.label} progress={progress} from={from} to={from + ROW_SPAN} y={14}>
                   <div
                     className={`flex flex-col gap-2 py-4 two:flex-row two:items-start two:gap-12 ${
                       i === 0 ? "" : "border-t"

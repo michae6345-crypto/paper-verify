@@ -40,16 +40,32 @@ import { useReducedMotionGate } from "@/components/site/motion/scrub";
  * `opacity: 0`. That is a `@media (prefers-reduced-motion: reduce)` and
  * `<noscript>` pair in `globals.css`, which this workstream does not own; it is
  * in the report.
+ *
+ * ---
+ *
+ * `scale` is opt-in and off by default. `MOTION_TEARDOWN.md` §4 records that
+ * cards in the reference enter with opacity *plus* a small scale, ~0.96 → 1, and
+ * never slide from far off screen — so a caller revealing a card should pass
+ * `scale={0.96}` and bring `y` down to match, because 48px of travel and a scale
+ * together is a card being thrown rather than one arriving.
+ *
+ * It is not the default for the same reason `y` is still 48: this component is
+ * also what reveals the hero's headline and its lede, and scaling a 108px
+ * headline resamples the type for the length of the tween. The distinction the
+ * teardown draws is between surfaces and text, and only the caller knows which
+ * it is holding.
  */
 export function Reveal({
   children,
   delay = 0,
   y = 48,
+  scale,
   className,
 }: {
   children: ReactNode;
   delay?: number;
   y?: number;
+  scale?: number;
   className?: string;
 }) {
   const reduced = useReducedMotionGate();
@@ -60,8 +76,8 @@ export function Reveal({
     <motion.div
       data-scrub=""
       className={className}
-      initial={{ opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y, scale }}
+      whileInView={{ opacity: 1, y: 0, scale: scale === undefined ? undefined : 1 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
     >

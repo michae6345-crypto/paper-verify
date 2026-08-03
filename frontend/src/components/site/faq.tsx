@@ -99,15 +99,29 @@ const FAQS: { q: string; a: ReactNode }[] = [
  * a stagger expressed as overlap rather than as a queue of delays, which is what
  * lets a fast scroll compress the sequence instead of playing it back.
  *
- * The last window closes at 0.59 of the section's travel. That is deliberately
- * early: a window that resolves before its question reaches the middle of the
- * screen costs a little of the movement, and one that resolves late leaves a
- * question sitting invisible on screen. The seven are not measured individually
- * — they share one subscription and differ only in their window.
+ * The six are not measured individually. The section is 832px tall, travel at a
+ * 720px viewport is 1552px, and the questions are a uniform 73px apart, which is
+ * the 0.047 spacing — so one constant and an index does the whole list, and the
+ * stagger is the list's own line spacing read as scroll distance.
+ *
+ * `WINDOW` was 0.13, which is 202px of scrolling. That is a fifth of a second at
+ * the speed a wheel moves, and it is most of why this page read as painting
+ * slowly rather than animating: the window was well placed — the questions were
+ * resolving between 61% and 74% of the screen, which is right — and simply too
+ * short to see. It is 0.265 now, 411px, and it still closes with the question's
+ * centre just under halfway up the screen.
+ *
+ * The direction that matters is unchanged: a window that resolves early costs a
+ * little movement, one that resolves late leaves a question sitting invisible
+ * while it is being read.
  */
-const FIRST = 0.22;
-const SPACING = 0.04;
-const WINDOW = 0.13;
+const FIRST = 0.189;
+const SPACING = 0.047;
+const WINDOW = 0.265;
+
+/** The card beside them. It is a surface, so it arrives as one. */
+const CARD_FROM = 0.202;
+const CARD_TO = 0.481;
 
 export function Faq() {
   const section = useRef<HTMLElement>(null);
@@ -121,17 +135,22 @@ export function Faq() {
         <div className="mt-10 flex flex-col gap-6 three:mt-12 three:flex-row three:items-start three:gap-10">
           <Scrub
             progress={progress}
-            from={0.08}
-            to={0.26}
-            y={40}
+            from={CARD_FROM}
+            to={CARD_TO}
+            y={12}
+            scale={[0.96, 1]}
+            lift="card"
             className="three:w-[380px] three:shrink-0"
           >
             {/* The card stands off the page and the questions beside it do not get
                 a surface at all. They are `<details>`, so a card behind them would
                 grow and shrink every time one opened, and a plane that changes
                 size as you read it is not a plane. Hairlines on the field are the
-                right form for a list that resizes itself. */}
-            <Card elevation="card" className="flex flex-col gap-6 p-8">
+                right form for a list that resizes itself.
+
+                `elevation="none"`: the shadow is scrubbed on the layer above so
+                it arrives with the card, and the prop would write a second one. */}
+            <Card elevation="none" className="flex flex-col gap-6 p-8">
               <h3
                 style={{
                   fontSize: "20px",
@@ -164,7 +183,7 @@ export function Faq() {
                 progress={progress}
                 from={FIRST + i * SPACING}
                 to={FIRST + i * SPACING + WINDOW}
-                y={20}
+                y={14}
               >
                 <details className="group border-b" style={{ borderColor: "var(--site-line)" }}>
                   <summary

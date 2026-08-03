@@ -26,11 +26,13 @@ import type { Verdict } from "@/types/run-report";
  * whole — the reader ends up having read each line rather than having seen a
  * block of monospace appear.
  *
- * On a narrow screen the four cards stack, the track gets three times longer,
- * and the windows all resolve early. That is the correct degradation: stacking
- * already sequences the cards by geometry, so the windows have nothing left to
- * do. Every window closes by 0.48, well before the last card is centred, so no
- * card can be sitting at zero opacity while it is on screen.
+ * On a narrow screen the four cards stack, the track gets roughly three times
+ * longer, and every window resolves earlier in the element's own travel than it
+ * does here. That is the correct degradation and it is safe in the direction
+ * that matters: stacking already sequences the cards by geometry, so the windows
+ * have nothing left to do, and a window that closes early costs movement rather
+ * than content. The direction to watch is the other one, and it is checked at
+ * five viewports rather than argued about.
  *
  * Nothing here is pinned. Four cards at this size exceed a 640px viewport at
  * every breakpoint, and a pinned section taller than the screen puts its own
@@ -54,18 +56,51 @@ export type Evidence = {
   verdict: Verdict;
 };
 
-/** Where each card's window opens. The fourth closes at 0.48. */
-const CARD_STARTS = [0.02, 0.06, 0.2, 0.24];
-const CARD_SPAN = 0.24;
+/**
+ * Where each card's window opens, and it is the grid's own geometry rather than
+ * four numbers that looked reasonable.
+ *
+ * The track is the grid, 660px tall, so travel at a 720px viewport is 1380px.
+ * The two rows of the grid are 350px apart, which is 0.25 of that travel, and
+ * that gap is where the separation between the two groups comes from — §4 of the
+ * teardown asks for windows that overlap heavily inside a group and are clearly
+ * apart between groups, and here that falls straight out of the fact that the
+ * second row is lower down the page. Only the 0.03 between the left and right
+ * card of a row is authored, because those two are side by side and geometry has
+ * nothing to say about which is read first.
+ *
+ * What these replace: `[0.02, 0.06, 0.2, 0.24]`, which opened the first card 27px
+ * into a 1380px travel. Driving a browser through it showed the top-left card at
+ * **opacity 0.64 and the two bottom cards at 0.95 and 0.78 on the frame their
+ * centres first came over the fold** — three of the four had done most or all of
+ * their animating below the fold, where the reader cannot be looking. That is the
+ * whole of the "it fades in like a slow paint" complaint, and it was invisible
+ * from the source, because a window can be perfectly well formed and still be
+ * pointed somewhere nobody is looking.
+ */
+const CARD_STARTS = [0.0, 0.03, 0.341, 0.371];
 
-/** The six evidence rows, opening after the card that holds them. */
-const ROW_START = 0.2;
-const ROW_SPAN = 0.14;
+/** 0.313 of 1380px is 432px of scrolling, against 331px before. */
+const CARD_SPAN = 0.313;
+
+/**
+ * The six evidence rows, opening after the card that holds them.
+ *
+ * Their `from` values are geometric — the rows are 26px apart, which is 0.019 of
+ * the travel — but the step is 0.035 rather than 0.019, and that is deliberate.
+ * The doc comment above says these six should read as figures landing one after
+ * another; at the geometric spacing they are 26px of scrolling apart, which
+ * arrives as one event. 0.035 is 48px, far enough apart to count them and still
+ * a 87% overlap between neighbours, so a fast scroll compresses them into one
+ * gesture instead of queueing six.
+ */
+const ROW_START = 0.165;
+const ROW_SPAN = 0.278;
 const ROW_STEP = 0.035;
 
-/** The closing paragraph, last. */
-const NOTE_FROM = 0.36;
-const NOTE_TO = 0.6;
+/** The closing paragraph, last. It sits below the grid, so its window is past 1. */
+const NOTE_FROM = 0.489;
+const NOTE_TO = 0.81;
 
 /**
  * One of the four.
@@ -77,28 +112,28 @@ const NOTE_TO = 0.6;
  * through is a contradiction the eye resolves as dirt. So they are opaque now and
  * they carry the elevation tokens.
  *
- * `leads` is the one that quotes a real finding. `71.0` claimed against `70.944`
- * computed is the only concrete result on the page, and in a 2x2 of otherwise
- * equal cards nothing says which one to read first. It stands off the page and
- * the other three rest, which is the whole distinction those two tokens exist to
- * draw.
+ * The one that quotes a real finding stands off the page and the other three
+ * rest. `71.0` claimed against `70.944` computed is the only concrete result on
+ * the page, and in a 2x2 of otherwise equal cards nothing says which one to read
+ * first — which is the whole distinction those two tokens exist to draw. Which
+ * token a card gets is decided by the presence of evidence, one level up, where
+ * the scrub that carries the shadow lives.
  */
 function CheckCard({
   title,
   description,
-  leads,
   children,
 }: {
   title: string;
   description: string;
-  leads?: boolean;
   children?: ReactNode;
 }) {
   return (
+    // No shadow class. The elevation is on a scrubbed layer outside this card so
+    // that it arrives with it; `leads` still decides *which* token, it is just
+    // decided one level up now. Two shadows on one surface reads as fog.
     <div
-      className={`flex h-full flex-col items-start gap-4 p-8 three:p-10 ${
-        leads ? "site-elevated" : "site-resting"
-      }`}
+      className="flex h-full flex-col items-start gap-4 p-8 three:p-10"
       style={{ background: "var(--site-card)", borderRadius: "var(--site-radius-inner)" }}
     >
       <h3
@@ -197,19 +232,25 @@ export function ChecksGrid({ cards, children }: { cards: CardSpec[]; children: R
         {cards.map((card, i) => {
           const from = CARD_STARTS[Math.min(i, CARD_STARTS.length - 1)];
           return (
+            // No blur, and 12px of travel rather than 40. §4 of the teardown
+            // spends blur exactly once, on the one element that matters, and the
+            // hero's verdict is already that element — four cards resolving out
+            // of a 6px blur is the effect stated four times in one section, and
+            // on a card carrying a table of figures it reads as the page failing
+            // to render rather than as depth. 40px alongside a scale is a slide
+            // from off screen, which §4 rules out in the same sentence that asks
+            // for the scale.
             <Scrub
               key={card.title}
               progress={progress}
               from={from}
               to={from + CARD_SPAN}
-              y={40}
-              blur={6}
+              y={12}
+              scale={[0.96, 1]}
+              lift={card.evidence ? "card" : "raised"}
+              liftRadius="inner"
             >
-              <CheckCard
-                title={card.title}
-                description={card.description}
-                leads={Boolean(card.evidence)}
-              >
+              <CheckCard title={card.title} description={card.description}>
                 {card.evidence && <EvidencePanel evidence={card.evidence} progress={progress} />}
               </CheckCard>
             </Scrub>

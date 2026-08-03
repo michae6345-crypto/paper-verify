@@ -58,10 +58,36 @@ const PROPERTIES: { term: string; detail: string }[] = [
   },
 ];
 
-/** Where the first row opens, how long each holds, and the gap between them. */
-const ROW_START = 0.18;
-const ROW_SPAN = 0.2;
-const ROW_STEP = 0.05;
+/**
+ * The card, then the rows inside it, then the paragraph that qualifies it.
+ *
+ * The section is 993px tall, so travel at a 720px viewport is 1713px. Each
+ * window opens on the frame its own top edge reaches the fold — the card's top
+ * sits 326px down the section, the first row's 390px — and runs for a fixed
+ * distance in pixels rather than a fixed share of the section.
+ *
+ * The card's old window, 0.08 → 0.28, was measured putting it at **opacity 1.00
+ * on the frame its centre first came over the fold**. The rows inside it were
+ * fine; the surface holding them did all of its arriving off screen, which is
+ * the same defect this page had in four other places and the reason the
+ * arithmetic for it now lives in `motion/scrub.tsx` rather than in each file's
+ * head.
+ *
+ * The rows are 82 to 84px apart, hence the 0.046 step. Their span is 0.24, which
+ * is 411px, and it overlaps its neighbour by 81% — heavily enough that a flick
+ * delivers the four as one gesture, far enough apart to be counted at reading
+ * speed.
+ */
+const CARD_FROM = 0.19;
+const CARD_TO = 0.442;
+
+const ROW_START = 0.227;
+const ROW_SPAN = 0.24;
+const ROW_STEP = 0.046;
+
+/** The paragraph below the card, and the last thing in the section to arrive. */
+const NOTE_FROM = 0.458;
+const NOTE_TO = 0.712;
 
 export function Report() {
   const section = useRef<HTMLElement>(null);
@@ -72,12 +98,24 @@ export function Report() {
       <Container>
         <SectionTag tag="The report" heading="What a reviewer opens" />
 
-        <Scrub progress={progress} from={0.08} to={0.28} y={40} className="mt-10 three:mt-[60px]">
+        <Scrub
+          progress={progress}
+          from={CARD_FROM}
+          to={CARD_TO}
+          y={12}
+          scale={[0.96, 1]}
+          lift="card"
+          className="mt-10 three:mt-[60px]"
+        >
           {/* One wide card carrying the whole section, so it stands off the page.
               The four rows inside it are separated by hairlines and take no
               elevation of their own: they are rows, not cards, and a shadow under
-              each one would be four objects where the section has one. */}
-          <Card tone="dark" elevation="card" className="p-8 three:p-12">
+              each one would be four objects where the section has one.
+
+              `elevation="none"` because the shadow is scrubbed on the layer
+              above, so the card gains its depth as it lands rather than carrying
+              it from the first frame. */}
+          <Card tone="dark" elevation="none" className="p-8 three:p-12">
             <dl className="flex flex-col">
               {PROPERTIES.map((property, i) => {
                 const from = ROW_START + i * ROW_STEP;
@@ -89,8 +127,7 @@ export function Report() {
                     progress={progress}
                     from={from}
                     to={from + ROW_SPAN}
-                    y={16}
-                    blur={4}
+                    y={14}
                     className={
                       i === 0
                         ? "flex flex-col gap-1 pb-6 two:flex-row two:gap-12"
@@ -125,7 +162,7 @@ export function Report() {
           </Card>
         </Scrub>
 
-        <Scrub progress={progress} from={0.42} to={0.62} y={32}>
+        <Scrub progress={progress} from={NOTE_FROM} to={NOTE_TO} y={20}>
           <p
             className="mt-10 max-w-[68ch]"
             style={{

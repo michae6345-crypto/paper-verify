@@ -158,7 +158,25 @@ function ScrubbedParagraph() {
  * row was on screen. `useSectionProgress` starts when the row enters from the
  * bottom and ends when it leaves the top, and the windows are placed around the
  * middle of that, where the row is actually being looked at.
+ *
+ * The track here is the `ul` itself, which is 44px tall, and that is the whole
+ * reason these numbers are what they are. Travel is `H + S` — 764px at a 720px
+ * viewport — so a window of 0.14, which is what these held, was **100px of
+ * scrolling** for all four pills together. Measured in a browser, not derived:
+ * it was the shortest window on the page by a factor of two and it resolved
+ * inside a single flick of a trackpad.
+ *
+ * The four share one geometry, so unlike every other group on this page their
+ * stagger cannot come from where they sit — they sit in the same place. It is
+ * authored instead, and `STEP` is the one number here chosen by eye rather than
+ * by arithmetic: 0.075 of the travel is 57px of scrolling between one pill and
+ * the next, which is the 60–80ms §4 of the teardown asks for within a group,
+ * once Lenis's 1.1s easing is doing the conversion.
  */
+
+/** How long one pill takes, and how far behind the previous one it starts. */
+const PILL_SPAN = 0.4;
+const PILL_STEP = 0.075;
 function VerdictPill({ verdict }: { verdict: (typeof VERDICTS)[number] }) {
   return (
     <span
@@ -185,9 +203,9 @@ function ScrubbedVerdicts() {
         <li key={verdict}>
           <Scrub
             progress={progress}
-            from={0.42 + i * 0.03}
-            to={0.56 + i * 0.03}
-            y={16}
+            from={i * PILL_STEP}
+            to={PILL_SPAN + i * PILL_STEP}
+            y={12}
             scale={[0.96, 1]}
           >
             <VerdictPill verdict={verdict} />

@@ -1,12 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MotionValue, useReducedMotion } from "motion/react";
+import { MotionValue } from "motion/react";
 
 import { Card, Container } from "@/components/site/ui";
 import { Reveal } from "@/components/site/reveal";
 import { SectionTag } from "@/components/site/section-tag";
-import { DrawLine, Scrub, useSectionProgress } from "@/components/site/motion/scrub";
+import {
+  DrawLine,
+  Scrub,
+  useReducedMotionGate,
+  useSectionProgress,
+} from "@/components/site/motion/scrub";
 import { cn } from "@/lib/utils";
 
 /**
@@ -61,48 +66,114 @@ import { cn } from "@/lib/utils";
  * the shadow that agrees with it. The two are written next to each other so they
  * cannot drift: change one offset to zero and its elevation should go back to
  * resting in the same edit.
+ *
+ * `lift` is the same shadow again, as a scrubbed layer rather than a class, and
+ * it exists because the two are needed in different branches. `ScrubbedRow` only
+ * ever renders above `three:`, so inside it the breakpoint is already satisfied
+ * and the shadow can arrive with the card instead of being painted on from the
+ * first frame. `StackedList` is the branch that still needs the class, because
+ * it is also what a wide viewport with `prefers-reduced-motion` renders, and
+ * there the scatter is present and nothing animates.
  */
-const STAGES: { name: string; description: string; stagger: string; elevation: string }[] = [
+const STAGES: {
+  name: string;
+  description: string;
+  stagger: string;
+  elevation: string;
+  lift: "raised" | "card";
+}[] = [
   {
     name: "resolving",
     description: "Find the paper and fetch its source.",
     stagger: "three:mt-[62px]",
     elevation: "three:site-elevated",
+    lift: "card",
   },
   {
     name: "extracting",
     description: "Resolve the multi-file LaTeX and build the macro table.",
     stagger: "three:mt-0",
     elevation: "",
+    lift: "raised",
   },
   {
     name: "mining",
     description: "Turn every table cell, link and citation into a checkable claim.",
     stagger: "three:mt-[64px]",
     elevation: "three:site-elevated",
+    lift: "card",
   },
   {
     name: "checking",
     description: "Recompute each claim without deciding anything.",
     stagger: "three:mt-[12px]",
     elevation: "",
+    lift: "raised",
   },
   {
     name: "adjudicating",
     description: "Apply the tolerance policy and assign a verdict.",
     stagger: "three:mt-[48px]",
     elevation: "three:site-elevated",
+    lift: "card",
   },
 ];
 
-/** The rule draws across this slice of the row's travel; the cards follow it. */
-const DRAW_FROM = 0.18;
-const DRAW_TO = 0.42;
+/**
+ * The rule draws across this slice of the row's travel; the cards follow it.
+ *
+ * The row's track is 504px tall, so travel at a 720px viewport is 1224px and the
+ * old 0.18 → 0.42 draw was 294px of scrolling for the whole spine. It is 343px
+ * now, and it starts later rather than earlier, which is the opposite of what
+ * the rest of this directory needed.
+ *
+ * The reason is the scatter. Stage 1 carries the largest offset, `mt-[62px]`, so
+ * it is the lowest card on the screen, and it also has to be the first to
+ * arrive. Those two pull against each other and no choice of numbers satisfies
+ * both: a window that closes early enough to lead the other four necessarily
+ * closes while its own card is still low. 0.08 is where that trade was measured
+ * out rather than argued — at 0, stage 1 was 68% resolved before its centre had
+ * cleared the fold; here it is 41%, and the four behind it are all under 10%.
+ * The alternative was to flatten the scatter, and the scatter is the reference's
+ * and is doing a different job.
+ */
+const DRAW_FROM = 0.08;
+const DRAW_TO = 0.36;
 
-/** The window card `i` holds. Consecutive windows overlap by more than half. */
+/**
+ * How long a card takes once the rule has reached it, and how long a node takes.
+ *
+ * 0.32 of 1224px is 392px of scrolling, against 220px before. The node is short
+ * on purpose: a 6px dot fading over 400px is not a dot lighting up, it is a dot
+ * that was always there. It should read as the line arriving at something.
+ */
+const CARD_SPAN = 0.32;
+const NODE_SPAN = 0.05;
+
+/**
+ * Where the rule reaches stage `i`. Every other window here is derived from it.
+ *
+ * This is the one section whose stagger is *not* geometric. Everywhere else on
+ * this page an element's window comes from where it sits, and the reading order
+ * falls out of the layout for free. Here the scatter deliberately puts stage 1
+ * lower on the screen than stage 2, so geometry would deliver the five cards in
+ * the order 2, 4, 5, 1, 3. The sequence is the entire content of this section,
+ * so the draw orders them instead and the scatter is left to do its other job.
+ */
+function stageArrival(i: number): number {
+  return DRAW_FROM + (DRAW_TO - DRAW_FROM) * ((i + 0.5) / STAGES.length);
+}
+
+/** The window card `i` holds. Consecutive windows overlap by more than four fifths. */
 function stageWindow(i: number): [number, number] {
-  const start = 0.2 + i * 0.05;
-  return [start, start + 0.18];
+  const arrival = stageArrival(i);
+  return [Math.max(0, arrival - 0.01), arrival + CARD_SPAN];
+}
+
+/** The node on the rule above card `i`, lighting as the line touches it. */
+function nodeWindow(i: number): [number, number] {
+  const arrival = stageArrival(i);
+  return [Math.max(0, arrival - 0.005), arrival + NODE_SPAN];
 }
 
 /** Is the row laid out as a row? The `three:` breakpoint, as a decision rather than a class. */
@@ -121,13 +192,23 @@ function useRowLayout(enabled: boolean) {
   return row;
 }
 
-function StageCard({ stage, index }: { stage: (typeof STAGES)[number]; index: number }) {
+function StageCard({
+  stage,
+  index,
+  lifted,
+}: {
+  stage: (typeof STAGES)[number];
+  index: number;
+  /** The scrubbed branch carries the shadow on a layer outside this card. */
+  lifted?: boolean;
+}) {
   return (
     <Card
       elevation="none"
       className={cn(
-        "site-resting flex h-full flex-col justify-between gap-10 p-8 three:min-h-[454px]",
-        stage.elevation,
+        "flex h-full flex-col justify-between gap-10 p-8 three:min-h-[454px]",
+        !lifted && "site-resting",
+        !lifted && stage.elevation,
       )}
     >
       <p
@@ -181,7 +262,7 @@ function Connector({ progress }: { progress: MotionValue<number> }) {
       </svg>
 
       {STAGES.map((stage, i) => {
-        const [from, to] = stageWindow(i);
+        const [from, to] = nodeWindow(i);
         return (
           <div
             key={stage.name}
@@ -223,8 +304,19 @@ function ScrubbedRow() {
           const [from, to] = stageWindow(i);
           return (
             <li key={stage.name} className={`${stage.stagger} ${LI_CLASS}`}>
-              <Scrub progress={progress} from={from} to={to} scale={[0.97, 1]}>
-                <StageCard stage={stage} index={i} />
+              {/* 12px of travel, not 24. §4 of the teardown is explicit that a
+                  card enters on opacity plus a small scale and never slides from
+                  far off screen, and 24px alongside a scale reads as a card being
+                  thrown at its slot rather than settling into it. */}
+              <Scrub
+                progress={progress}
+                from={from}
+                to={to}
+                y={12}
+                scale={[0.96, 1]}
+                lift={stage.lift}
+              >
+                <StageCard stage={stage} index={i} lifted />
               </Scrub>
             </li>
           );
@@ -241,7 +333,11 @@ function StackedList() {
       <ol className={OL_CLASS}>
         {STAGES.map((stage, i) => (
           <li key={stage.name} className={`${stage.stagger} ${LI_CLASS}`}>
-            <Reveal delay={i * 0.05}>
+            {/* The same gesture the scrubbed branch uses, on a timeline instead
+                of a scroll position. This is the whole of the motion on a phone,
+                where the page's own scroll is already delivering the cards one
+                at a time and there is nothing to scrub against. */}
+            <Reveal delay={i * 0.05} y={16} scale={0.96}>
               <StageCard stage={stage} index={i} />
             </Reveal>
           </li>
@@ -252,7 +348,16 @@ function StackedList() {
 }
 
 export function Process() {
-  const reduced = useReducedMotion();
+  // The gate, not `motion`'s `useReducedMotion`. This picks between two
+  // structurally different trees, which is the case the module comment in
+  // `motion/scrub.tsx` describes at length: `useReducedMotion` reads null on the
+  // server and the truth on the client's first render, so the two disagree and
+  // React keeps the server's attributes on a node the client thinks it owns.
+  // It happened to be survivable here only because `useRowLayout` also starts
+  // false, so both branches picked `StackedList` on the first pass. That is a
+  // coincidence of initial state rather than a reason, and the file it borrows
+  // the pattern from already names this file as one that uses the gate.
+  const reduced = useReducedMotionGate();
   const row = useRowLayout(!reduced);
 
   return (

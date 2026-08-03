@@ -10,6 +10,8 @@ import {
 } from "motion/react";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
+import { cn } from "@/lib/utils";
+
 /**
  * The page's scroll vocabulary. Every section builds from these.
  *
@@ -153,6 +155,49 @@ export function useReducedMotionGate(): boolean {
  * consumer on this page was checked against the second case at 1440×900,
  * 1440×760 and 1100×640; the findings are in the report. Prefer to close a
  * window by `S/(H+S)` — around 0.6 for a section a screen and a half tall.
+ *
+ * ---
+ *
+ * **How to place a window, rather than guess one.** The rule above says where
+ * not to put a window. This says where to put it, and it is the arithmetic every
+ * consumer in this directory is now derived from, because the hand-placed
+ * constants that preceded it were measured in a browser and found to be spending
+ * almost all of their motion off screen.
+ *
+ * Give the element's top edge and centre as offsets from the top of the track,
+ * `top` and `centre`. Then the element's centre sits at viewport fraction
+ *
+ *     f(p) = 1 + centre/H − p(H+S)/H
+ *
+ * which rearranges to the only two expressions a consumer needs:
+ *
+ *     from = top / (H + S)              its top edge reaching the fold
+ *     to   = (top + W) / (H + S)        W pixels of scrolling later
+ *
+ * The first is exact and free: an element's window should open on the frame it
+ * first becomes visible, which is simply its own offset over the travel. The
+ * second says something that is not obvious and is the reason this is written
+ * down — **`W` is a distance in pixels, and a window's duration does not depend
+ * on the height of the section it is in.** Two lists in sections of very
+ * different heights, given the same `W`, animate for the same length of time.
+ * A window expressed as "0.24 of the travel" does not: in a tall section that is
+ * a long, slow arrival and in a short one it is a flicker, which is exactly how
+ * this page ended up with windows ranging from 100px to 600px of scroll with no
+ * one having chosen either number.
+ *
+ * The budgets in use, both of them a fraction of the *viewport* rather than of
+ * the section:
+ *
+ *     surfaces   W = 0.60 H   a card, arriving as an object
+ *     rows       W = 0.52 H + h/2, which is the same as closing when the
+ *                element's centre reaches 48% of the screen
+ *
+ * At the 720px viewport that most readers actually have, both land near 400px of
+ * scrolling. The ceiling worth knowing about: an element that opens as its top
+ * appears and closes as its centre passes the middle can spend at most
+ * `0.5 H + h/2` — about 580px for a tall card. Beyond that it is still arriving
+ * while it is being read. A pinned section is the only way past that ceiling,
+ * which is why the hero and the intro paragraph are pinned and nothing else is.
  *
  * Under reduced motion this returns a `MotionValue` fixed at 1, so a section that
  * does *not* branch at component level still renders every window resolved rather
@@ -413,6 +458,33 @@ function useOverflowWarning() {
  * trade. The tab-order case turns out to look after itself: moving focus to an
  * off-screen control scrolls it into view, and scrolling it into view is what
  * lights it up.
+ *
+ * ---
+ *
+ * **`lift` — the card gaining its shadow as it arrives.** A surface that fades
+ * and scales still reads as a picture of a card being faded in. A surface that
+ * also acquires its elevation reads as one arriving, and depth is the one thing
+ * this page's vocabulary already had tokens for and was not animating at all.
+ *
+ * It is a layer rather than an animated `box-shadow`: an absolutely positioned
+ * sibling behind the children, carrying one of the existing elevation tokens,
+ * whose *opacity* is scrubbed. Three reasons it is built that way. A
+ * `box-shadow` cannot be interpolated from a CSS variable, so animating the
+ * property would mean copying the six shadow stops out of `globals.css` into
+ * this file, where they would drift. Opacity is composited and a multi-stop
+ * shadow repaint is not. And the layer inherits the parent's own fade, so the
+ * effective shadow is the square of the progress — the surface reaches full
+ * opacity while its shadow is still coming in, which is what makes it read as
+ * settling onto the page rather than as a picture that includes a shadow.
+ *
+ * The consumer must set `elevation="none"` on the `Card` inside it. Two shadows
+ * on one surface is the "reads as fog" failure `ui.tsx` describes, and the
+ * inline `box-shadow` a `Card` writes cannot be overridden from out here.
+ *
+ * Under reduced motion the layer is still rendered, at rest and at full
+ * strength. A reader who asked for less motion should get the resolved card,
+ * and the resolved card has a shadow; dropping the layer with the animation
+ * would quietly flatten every surface on the page for exactly those readers.
  */
 export function Scrub({
   progress,
@@ -421,6 +493,8 @@ export function Scrub({
   y = 24,
   scale,
   blur,
+  lift,
+  liftRadius = "card",
   children,
   className,
 }: {
@@ -430,12 +504,27 @@ export function Scrub({
   y?: number;
   scale?: [number, number];
   blur?: number;
+  lift?: "raised" | "card";
+  liftRadius?: "card" | "inner";
   children: ReactNode;
   className?: string;
 }) {
   const reduced = useReducedMotionGate();
 
-  if (reduced) return <div className={className}>{children}</div>;
+  if (reduced) {
+    if (!lift) return <div className={className}>{children}</div>;
+    return (
+      <div className={cn("relative", className)}>
+        <span
+          aria-hidden="true"
+          data-scrub=""
+          className="pointer-events-none absolute inset-0"
+          style={{ borderRadius: LIFT_RADIUS[liftRadius], boxShadow: LIFT_SHADOW[lift] }}
+        />
+        {children}
+      </div>
+    );
+  }
 
   return (
     <ScrubbedBox
@@ -445,12 +534,26 @@ export function Scrub({
       y={y}
       scale={scale}
       blur={blur}
+      lift={lift}
+      liftRadius={liftRadius}
       className={className}
     >
       {children}
     </ScrubbedBox>
   );
 }
+
+/** The elevation tokens `lift` is allowed to reach for. Not free-form shadows. */
+const LIFT_SHADOW = {
+  raised: "var(--site-shadow-raised)",
+  card: "var(--site-shadow-card)",
+} as const;
+
+/** Matching the two radius tokens, because the layer has to be the card's shape. */
+const LIFT_RADIUS = {
+  card: "var(--site-radius-card)",
+  inner: "var(--site-radius-inner)",
+} as const;
 
 function ScrubbedBox({
   progress,
@@ -459,6 +562,8 @@ function ScrubbedBox({
   y,
   scale,
   blur,
+  lift,
+  liftRadius,
   children,
   className,
 }: {
@@ -468,6 +573,8 @@ function ScrubbedBox({
   y: number;
   scale?: [number, number];
   blur?: number;
+  lift?: "raised" | "card";
+  liftRadius: "card" | "inner";
   children: ReactNode;
   className?: string;
 }) {
@@ -481,9 +588,25 @@ function ScrubbedBox({
   return (
     <motion.div
       data-scrub=""
-      className={className}
+      className={lift ? cn("relative", className) : className}
       style={{ opacity, y: ty, scale: s, filter, pointerEvents }}
     >
+      {/* Behind the children and inside the scale, so the shadow arrives with
+          the surface and grows with it. It reads the same `opacity` the box
+          already carries, which the parent then multiplies by again — the lag
+          that turns a fade into an arrival. */}
+      {lift && (
+        <motion.span
+          aria-hidden="true"
+          data-scrub=""
+          className="pointer-events-none absolute inset-0"
+          style={{
+            borderRadius: LIFT_RADIUS[liftRadius],
+            boxShadow: LIFT_SHADOW[lift],
+            opacity,
+          }}
+        />
+      )}
       {children}
     </motion.div>
   );
