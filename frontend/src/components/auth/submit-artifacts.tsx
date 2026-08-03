@@ -94,9 +94,16 @@ export function SubmitArtifacts({ knownIds }: { knownIds: string[] }) {
 
   const headingRef = useRef<HTMLHeadingElement>(null);
 
+  // Whether there is a session is unknowable until `localStorage` is readable,
+  // so the screen holds for that one frame. Rendering the form first and
+  // swapping it for the sign-in prompt would flash a form the user cannot use.
+  if (!hydrated) {
+    return <div className="min-h-[560px]" />;
+  }
+
   // Signed out is a real state here, not a failure: there is nothing to protect,
   // but a record needs an address on it.
-  if (hydrated && !session) {
+  if (!session) {
     return (
       <Panel as="section">
         <h2 className="site-h3">Sign in first</h2>
