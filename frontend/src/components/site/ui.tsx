@@ -36,6 +36,23 @@ export function Container({ children, className }: { children: ReactNode; classN
  * place this repository refuses a green dot is the footer's status line, which
  * does make such a claim; that line is still plain text.
  */
+/**
+ * Elevation, and the border that looks like a mistake.
+ *
+ * The capture puts its signature shadow — the 8px white ring plus the drop —
+ * on a 147px-radius white pill with a 1px white border. That is this component's
+ * shape exactly, so the light tag carries `--site-shadow-halo`. A tag sits over
+ * the page field with content behind it, which is the case the ring exists for.
+ *
+ * The dark tag takes no shadow. It is a translucent pill on an inverted card,
+ * and a white ring around it would read as a glow rather than as separation.
+ *
+ * The white border on a white fill is not an oversight and not a porting slip:
+ * the capture carries `--border-color: rgb(255,255,255)` over
+ * `background-color: rgb(255,255,255)` on the same element. It draws nothing.
+ * It is kept because `box-sizing: border-box` still counts it, so removing it
+ * takes 2px off the pill at every occurrence for no reason.
+ */
 export function Tag({
   children,
   tone = "light",
@@ -53,6 +70,7 @@ export function Tag({
         background: dark ? "rgba(255,255,255,0.06)" : "var(--site-card)",
         border: `1px solid ${dark ? "var(--site-line-invert)" : "var(--site-card)"}`,
         borderRadius: "var(--site-radius-pill)",
+        boxShadow: dark ? undefined : "var(--site-shadow-halo)",
       }}
     >
       {dot && (
@@ -154,17 +172,25 @@ export function GhostLink({
  *
  * `none` exists for a card that is already inside another elevated surface.
  * Stacking two shadows reads as fog, not as depth.
+ *
+ * `radius` is here because this component used to hard-code the 24px card
+ * radius, which meant anything needing the 16px inner radius had to hand-roll
+ * its own surface instead — which is what the four check cards were doing, and
+ * why they went a whole release with no elevation at all. Two values, matching
+ * the two radius tokens, because a third would be a scale nobody asked for.
  */
 export function Card({
   children,
   className,
   tone = "light",
   elevation = "resting",
+  radius = "card",
 }: {
   children: ReactNode;
   className?: string;
   tone?: "light" | "dark";
   elevation?: "none" | "resting" | "card" | "halo";
+  radius?: "card" | "inner";
 }) {
   const dark = tone === "dark";
   const shadow = {
@@ -179,7 +205,7 @@ export function Card({
       className={cn("relative", className)}
       style={{
         background: dark ? "var(--site-deep)" : "var(--site-card)",
-        borderRadius: "var(--site-radius-card)",
+        borderRadius: radius === "inner" ? "var(--site-radius-inner)" : "var(--site-radius-card)",
         color: dark ? "#ffffff" : "var(--site-ink)",
         boxShadow: shadow,
       }}
