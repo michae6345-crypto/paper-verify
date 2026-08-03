@@ -16,21 +16,51 @@
    --------------------------------------------------------------------------- */
 
 :root {
-  /* Chrome — application surfaces, always dark */
-  --chrome-base: #14181d;
-  --chrome-panel: #1b2027;
-  --chrome-raised: #222932;
-  --chrome-line: #2a323c;
-  --chrome-text: #e4e7eb;
-  --chrome-dim: #8b95a1;
-  --chrome-faint: #5a646f;
+  /* Chrome — application surfaces, always dark.
 
-  /* Document — paper pane, always light */
-  --paper: #fbfaf8;
-  --paper-ink: #16191d;
-  --paper-rule: #ddd9d2;
+     These used to be a blue-slate ramp (#14181d … #2a323c). They are now the
+     landing page's own dark, because the landing page already has one: its
+     inverted cards are #262626, and `--chrome-panel` is that value exactly.
+
+     That is the whole reconciliation between the two surfaces. The report view
+     is not "the dark app next to the light site" — it is the landing's dark
+     card, scaled up until the instrument fits inside it. Neutral greys, no hue,
+     so nothing on the dark side argues with #ff3700.
+
+     --chrome-base is #141414 rather than something nearer the panel because
+     --v-pending is a mandated colour that only clears 3:1 against a field this
+     deep (3.06). Every step above it was measured, not picked. */
+  --chrome-base: #141414;
+  --chrome-panel: #262626;
+  --chrome-raised: #2e2e2e;
+  --chrome-line: #383838;
+  --chrome-text: #f2f2f2;
+  /* --site-muted-invert, unchanged: 5.86 on the panel, 7.13 on the base. */
+  --chrome-dim: #a1a1a1;
+  /* Tertiary ink — locators, versions, dom ids. The old #5a646f read at 3.3:1
+     and was never body text you could actually read. 4.99 on the panel. Not
+     used on --chrome-raised, where it would land at 4.48. */
+  --chrome-faint: #949494;
+
+  /* Document — paper pane, always light. The landing's white card and its black
+     ink, so the paper in the report is the same material as a card on the
+     landing rather than a near-white of its own. */
+  --paper: #ffffff;
+  --paper-ink: #000000;
+  --paper-rule: #e0e0e0;
+  /* Secondary ink on any light surface. The landing's --site-muted, and it is
+     that value for the reason stated there: one opaque grey that clears 4.5:1
+     on every light surface in the product (7.34 on white, 5.20 on #d9d9d9)
+     rather than an alpha that drifts with whatever it lands on. */
+  --paper-dim: #565656;
   /* §5.4 anchor highlight. Owned by the document pane wave, defined here so the
-     value lives with the other tokens. */
+     value lives with the other tokens.
+
+     Deliberately still yellow, and deliberately not the accent. This is the
+     one mark that has to sit legibly underneath any of the five verdicts, and
+     it marks a passage rather than offering a control — a reader's highlighter,
+     not a button. Making it #ff3700 would have merged "this is the claim you
+     selected" with "this is something to click", which are different things. */
   --paper-highlight: #fff3c4;
 
   /* Verdict semantics — only ever used on verdicts, never on chrome or brand */
@@ -40,22 +70,41 @@
   --v-unverifiable: #c08a2e;
   --v-pending: #5a646f;
 
-  /* The single interactive colour */
-  --focus: #6a7bff;
+  /* The single interactive colour, and it is now the landing page's accent
+     rather than a blue of the app's own. One accent across four surfaces.
 
-  /* Anchor and ledger — UI_PLAN.md. None of these is a verdict colour: verdict
-     colour is reserved and already carries meaning, and the anchor has to be
-     able to sit under any of the five verdicts without arguing with it. */
-  /* A span in the paper a claim points at, unselected. A 2px left rule, not a fill. */
-  --anchor-rest: #3a4450;
+     Three inks, because one hex cannot be body text on both a white card and a
+     #262626 panel and still clear 4.5:1 — the same problem --siglum already
+     solves the same way.
+
+       --focus            rings, rules, fills, marks. Never small text on light.
+       --focus-ink        interactive TEXT on the dark chrome. 4.92 on the panel.
+       --focus-ink-paper  interactive TEXT on a light surface. 5.37 on white.
+
+     A focus ring is a 2px graphic and needs 3:1, which #ff3700 clears on every
+     surface in the product (3.62 on white, 5.09 on --chrome-base). */
+  --focus: #ff3700;
+  --focus-ink: #ff5c33;
+  --focus-ink-paper: #cc2b00;
+
+  /* Anchor and ledger — UI_PLAN.md. Neither of the two anchor states is a
+     verdict colour: verdict colour is reserved and already carries meaning, and
+     the anchor has to be able to sit under any of the five verdicts without
+     arguing with it. */
+  /* A span in the paper a claim points at, unselected. A 2px left rule, not a
+     fill. Lightened from #3a4450 because the paper is now pure white and the
+     old slate read as a border rather than as a margin mark: 4.54 on white. */
+  --anchor-rest: #767676;
   /* The selected span. Same value as --paper-highlight (§5.4), promoted to a token. */
   --anchor-live: #fff3c4;
-  /* The connecting tint on the ledger row paired with the live span. 12% of --focus. */
-  --anchor-trace: #6a7bff1f;
+  /* The connecting tint on the ledger row paired with the live span. Still 12%
+     of --focus, which now means the accent — the ledger row and the control
+     that selected it are the same colour at two strengths. */
+  --anchor-trace: #ff37001f;
   /* Hairline hatching the INFERRED tag. Reads as texture, not status. */
-  --provenance-line: #4a5563;
+  --provenance-line: #5a5a5a;
   /* Group header band in the ledger, between --chrome-base and --chrome-panel. */
-  --ledger-band: #191e25;
+  --ledger-band: #1e1e1e;
 
   /* -------------------------------------------------------------------------
      Site fields — DESIGN_PLAN.md "Palette". Six additions, none of which
@@ -63,19 +112,24 @@
      the app chrome is still the two materials of §2 and does not gain a field.
      ------------------------------------------------------------------------- */
 
-  /* Light section field. Promotes the existing paper colour to a background. */
-  --field-paper: #fbfaf8;
+  /* Light section field — the page a white card sits on. The landing's own
+     --site-base, so `/check` is the same field as the landing rather than a
+     near-white that reads as an almost-match. */
+  --field-paper: #d9d9d9;
   /* Dark section field. Below --chrome-base, so a section reads as deeper than
      the app chrome around it. */
-  --field-deep: #101419;
+  --field-deep: #0d0d0d;
 
   /* One hairline construction grid, two inks. */
-  --rule-grid: #e3dfd8;
-  --rule-grid-deep: #232a33;
+  --rule-grid: #e6e6e6;
+  --rule-grid-deep: #333333;
 
   /* The single highlight block behind one phrase per section: --focus diluted,
-     so the accent is our interactive colour rather than a new hue. */
-  --wash: #dce1f5;
+     so the accent is our interactive colour rather than a new hue. Warm now
+     that the accent is, and it stays clear of --anchor-live: the wash is a
+     static mark on residual's own words, the highlight is a live selection, and
+     they never appear on the same paragraph. Black on it reads at 17:1. */
+  --wash: #ffe2d9;
   /* The same gesture on a dark field. A pale wash under light text would be
      unreadable, so the deep field gets --focus at low value instead of low
      chroma. --chrome-text on it is 11:1. */
@@ -91,18 +145,40 @@
 
      There are four. #8A7F6D failed three of them; #8f8371, measured only against
      --field-deep, still failed --chrome-panel at 4.41 and --chrome-raised at
-     3.95, and --chrome-panel is where the ledger's margin slot sits. This value
-     clears all four: deep 5.87, base 5.66, panel 5.20, raised 4.66. Same hue,
-     same chroma, still reads as pencil rather than ink. */
-  --siglum: #9a907e;
+     3.95, and --chrome-panel is where the ledger's margin slot sits. Same hue,
+     same chroma, still reads as pencil rather than ink.
+
+     Re-measured when the chrome moved onto the landing's neutral greys, which
+     are lighter than the slate they replaced: #9a907e fell to 4.31 on
+     --chrome-raised. One step lighter clears all four again — base 6.56,
+     band 5.94, panel 5.39, raised 4.84. */
+  --siglum: #a3998a;
   /* The same ink with enough weight to clear 4.5:1 on --field-paper, where the
      dark-field value reads at 3.8:1. One mark, two inks, exactly as the grid.
      Also the secondary text colour on light fields. */
   --siglum-paper: #766c5c;
 
-  /* Shape — §3. 6px on panels and inputs, 4px on chips. Never fully rounded. */
+  /* Shape — §3. 6px on panels and inputs, 4px on chips. Never fully rounded.
+
+     These stay, and they stay for the reason given below: a ledger row is 3px
+     of corner away from being a pill, and a run with twelve checks on a 900px
+     viewport cannot afford 18px on every one of them. Density is why the
+     instrument looks like an instrument.
+
+     What the app takes from the landing instead is the OUTER shape. A pane, a
+     card, a sheet, a control — the things a reader sees the edge of — round at
+     the landing's rate; the rows and chips packed inside them do not. That is
+     the same rule the landing follows (24px card, 10px chip inside it), one
+     step tighter because the app's surfaces are smaller. */
   --radius-panel: 6px;
   --radius-chip: 4px;
+  /* A card on a light app field — `/check`. The landing's own 24px, because
+     that page is at the landing's scale and carries the landing's cards. */
+  --radius-card: 24px;
+  /* Outer app surfaces: the document pane, the verdict pane, a bottom sheet. */
+  --radius-surface: 16px;
+  /* Buttons, inputs, and anything a pointer lands on. */
+  --radius-control: 12px;
 
   /* Shape, marketing route group only. §3's 6px/4px is a considered choice for a
      dense instrument, and it stays that way inside the app: a run with twelve
@@ -116,6 +192,24 @@
   --radius-site-card: 16px;
   --radius-site-control: 12px;
   --radius-site-chip: 10px;
+
+  /* Controls, stated once so a control does not have to know which material it
+     is standing on.
+
+     `/check` is light and the report view is dark, and the submit form is the
+     same component on both. Rather than threading a `surface` prop through it —
+     which is the `if (LOCAL:)` scattered through the codebase that CLAUDE.md
+     warns about, in CSS — the page sets these four and the control reads them.
+     The defaults below are the dark chrome; `.on-paper` overrides them. */
+  --control-surface: var(--chrome-panel);
+  --control-ink: var(--chrome-text);
+  --control-dim: var(--chrome-dim);
+  --control-line: var(--chrome-line);
+  /* The primary control is a solid block of maximum contrast against its field,
+     which is what the landing's black pill is. Inverted on the dark chrome, so
+     the same rule produces a light block there — one gesture, not two. */
+  --control-fill: var(--chrome-text);
+  --control-fill-ink: var(--chrome-base);
 
   /* Layout — §4 */
   --nav-rail-w: 56px;
@@ -298,6 +392,51 @@
   font-weight: 500;
 }
 
+/* ---------------------------------------------------------------------------
+   The app's display voice — Instrument Serif, the landing's own.
+
+   §3's scale is unchanged and the sizes above are unchanged: 13px body in a
+   pane that is 45% of a 1100px window is a density decision, and setting the
+   ledger at the landing's 16px would halve the number of claims a reader can
+   see at once. What crosses over is the FACE, everywhere, plus these three
+   display steps at the sizes the landing uses them at.
+
+   The pairing is also the landing's: Instrument Serif italic for the small
+   section tag, roman for a heading. Never below 20px, never a paragraph.
+   --------------------------------------------------------------------------- */
+
+/* A page heading on an app surface. Inter at the landing's tracking, not the
+   serif: -0.06em at 44px is the single most recognisable thing about the
+   landing's headline, and it is the tracking that carries it. */
+@utility t-h1 {
+  font-size: clamp(30px, 4.5vw, 44px);
+  line-height: 1.15;
+  font-weight: 400;
+  letter-spacing: -0.06em;
+}
+
+/* A heading inside a pane — the ledger's paper title, the verdict pane's check
+   name. The landing's card-title step. */
+@utility t-h3 {
+  font-size: 20px;
+  line-height: 1.4;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* The landing's section tag: Instrument Serif, italic, small. It labels a
+   region rather than shouting at it, and it is the only place the display face
+   appears in the app. Used instead of `t-label`'s uppercase tracking wherever a
+   label names a whole section rather than a single field. */
+@utility t-tag {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: 20px;
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+
 /* Every number, every identifier. §3 and §12 both make tabular-nums mandatory —
    it is baked into the utility so a numeric element cannot be written without it. */
 @utility t-num {
@@ -318,6 +457,41 @@
 
 @utility measure-doc {
   max-width: 68ch;
+}
+
+/* ---------------------------------------------------------------------------
+   A light app surface.
+
+   §2 holds two materials against each other, and that opposition is what the
+   report view is: the paper is warm, light and serif, the instrument reading it
+   is cool, dark and dense. `/check` has no paper in it. There is nothing on that
+   page to hold anything against, so the contrast has nothing to do — and a dark
+   submit screen between a light landing page and a light document pane was a
+   boundary the reader crossed twice for no reason.
+
+   So `/check` puts this class on its root and becomes the landing: the landing's
+   field, the landing's white cards, the landing's ink. It is not a light theme.
+   Nothing else in the app may use it, and the report view must not: the moment
+   there is a document on the screen, the two materials are back.
+   --------------------------------------------------------------------------- */
+
+.on-paper {
+  background: var(--field-paper);
+  color: var(--paper-ink);
+
+  --control-surface: var(--paper);
+  --control-ink: var(--paper-ink);
+  --control-dim: var(--paper-dim);
+  --control-line: rgba(0, 0, 0, 0.15);
+  --control-fill: var(--paper-ink);
+  --control-fill-ink: var(--paper);
+}
+
+/* `t-label`'s colour is the dark chrome's secondary ink, which is 1.83:1 here.
+   The utility is used in a dozen places and carries its colour with it, so the
+   surface corrects it rather than every call site opting out. */
+.on-paper .t-label {
+  color: var(--paper-dim);
 }
 
 /* ---------------------------------------------------------------------------

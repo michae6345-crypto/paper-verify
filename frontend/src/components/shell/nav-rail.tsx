@@ -24,29 +24,55 @@ function CheckPaperIcon() {
   );
 }
 
+/**
+ * The dots knock a hole in the rules behind them, so they are painted in the
+ * rail's own background rather than in a fixed colour — the rail is dark on the
+ * report and light on `/check`, and a `--chrome-base` dot would show as three
+ * black pips on the light one. `--rail-field` is set by the <nav> below.
+ */
 function RunsIcon() {
   return (
     <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5">
       <path d="M3 5h14M3 10h14M3 15h14" strokeLinecap="round" />
-      <circle cx="6.5" cy="5" r="1.6" fill="var(--chrome-base)" />
-      <circle cx="12" cy="10" r="1.6" fill="var(--chrome-base)" />
-      <circle cx="8.5" cy="15" r="1.6" fill="var(--chrome-base)" />
+      <circle cx="6.5" cy="5" r="1.6" fill="var(--rail-field)" />
+      <circle cx="12" cy="10" r="1.6" fill="var(--rail-field)" />
+      <circle cx="8.5" cy="15" r="1.6" fill="var(--rail-field)" />
     </svg>
   );
 }
 
 const ITEMS = [
-  { href: "/", label: "Check a paper", icon: CheckPaperIcon, match: (p: string) => p === "/" },
   {
-    href: "/#recent",
+    href: "/check",
+    label: "Check a paper",
+    icon: CheckPaperIcon,
+    match: (p: string) => p === "/check",
+  },
+  {
+    href: "/check#recent",
     label: "Recently checked",
     icon: RunsIcon,
-    match: (p: string) => p.startsWith("/runs"),
+    match: (p: string) => p.startsWith("/runs") || p.startsWith("/reports"),
   },
 ];
 
-export function NavRail() {
+/**
+ * `surface` is which of §2's two materials the rail is standing on. `chrome` is
+ * the report and run views; `paper` is `/check`, which is the landing's light
+ * field and has no document to hold the dark against.
+ *
+ * The rail is the one component that appears on both, so it is the one that has
+ * to know. Everything below it reads the control tokens the surface already set.
+ */
+export function NavRail({ surface = "chrome" }: { surface?: "chrome" | "paper" }) {
   const pathname = usePathname();
+  const paper = surface === "paper";
+
+  const ink = paper ? "var(--paper-ink)" : "var(--chrome-text)";
+  const quiet = paper ? "var(--paper-dim)" : "var(--chrome-faint)";
+  const active = paper ? "rgba(0, 0, 0, 0.06)" : "var(--chrome-raised)";
+  const rule = paper ? "var(--rule-grid)" : "var(--rule-grid-deep)";
+  const field = paper ? "var(--paper)" : "var(--chrome-panel)";
 
   return (
     <nav
@@ -56,20 +82,29 @@ export function NavRail() {
       // the layout into columns. Row separators inside a column keep
       // `--chrome-line`, so the structure of the page and the structure of a
       // list are told apart by two inks rather than by one doing both jobs.
-      style={{ borderColor: "var(--rule-grid-deep)", background: "var(--chrome-panel)" }}
+      style={
+        { borderColor: rule, background: field, "--rail-field": field } as React.CSSProperties
+      }
     >
-      {/* Wordmark. Never carries a verdict colour (§3). */}
+      {/* Wordmark. Never carries a verdict colour (§3), and never the accent
+          either (§Style: verdict colours never appear on logos, and the accent
+          on a wordmark would make the brand the interactive element). */}
       <Link
         href="/"
-        className="mb-3 flex h-8 w-8 items-center justify-center rounded-[4px] t-num"
-        style={{ color: "var(--chrome-text)", fontSize: "13px", fontWeight: 500 }}
+        className="mb-3 flex h-8 w-8 items-center justify-center t-num"
+        style={{
+          borderRadius: "var(--radius-chip)",
+          color: ink,
+          fontSize: "13px",
+          fontWeight: 500,
+        }}
         aria-label="residual, home"
       >
         pv
       </Link>
 
       {ITEMS.map((item) => {
-        const active = item.match(pathname);
+        const here = item.match(pathname);
         const Icon = item.icon;
         return (
           <Tooltip key={item.href}>
@@ -77,13 +112,12 @@ export function NavRail() {
               render={
                 <Link
                   href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "flex h-9 w-9 items-center justify-center rounded-[4px] transition-colors",
-                  )}
+                  aria-current={here ? "page" : undefined}
+                  className={cn("flex h-9 w-9 items-center justify-center transition-colors")}
                   style={{
-                    color: active ? "var(--chrome-text)" : "var(--chrome-faint)",
-                    background: active ? "var(--chrome-raised)" : "transparent",
+                    borderRadius: "var(--radius-control)",
+                    color: here ? ink : quiet,
+                    background: here ? active : "transparent",
                     transitionDuration: "var(--dur-fast)",
                   }}
                 />

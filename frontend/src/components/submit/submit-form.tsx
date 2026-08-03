@@ -56,20 +56,22 @@ export function SubmitForm({ knownIds }: { knownIds: string[] }) {
           spellCheck={false}
           aria-describedby="arxiv-help"
           aria-invalid={error ? true : undefined}
-          className="min-w-0 flex-1 rounded-[6px] border px-3 py-2 t-num outline-none"
+          className="min-w-0 flex-1 border px-3.5 py-2.5 t-num outline-none"
           style={{
-            borderColor: "var(--chrome-line)",
-            background: "var(--chrome-panel)",
-            color: "var(--chrome-text)",
+            borderRadius: "var(--radius-control)",
+            borderColor: "var(--control-line)",
+            background: "var(--control-surface)",
+            color: "var(--control-ink)",
           }}
         />
         <button
           type="submit"
-          className="shrink-0 rounded-[6px] border px-3 py-2 t-emph transition-colors"
+          className="shrink-0 border px-4 py-2.5 t-emph transition-colors"
           style={{
-            borderColor: "var(--chrome-line)",
-            background: "var(--chrome-raised)",
-            color: "var(--chrome-text)",
+            borderRadius: "var(--radius-control)",
+            borderColor: "var(--control-fill)",
+            background: "var(--control-fill)",
+            color: "var(--control-fill-ink)",
             transitionDuration: "var(--dur-fast)",
           }}
         >
@@ -77,12 +79,12 @@ export function SubmitForm({ knownIds }: { knownIds: string[] }) {
         </button>
       </div>
 
-      <p id="arxiv-help" className="mt-2 t-body" style={{ color: "var(--chrome-dim)" }}>
+      <p id="arxiv-help" className="mt-2 t-body" style={{ color: "var(--control-dim)" }}>
         Checks the paper&apos;s tables, citations, and links against each other.
       </p>
 
       {error && (
-        <p role="alert" className="mt-2 t-body" style={{ color: "var(--chrome-text)" }}>
+        <p role="alert" className="mt-2 t-body" style={{ color: "var(--control-ink)" }}>
           {error}
         </p>
       )}
