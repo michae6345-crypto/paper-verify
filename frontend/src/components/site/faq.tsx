@@ -1,8 +1,10 @@
+"use client";
+
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 
 import { Card, Container, Mono, PrimaryLink } from "@/components/site/ui";
-import { Reveal } from "@/components/site/reveal";
+import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
 import { SectionTag } from "@/components/site/section-tag";
 
 /**
@@ -10,9 +12,16 @@ import { SectionTag } from "@/components/site/section-tag";
  *
  * Native `<details>`, so the accordion works with JavaScript off and keeps the
  * platform's keyboard and screen-reader behaviour for free. The reference builds
- * its accordion out of a Framer component with a height tween; the only motion
- * here is a 120ms colour change on the summary, which is the whole of what an
- * accordion needs.
+ * its accordion out of a Framer component with a height tween.
+ *
+ * Two pieces of motion here, and keeping them apart is the point. The *arrival*
+ * is scrubbed: the seven questions hold overlapping slices of the section's own
+ * travel, so they come up in order as the section crosses the screen and go back
+ * down if the reader scrolls back up through it. The *disclosure* is CSS on the
+ * open state, because a question opening has nothing to do with where the page
+ * is scrolled to, and driving it from scroll would be a lie about what caused
+ * it. That also keeps `<details>` native — no height measurement, no JS
+ * accordion, still works with the scripts off.
  *
  * The seven questions and their answers are the reference's, verbatim. The one
  * change is the apostrophe in "researcher's", which the capture holds as a
@@ -97,14 +106,39 @@ const FAQS: { q: string; a: ReactNode }[] = [
   },
 ];
 
+/**
+ * The slice of the section's travel one question holds. `SPACING` is smaller
+ * than `WINDOW`, so the fourth is still arriving while the fifth has started —
+ * a stagger expressed as overlap rather than as a queue of delays, which is what
+ * lets a fast scroll compress the sequence instead of playing it back.
+ *
+ * The last window closes at 0.59 of the section's travel. That is deliberately
+ * early: a window that resolves before its question reaches the middle of the
+ * screen costs a little of the movement, and one that resolves late leaves a
+ * question sitting invisible on screen. The seven are not measured individually
+ * — they share one subscription and differ only in their window.
+ */
+const FIRST = 0.22;
+const SPACING = 0.04;
+const WINDOW = 0.13;
+
 export function Faq() {
+  const section = useRef<HTMLElement>(null);
+  const progress = useSectionProgress(section);
+
   return (
-    <section id="faq" className="scroll-mt-20 py-14 three:py-[120px]">
+    <section id="faq" ref={section} className="scroll-mt-20 py-14 three:py-[120px]">
       <Container>
         <SectionTag tag="FAQ" heading="Questions worth asking" />
 
         <div className="mt-10 flex flex-col gap-6 three:mt-12 three:flex-row three:items-start three:gap-10">
-          <Reveal className="three:w-[380px] three:shrink-0">
+          <Scrub
+            progress={progress}
+            from={0.08}
+            to={0.26}
+            y={40}
+            className="three:w-[380px] three:shrink-0"
+          >
             <Card className="flex flex-col gap-6 p-8">
               <h3
                 style={{
@@ -129,16 +163,18 @@ export function Faq() {
                 .
               </p>
             </Card>
-          </Reveal>
+          </Scrub>
 
-          <Reveal delay={0.08} className="min-w-0 three:flex-1">
-            <div>
-              {FAQS.map((item) => (
-                <details
-                  key={item.q}
-                  className="group border-b"
-                  style={{ borderColor: "var(--site-line)" }}
-                >
+          <div className="min-w-0 three:flex-1">
+            {FAQS.map((item, i) => (
+              <Scrub
+                key={item.q}
+                progress={progress}
+                from={FIRST + i * SPACING}
+                to={FIRST + i * SPACING + WINDOW}
+                y={20}
+              >
+                <details className="group border-b" style={{ borderColor: "var(--site-line)" }}>
                   <summary
                     className="flex cursor-pointer list-none items-baseline justify-between gap-6 py-5 transition-colors marker:content-none"
                     style={{
@@ -160,13 +196,20 @@ export function Faq() {
                       <span className="hidden group-open:inline">&minus;</span>
                     </span>
                   </summary>
-                  <div className="site-body max-w-[70ch] pb-6" style={{ fontSize: "15px" }}>
+                  {/* The disclosure, and the whole of it. The answer is in the
+                      document only while the details is open, so the enter
+                      animation runs on the frame the browser reveals it. The
+                      reduced-motion block in globals.css already flattens it. */}
+                  <div
+                    className="site-body max-w-[70ch] pb-6 group-open:animate-in group-open:fade-in group-open:slide-in-from-top-1 group-open:ease-out group-open:animation-duration-200"
+                    style={{ fontSize: "15px" }}
+                  >
                     {item.a}
                   </div>
                 </details>
-              ))}
-            </div>
-          </Reveal>
+              </Scrub>
+            ))}
+          </div>
         </div>
       </Container>
     </section>
