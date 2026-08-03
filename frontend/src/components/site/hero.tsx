@@ -121,6 +121,33 @@ function Exit({
   );
 }
 
+/**
+ * A layer that is not clickable until it is visible.
+ *
+ * `opacity: 0` still takes a click, and the controls spend most of the pin at
+ * zero directly under the headline. Without this, the top of the page has an
+ * invisible link across it.
+ */
+function Live({
+  progress,
+  at,
+  children,
+  className,
+}: {
+  progress: MotionValue<number>;
+  at: number;
+  children: ReactNode;
+  className?: string;
+}) {
+  const pointerEvents = useTransform(progress, (p) => (p >= at ? "auto" : "none"));
+
+  return (
+    <motion.div className={className} style={{ pointerEvents }}>
+      {children}
+    </motion.div>
+  );
+}
+
 /** The pipeline: a dormant hairline with five nodes on it, and the spine drawn over it. */
 function Spine({ progress }: { progress: MotionValue<number> }) {
   return (
@@ -268,7 +295,11 @@ function PinnedHero() {
                 </Exit>
               </div>
 
-              <div className="absolute inset-0 flex flex-col items-center justify-start gap-3">
+              <Live
+                progress={progress}
+                at={0.82}
+                className="absolute inset-0 flex flex-col items-center justify-start gap-3"
+              >
                 <Scrub progress={progress} from={0.82} to={0.93} y={20}>
                   <p className="site-body mx-auto max-w-[560px] text-balance">
                     residual checks whether the numbers a paper states agree with each other. An
@@ -289,7 +320,7 @@ function PinnedHero() {
                     <GhostLink href="/reports/1810.04805">See a finished report</GhostLink>
                   </div>
                 </Scrub>
-              </div>
+              </Live>
             </div>
           </Container>
         )}
