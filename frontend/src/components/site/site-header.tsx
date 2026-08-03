@@ -55,6 +55,7 @@ const SECTIONS = [
   { href: "#process", label: "How a run proceeds" },
   { href: "#checks", label: "The checks" },
   { href: "#decides", label: "How it decides" },
+  { href: "#apparatus", label: "The apparatus" },
   { href: "#measured", label: "Measured" },
   { href: "#report", label: "The report" },
   { href: "#faq", label: "Questions" },
