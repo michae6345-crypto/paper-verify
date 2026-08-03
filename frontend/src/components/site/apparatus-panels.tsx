@@ -910,7 +910,25 @@ function MultiValueNote({ data }: { data: ApparatusData }) {
  *
  * Deliberately not a Tailwind breakpoint, for the reason `hero.tsx` gives: the
  * constraint is height as much as width, and it decides which tree renders
- * rather than how one tree looks. Same threshold as the hero.
+ * rather than how one tree looks.
+ *
+ * **This is deliberately not the hero's threshold, and it must not be "fixed" to
+ * match it.** The hero gates at 1024 × 760 because its only tall element is a
+ * headline, and a headline can be capped — which is exactly what it does, so its
+ * budget is flat and 760 is honest. This section's tall element is a table with
+ * forty-five body cells in it, and a table cannot be capped. It can only be made
+ * smaller, and a table small enough to fit 760 is a table nobody can read.
+ *
+ * The budget is 789 against 860. Trimming the header clearance, the foot and the
+ * well together recovers about 24px, which lands at 765 — still above 760, and
+ * with a margin thin enough that one wrapped header cell would push the lower
+ * half of the panel off the screen. That is the failure this whole codebase is
+ * built to avoid, and it is not worth taking on to make two numbers match.
+ *
+ * Below the threshold `StaticApparatus` stacks both readings at natural height.
+ * A reader on a 760px laptop sees the hero pin and reads this section as two
+ * panels rather than one covering the other. That is a smaller loss than a
+ * panel whose bottom rows cannot be reached.
  */
 function usePinnable(enabled: boolean) {
   const [pinnable, setPinnable] = useState(false);
