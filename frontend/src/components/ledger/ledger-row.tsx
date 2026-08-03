@@ -190,8 +190,8 @@ export function LedgerRow({
           onClick={() => onToggle(row.key)}
           aria-expanded={expanded}
           aria-controls={expanded ? derivationId : undefined}
-          className="inline-flex items-center gap-1 rounded-[4px] t-body"
-          style={{ color: "var(--chrome-dim)" }}
+          className="inline-flex items-center gap-1 t-body"
+          style={{ borderRadius: "var(--radius-control)", color: "var(--chrome-dim)" }}
         >
           Explain
           <span

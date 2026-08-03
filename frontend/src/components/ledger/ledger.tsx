@@ -50,16 +50,14 @@ function GroupHeader({ group, count }: { group: LedgerGroup; count: number }) {
       style={{ background: "var(--ledger-band)", borderColor: "var(--chrome-line)" }}
     >
       <div className="flex items-baseline justify-between gap-3">
-        <h3
-          style={{
-            // The instrument quotes the document it is examining: group headings
-            // sit in the dark chrome in the paper's own serif (UI_PLAN.md).
-            fontFamily: "var(--font-doc), ui-serif, Georgia, serif",
-            fontSize: "17px",
-            lineHeight: 1.3,
-            color: "var(--chrome-text)",
-          }}
-        >
+        {/* This was set in the paper's own serif, on UI_PLAN.md's idea that the
+            instrument quotes the document it is examining. It now sits in
+            residual's display face instead, and the distinction is sharper for
+            it: Source Serif is the PAPER speaking — the verbatim claim on a
+            ledger row, the explanation in the verdict pane — and Instrument
+            Serif is residual naming its own sections, here and on the landing.
+            Three faces, three jobs, rather than two serifs sharing one. */}
+        <h3 className="t-tag" style={{ color: "var(--chrome-text)" }}>
           {GROUP_LABEL[group]}
         </h3>
         {/* The count labels something a reader can go and look at. There is no
@@ -239,18 +237,9 @@ export function Ledger({
           the title block there would spend a third of a phone screen saying what
           the reader can already see. */}
       <header className={cn("shrink-0 px-4 pt-4 pb-3", instance === "sheet" && "hidden")}>
-        {/* The instrument names the document in the document's own voice, one
-            size down from the paper pane's title. Serif against the sans of
-            everything else in this pane is what makes it read as the heading —
-            not weight (DESIGN_PLAN.md). */}
-        <h1
-          style={{
-            fontFamily: "var(--font-doc), ui-serif, Georgia, serif",
-            fontSize: "19px",
-            lineHeight: 1.25,
-            color: "var(--chrome-text)",
-          }}
-        >
+        {/* The same step the run rail sets its paper title at, so the two dark
+            panes name the document the same way. */}
+        <h1 className="t-h3" style={{ color: "var(--chrome-text)" }}>
           {report.title || "Untitled paper"}
         </h1>
         <p className="mt-1 t-num" style={{ fontSize: "12px", color: "var(--chrome-faint)" }}>

@@ -36,8 +36,12 @@ function ComparisonBlock({ finding }: { finding: Finding }) {
 
   return (
     <dl
-      className="mt-3 grid grid-cols-[6.5rem_1fr] gap-x-4 gap-y-1 rounded-[4px] border px-3 py-2.5"
-      style={{ borderColor: "var(--chrome-line)", background: "var(--chrome-base)" }}
+      className="mt-3 grid grid-cols-[6.5rem_1fr] gap-x-4 gap-y-1 border px-3 py-2.5"
+      style={{
+        borderRadius: "var(--radius-panel)",
+        borderColor: "var(--chrome-line)",
+        background: "var(--chrome-base)",
+      }}
     >
       {rows.map(([key, value]) => (
         <div key={key} className="contents">
@@ -64,8 +68,9 @@ function ReportControl() {
         type="button"
         onClick={() => setSent(true)}
         disabled={sent}
-        className="rounded-[4px] border px-2.5 py-1.5 t-body transition-colors"
+        className="border px-3 py-2 t-body transition-colors"
         style={{
+          borderRadius: "var(--radius-control)",
           borderColor: "var(--chrome-line)",
           color: sent ? "var(--chrome-faint)" : "var(--chrome-dim)",
           transitionDuration: "var(--dur-fast)",
@@ -129,8 +134,12 @@ function CheckDetail({
         <button
           type="button"
           onClick={onClose}
-          className="rounded-[4px] px-1.5 py-1 t-body"
-          style={{ color: "var(--chrome-faint)", fontSize: "12px" }}
+          className="px-2 py-1 t-body"
+          style={{
+            borderRadius: "var(--radius-control)",
+            color: "var(--chrome-dim)",
+            fontSize: "12px",
+          }}
         >
           Close
           <kbd className="ml-1.5 t-num" style={{ fontSize: "11px" }}>
@@ -139,7 +148,7 @@ function CheckDetail({
         </button>
       </div>
 
-      <h2 className="mt-4 t-panel-title" style={{ color: "var(--chrome-text)" }}>
+      <h2 className="mt-4 t-h3" style={{ color: "var(--chrome-text)" }}>
         {check.display_name || check.checker}
       </h2>
       {check.description && (
@@ -150,8 +159,8 @@ function CheckDetail({
 
       {reason && (
         <div
-          className="mt-4 rounded-[4px] border px-3 py-2.5"
-          style={{ borderColor: "var(--chrome-line)" }}
+          className="mt-4 border px-3 py-2.5"
+          style={{ borderRadius: "var(--radius-panel)", borderColor: "var(--chrome-line)" }}
         >
           <p className="t-emph" style={{ color: "var(--chrome-text)" }}>
             {reason.label}
@@ -164,8 +173,12 @@ function CheckDetail({
           {reason.retryable && (
             <button
               type="button"
-              className="mt-2 rounded-[4px] border px-2 py-1 t-body"
-              style={{ borderColor: "var(--chrome-line)", color: "var(--chrome-dim)" }}
+              className="mt-2 border px-2.5 py-1.5 t-body"
+              style={{
+                borderRadius: "var(--radius-control)",
+                borderColor: "var(--chrome-line)",
+                color: "var(--chrome-dim)",
+              }}
             >
               Retry this check
             </button>
@@ -207,7 +220,12 @@ function NotCheckedList({ report }: { report: RunReport }) {
 
   return (
     <div className="px-5 py-4">
-      <h2 className="t-label">Not checked</h2>
+      {/* The landing's section tag, and this is the section §5.5 makes
+          first-class. An uppercase 11px label read as a field name for the list
+          under it; this reads as what it is, the largest part of most reports. */}
+      <h2 className="t-tag" style={{ color: "var(--chrome-text)" }}>
+        Not checked
+      </h2>
 
       {items.length === 0 ? (
         <p className="mt-2 t-body" style={{ color: "var(--chrome-dim)" }}>

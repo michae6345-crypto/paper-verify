@@ -40,7 +40,9 @@ export function RunRail({
     >
       {/* Paper header — title, arXiv ID in mono, elapsed time (§5.3) */}
       <header className="border-b px-4 py-3" style={{ borderColor: "var(--chrome-line)" }}>
-        <h1 className="t-panel-title" style={{ color: "var(--chrome-text)" }}>
+        {/* The landing's card-title step, at the landing's tracking. The rail is
+            280px and this is the one heading in it. */}
+        <h1 className="t-h3" style={{ color: "var(--chrome-text)" }}>
           {report.title || "Untitled paper"}
         </h1>
         <div className="mt-2 flex items-baseline justify-between gap-3">
@@ -94,7 +96,9 @@ export function RunRail({
           <section className="mt-2 border-t" style={{ borderColor: "var(--chrome-line)" }}>
             {notChecked.length === 0 ? (
               <div className="px-4 py-3">
-                <h2 className="t-label">Not checked</h2>
+                <h2 className="t-tag" style={{ color: "var(--chrome-text)" }}>
+                  Not checked
+                </h2>
                 <p className="mt-1.5 t-body" style={{ color: "var(--chrome-dim)" }}>
                   Everything in this paper that these checks apply to was checked.
                 </p>
@@ -106,12 +110,17 @@ export function RunRail({
                 className="w-full px-4 py-3 text-left transition-colors"
                 style={{ transitionDuration: "var(--dur-fast)" }}
               >
-                <h2 className="t-label">Not checked</h2>
+                <h2 className="t-tag" style={{ color: "var(--chrome-text)" }}>
+                  Not checked
+                </h2>
                 <p className="mt-1.5 t-body" style={{ color: "var(--chrome-dim)" }}>
                   <span className="t-num">{notChecked.length}</span>{" "}
                   {notChecked.length === 1 ? "thing" : "things"} could not be checked.
                 </p>
-                <span className="mt-1.5 block t-body" style={{ color: "var(--focus)" }}>
+                {/* --focus-ink, not --focus: the accent at full strength is
+                    4.18:1 on this panel and this is body text. Same accent, the
+                    ink cut for a dark surface. */}
+                <span className="mt-1.5 block t-body" style={{ color: "var(--focus-ink)" }}>
                   See the reasons
                 </span>
               </button>
@@ -137,8 +146,13 @@ export function RunRail({
         <button
           type="button"
           onClick={onReplay}
-          className="rounded-[4px] px-2 py-1 t-body transition-colors"
-          style={{ color: "var(--focus)", transitionDuration: "var(--dur-fast)", fontSize: "12px" }}
+          className="px-2 py-1 t-body transition-colors"
+          style={{
+            borderRadius: "var(--radius-control)",
+            color: "var(--focus-ink)",
+            transitionDuration: "var(--dur-fast)",
+            fontSize: "12px",
+          }}
         >
           Replay the run
         </button>

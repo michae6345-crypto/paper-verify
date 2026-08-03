@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from "motion/react";
 
 import type { StreamRow } from "@/hooks/use-check-stream";
 import { ROW_STAGGER_MS } from "@/lib/stream";
-import { VERDICT_COLOR, VERDICT_LABEL } from "@/lib/verdict";
+import { VERDICT_LABEL } from "@/lib/verdict";
 import { cn } from "@/lib/utils";
 import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
 
@@ -63,6 +63,10 @@ export function CheckRow({
       )}
       style={{
         background: selected ? "var(--chrome-raised)" : "transparent",
+        // The same 2px accent rule the selected ledger row carries. The two
+        // panes select different things, but a reader learns one mark for "this
+        // is the one you picked" and it holds across the product.
+        boxShadow: selected ? "inset 2px 0 0 0 var(--focus)" : undefined,
         transitionDuration: "var(--dur-fast)",
       }}
     >
@@ -78,16 +82,15 @@ export function CheckRow({
         {check.display_name || check.checker}
       </span>
 
+      {/* The status used to be set in VERDICT_COLOR whenever the check produced
+          findings. It reads at 3.44:1 for `diverges` on this panel, which is
+          under the 4.5:1 floor for text — and the verdict colours are semantic
+          and fixed, so the text is what gives way. Nothing is lost: the glyph
+          two columns left already carries the verdict in both shape and colour,
+          and this string counts findings rather than naming a verdict. */}
       <span
         className="mt-[1px] shrink-0 t-body whitespace-nowrap"
-        style={{
-          fontSize: "12px",
-          color: running
-            ? "var(--chrome-dim)"
-            : findings.length > 0
-              ? VERDICT_COLOR[check.verdict]
-              : "var(--chrome-dim)",
-        }}
+        style={{ fontSize: "12px", color: "var(--chrome-dim)" }}
       >
         {status}
       </span>

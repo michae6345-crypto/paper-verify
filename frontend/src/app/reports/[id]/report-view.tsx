@@ -5,6 +5,7 @@ import { useReducedMotion } from "motion/react";
 
 import type { RunReport } from "@/types/run-report";
 import { NavRail } from "@/components/shell/nav-rail";
+import { appFonts } from "@/components/shell/fonts";
 import { Gutter } from "@/components/shell/gutter";
 import { GutterMarks } from "@/components/gutter/gutter-marks";
 import { deriveMarks } from "@/components/gutter/marks";
@@ -111,7 +112,10 @@ export function ReportView({ report }: { report: RunReport }) {
   };
 
   return (
-    <div className="flex h-dvh overflow-hidden" style={{ background: "var(--chrome-base)" }}>
+    <div
+      className={`flex h-dvh overflow-hidden ${appFonts}`}
+      style={{ background: "var(--chrome-base)" }}
+    >
       <NavRail />
 
       <div className="flex min-h-0 min-w-0 flex-1 three:grid three:grid-cols-[var(--split-doc)_var(--gutter-w)_var(--split-verdict)]">
@@ -156,8 +160,12 @@ export function ReportView({ report }: { report: RunReport }) {
           claim count and the selected claim visible, so the link between the two
           panes is legible even while the paper has the screen. */}
       <div
-        className="fixed inset-x-0 bottom-0 z-20 flex h-[72dvh] flex-col rounded-t-[6px] border-t three:hidden"
+        className="fixed inset-x-0 bottom-0 z-20 flex h-[72dvh] flex-col border-t three:hidden"
         style={{
+          // An outer surface, so it rounds at the landing's rate rather than
+          // §3's 6px. The ledger rows inside it do not.
+          borderTopLeftRadius: "var(--radius-surface)",
+          borderTopRightRadius: "var(--radius-surface)",
           // The sheet's top edge is the same seam as the pane's left edge, one
           // column layout down, so it carries the same grid ink.
           borderColor: "var(--rule-grid-deep)",

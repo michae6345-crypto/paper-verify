@@ -32,8 +32,9 @@ function ReportControl({ subject }: { subject: string }) {
         type="button"
         onClick={() => setSent(true)}
         disabled={sent}
-        className="rounded-[4px] border px-2 py-1 t-body transition-colors"
+        className="border px-2.5 py-1.5 t-body transition-colors"
         style={{
+          borderRadius: "var(--radius-control)",
           borderColor: "var(--chrome-line)",
           color: sent ? "var(--chrome-faint)" : "var(--chrome-dim)",
           transitionDuration: "var(--dur-fast)",
@@ -69,10 +70,14 @@ export function Derivation({ row, id }: { row: LedgerRowData; id: string }) {
   return (
     <div
       id={id}
-      className="mt-3 rounded-[4px] border px-3 py-2.5"
+      className="mt-3 border px-3 py-2.5"
       // `--field-deep` sits below `--chrome-base`, so the working reads as a
       // section cut into the ledger rather than as another panel stacked on it.
-      style={{ borderColor: "var(--chrome-line)", background: "var(--field-deep)" }}
+      style={{
+        borderRadius: "var(--radius-panel)",
+        borderColor: "var(--chrome-line)",
+        background: "var(--field-deep)",
+      }}
     >
       <p className="t-body" style={{ color: "var(--chrome-dim)" }}>
         {check.description || "This check has no description on file."}

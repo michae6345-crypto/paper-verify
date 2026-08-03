@@ -7,6 +7,7 @@ import type { RunReport } from "@/types/run-report";
 import { useCheckStream } from "@/hooks/use-check-stream";
 import { recordedElapsedSeconds } from "@/lib/stream";
 import { NavRail } from "@/components/shell/nav-rail";
+import { appFonts } from "@/components/shell/fonts";
 import { Gutter } from "@/components/shell/gutter";
 import { DocumentPane } from "./document-pane";
 import { RunRail } from "./run-rail";
@@ -92,7 +93,10 @@ export function RunView({ report }: { report: RunReport }) {
   const verdictPane = <VerdictPane report={report} check={selected} onClose={close} />;
 
   return (
-    <div className="flex h-dvh overflow-hidden" style={{ background: "var(--chrome-base)" }}>
+    <div
+      className={`flex h-dvh overflow-hidden ${appFonts}`}
+      style={{ background: "var(--chrome-base)" }}
+    >
       <NavRail />
 
       <div className="flex min-w-0 flex-1 flex-col two:flex-row">
@@ -150,8 +154,12 @@ export function RunView({ report }: { report: RunReport }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: reduced ? 0 : 8 }}
             transition={{ duration: reduced ? 0.001 : 0.2, ease: [0, 0, 0.2, 1] }}
-            className="fixed inset-x-0 bottom-0 z-20 max-h-[70dvh] overflow-y-auto rounded-t-[6px] border-t three:hidden"
+            className="fixed inset-x-0 bottom-0 z-20 max-h-[70dvh] overflow-y-auto border-t three:hidden"
             style={{
+              // An outer surface, so it rounds at the landing's rate rather than
+              // §3's 6px. The rows inside it do not.
+              borderTopLeftRadius: "var(--radius-surface)",
+              borderTopRightRadius: "var(--radius-surface)",
               borderColor: "var(--rule-grid-deep)",
               background: "var(--chrome-panel)",
             }}
