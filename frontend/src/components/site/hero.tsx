@@ -248,9 +248,9 @@ function StaticHero() {
 
           <Reveal delay={0.12}>
             <p className="site-body mx-auto max-w-[560px] text-balance">
-              residual checks whether the numbers a paper states agree with each other. An author
-              runs it before submitting and attaches the report. A reviewer or chair reads it
-              instead of redoing the arithmetic by hand.
+              residual checks the numbers a paper states, the links it prints and the work it
+              cites. An author runs it before submitting and attaches the report. A reviewer or
+              chair reads that instead of checking by hand.
             </p>
           </Reveal>
 
@@ -302,9 +302,9 @@ function PinnedHero() {
               >
                 <Scrub progress={progress} from={0.82} to={0.93} y={20}>
                   <p className="site-body mx-auto max-w-[560px] text-balance">
-                    residual checks whether the numbers a paper states agree with each other. An
-                    author runs it before submitting and attaches the report. A reviewer or chair
-                    reads it instead of redoing the arithmetic by hand.
+                    residual checks the numbers a paper states, the links it prints and the work
+                    it cites. An author runs it before submitting and attaches the report. A
+                    reviewer or chair reads that instead of checking by hand.
                   </p>
                 </Scrub>
 

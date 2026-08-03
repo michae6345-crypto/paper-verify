@@ -33,10 +33,10 @@ const FAQS: { q: string; a: ReactNode }[] = [
     q: "Who is this for?",
     a: (
       <p>
-        Two people. An author, before submitting, who wants the numbers in the paper checked and a
-        report to attach. A reviewer or area chair, who would otherwise redo the arithmetic in a
-        table by hand, or skip it. It verifies numbers, not content, so it does not replace review.
-        It takes one mechanical part off it.
+        Two people. An author, before submitting, who wants the paper checked and a report to
+        attach. A reviewer or area chair, who would otherwise work through a table, a set of URLs
+        and a bibliography by hand, or skip them. It verifies numbers, not content, so it does not
+        replace review. It takes one mechanical part off it.
       </p>
     ),
   },
@@ -87,10 +87,11 @@ const FAQS: { q: string; a: ReactNode }[] = [
     q: "What does it check?",
     a: (
       <p>
-        Four things. That each bolded value is the best in its rule-delimited block. That a column
-        labelled average matches the mean of its row. That the URLs printed in the paper still
-        resolve. That every reference in the bibliography exists. Anything beyond those four is on
-        the roadmap and is not running.
+        Four things, in two families. Against the paper itself: that each bolded value is the best
+        in its rule-delimited block, and that a column labelled average matches the mean of its
+        row. Against the world outside it: that the URLs printed in the paper still resolve, and
+        that every reference in the bibliography exists and has not been retracted. Anything beyond
+        those four is on the roadmap and is not running.
       </p>
     ),
   },

@@ -7,6 +7,7 @@ import {
   CELLS,
   CHECKS_CALLING_MODEL,
   CHECKS_TODAY,
+  NOT_CHECKED_ENTRIES,
   PAPERS,
   TABLES,
 } from "@/components/site/corpus";
@@ -14,17 +15,23 @@ import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
 import { Container, Mono } from "@/components/site/ui";
 
 /**
- * The measured band: four rows, each a figure and the file it came from.
+ * The measured band: five rows, each a figure and the file it came from.
+ *
+ * Four of them count work done and one counts work refused, and the refused one
+ * is there on purpose. A band that reports only volume argues that the tool got
+ * through a lot of tables; this product's claim is that it knows when to stop,
+ * so the 32 things the corpus declined to check belong beside the 7,014 cells it
+ * read. Every one of the 32 carries a reason code.
  *
  * Every number is bound from `corpus.ts` rather than typed here, which is the
  * whole point of that file existing — if the checker changes and the corpus
  * figures move, the CI corpus gate catches it and this page moves with them. A
  * `7,014` written into JSX would not.
  *
- * The reference gives this band no heading at all, and that is kept: four rows
- * of figure and provenance say what they are. It does get a heading for anything
+ * The reference gives this band no heading at all, and that is kept: rows of
+ * figure and provenance say what they are. It does get a heading for anything
  * that cannot see the layout, since the section is a nav target and a run of
- * four unlabelled rows is not one to arrive at.
+ * unlabelled rows is not one to arrive at.
  *
  * Motion: the rows arrive in sequence, and each figure's digits roll into place
  * rather than the figure counting up to itself. The distinction is the one this
@@ -47,6 +54,11 @@ const ROWS: { label: string; source: string; value: string }[] = [
   { label: "Validation corpus", source: "fixtures/papers", value: `${PAPERS} papers` },
   { label: "Tables parsed", source: "fixtures/papers", value: `${TABLES} tables` },
   { label: "Cells read", source: "fixtures/papers", value: `${CELLS.toLocaleString("en-GB")} cells` },
+  {
+    label: "Declined, with a reason attached",
+    source: "fixtures/papers",
+    value: `${NOT_CHECKED_ENTRIES} entries`,
+  },
   {
     label: "Checks that call a model",
     source: "backend/pv/checks",

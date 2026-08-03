@@ -17,16 +17,22 @@ import { SectionTag } from "@/components/site/section-tag";
  * dressed as four features.
  *
  * Which is also why the motion runs in the order it does. The card comes up,
- * then the four capabilities in turn, and the sentence that disowns them lands
+ * then the four capabilities in turn, and the paragraph that disowns them lands
  * last, while they are all still on screen. A list of four things that arrives
  * after the reader has read the disclaimer is a different section.
+ *
+ * The rerun is the one the product is actually aimed at, so it is described at
+ * the length that deserves and the paragraph names the reason it is unsolved
+ * rather than only the fact that it is unbuilt. A run that is not deterministic
+ * cannot produce a verdict under the rule the rest of this page is built on, and
+ * a roadmap item that hides its own hard part is a promise.
  */
 
 const ITEMS: { title: string; description: string }[] = [
   {
     title: "Rerun the experiments",
     description:
-      "An author submits a container image and the run reproduces the numbers in the tables, rather than only recomputing them from the source.",
+      "The paper's code runs on hosted GPUs and what it produces is compared against what the paper prints. Recomputing a table says the paper agrees with itself. Running the code says whether the paper agrees with its own experiments.",
   },
   {
     title: "Reports a venue can verify",
@@ -117,7 +123,11 @@ export function Roadmap() {
             >
               None of this runs yet. It is listed because it is the direction, not because you can
               use it. Everything above this section works today on the corpus in this repository,
-              and nothing on the roadmap is counted in those numbers.
+              and nothing on the roadmap is counted in those numbers. The rerun is the least
+              settled of the four: a training run is not deterministic, and a layer whose whole
+              rule is that a verdict is a pure function of its inputs cannot report a seed&rsquo;s
+              worth of variance as a divergence. That question is open, which is why this is a
+              direction and not a date.
             </p>
           </Scrub>
         </div>

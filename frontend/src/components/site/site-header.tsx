@@ -41,6 +41,7 @@ const SECTIONS = [
   { href: "#checks", label: "The checks" },
   { href: "#decides", label: "How it decides" },
   { href: "#measured", label: "Measured" },
+  { href: "#report", label: "The report" },
   { href: "#faq", label: "Questions" },
   { href: "#roadmap", label: "What's next" },
 ];
