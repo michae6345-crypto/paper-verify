@@ -75,6 +75,14 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "re
  * paint and they never see a scroll event. That is "no animation", but it is not
  * literally "no subscription was ever constructed", and the difference should not
  * be papered over.
+ *
+ * Every element these primitives write an inline transform to carries
+ * `data-scrub` (or `data-scrub-path` for a stroke). Nothing in this file reads
+ * it. It exists so that fix (2) is a single block of CSS with a selector already
+ * in place rather than a refactor, and so that the one case (3) genuinely cannot
+ * reach — a reader whose JavaScript never arrives, who would otherwise get a
+ * document of `opacity: 0` — is one rule away from being covered. The rule
+ * belongs in `globals.css`, next to the reduced-motion block already there.
  */
 
 /**
@@ -472,6 +480,7 @@ function ScrubbedBox({
 
   return (
     <motion.div
+      data-scrub=""
       className={className}
       style={{ opacity, y: ty, scale: s, filter, pointerEvents }}
     >
@@ -547,6 +556,7 @@ function DrawnPath({
 
   return (
     <motion.path
+      data-scrub-path=""
       d={d}
       className={className}
       strokeWidth={strokeWidth}
@@ -625,7 +635,7 @@ function CoveringPanel({
   // and a spring on a panel this size would add a lag between the reader's
   // fingers and the thing they are moving.
   return (
-    <motion.div className={className} style={{ y }}>
+    <motion.div data-scrub="" className={className} style={{ y }}>
       {children}
     </motion.div>
   );
