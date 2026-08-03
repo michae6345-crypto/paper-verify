@@ -124,7 +124,10 @@ export function PageHead({
 }) {
   return (
     <div className="mb-8 two:mb-12">
-      <p className="site-display" style={{ fontSize: "20px", color: "var(--site-accent)" }}>
+      {/* Not the accent: #ff3700 is 3.65:1 on a white card, which is fine for a
+          glyph and short of the 4.5:1 this is. The accent earns its place on the
+          no-auth notice, where it is a background. */}
+      <p className="site-display" style={{ fontSize: "20px", color: "var(--site-muted)" }}>
         {eyebrow}
       </p>
       <h1
