@@ -140,17 +140,40 @@ export function GhostLink({
 /**
  * A white card on the page field. Every section that carries entries carries
  * them in one of these.
+ *
+ * `elevation` is how far off the page it stands, and the values are the
+ * elevation tokens in `globals.css`, not free-form shadows. Three levels rather
+ * than a scale, because the only distinction the page needs is background,
+ * foreground, and the one thing being pointed at:
+ *
+ *   resting   the default. A card that is part of a field of cards.
+ *   card      standing off the page. For the one card in a group that leads.
+ *   halo      the white ring and drop. For an element that has to read as
+ *             detached from whatever it overlaps, which is what the verdict
+ *             pills and the hero result are doing.
+ *
+ * `none` exists for a card that is already inside another elevated surface.
+ * Stacking two shadows reads as fog, not as depth.
  */
 export function Card({
   children,
   className,
   tone = "light",
+  elevation = "resting",
 }: {
   children: ReactNode;
   className?: string;
   tone?: "light" | "dark";
+  elevation?: "none" | "resting" | "card" | "halo";
 }) {
   const dark = tone === "dark";
+  const shadow = {
+    none: undefined,
+    resting: "var(--site-shadow-raised)",
+    card: "var(--site-shadow-card)",
+    halo: "var(--site-shadow-halo)",
+  }[elevation];
+
   return (
     <div
       className={cn("relative", className)}
@@ -158,6 +181,7 @@ export function Card({
         background: dark ? "var(--site-deep)" : "var(--site-card)",
         borderRadius: "var(--site-radius-card)",
         color: dark ? "#ffffff" : "var(--site-ink)",
+        boxShadow: shadow,
       }}
     >
       {children}

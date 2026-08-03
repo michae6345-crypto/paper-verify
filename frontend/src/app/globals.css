@@ -623,8 +623,75 @@
   }
 }
 
-/* The app strips every shadow at the root (§3). The landing page is allowed
-   exactly one, on the primary control, and it is the reference's own stack. */
+/* ---------------------------------------------------------------------------
+   Elevation.
+
+   The app strips every shadow at the root (§3) and that stays true — everything
+   below is scoped to `[data-site]` and must not be reached for from the report
+   or run views.
+
+   The five stacks are the published page's own, read out of
+   `.framer-capture/home.html`, which carries nine distinct `box-shadow`
+   declarations. Only one of them had been ported, which is why the page reads
+   flat: a field of white cards on grey with no elevation between them is a
+   diagram of a layout rather than a layout.
+
+   **The light sits top-left.** Every stack here offsets down and right, and that
+   is the one rule to keep if these are ever revised. A shadow that falls the
+   other way on one card is what makes a page look assembled by two people.
+
+   Reproduce:
+
+     python - <<'PY'
+     import re, collections
+     h = open('.framer-capture/home.html', encoding='utf-8', errors='replace').read()
+     for v, n in collections.Counter(re.findall(r'box-shadow:\s*([^;"}]+)', h)).most_common():
+         print(n, v)
+     PY
+   --------------------------------------------------------------------------- */
+
+[data-site] {
+  /* The page's signature, and the most used shadow in the capture by a wide
+     margin. Two parts doing two jobs: an 8px white ring that knocks the element
+     off whatever it is sitting on, and a soft drop under it. The ring alone was
+     already in use on the verdict pills and the hero result; the drop is the
+     half that was missing, and the half that carries the depth. */
+  --site-shadow-halo:
+    0 0 0 8px rgba(255, 255, 255, 0.25),
+    12px 16px 16px 0 rgba(0, 0, 0, 0.1);
+
+  /* A card standing off the page. Three stops with negative spread, so the
+     contact shadow stays tight and the ambient one spreads. */
+  --site-shadow-card:
+    0 0.48px 1.25px -1.25px rgba(0, 0, 0, 0.29),
+    0 1.83px 4.76px -2.5px rgba(0, 0, 0, 0.25),
+    0 8px 20.8px -3.75px rgba(0, 0, 0, 0.1);
+
+  /* The same idea, lighter. For a card that should read as resting rather than
+     lifted — the difference between the two is what gives a grid of cards a
+     foreground and a background. */
+  --site-shadow-raised:
+    0 0.6px 1.57px -1.5px rgba(0, 0, 0, 0.17),
+    0 2.29px 5.95px -3px rgba(0, 0, 0, 0.14),
+    0 10px 26px -4.5px rgba(0, 0, 0, 0.02);
+
+  /* The accent glow. Used once in the capture and it should stay that way.
+     Not a verdict colour, so it does not break the rule about verdict colour on
+     controls, but it is loud and it earns its place only on one element. */
+  --site-shadow-accent:
+    0 0.62px 0.62px -0.7px rgba(255, 38, 0, 0.69),
+    0 1.7px 1.7px -1.4px rgba(255, 38, 0, 0.67),
+    0 3.72px 3.72px -2.1px rgba(255, 38, 0, 0.63),
+    0 8.26px 8.26px -2.8px rgba(255, 38, 0, 0.54),
+    0 21px 21px -3.5px rgba(255, 38, 0, 0.3);
+
+  /* A 1px border drawn as a ring rather than a border, so it costs no layout
+     and can sit on an element that is already being transformed. */
+  --site-ring-inset: inset 0 0 0 1px rgb(0, 0, 0);
+}
+
+/* The primary control. The reference's six-stop stack with an inset at the foot,
+   and the one shadow the product allowed itself before this block existed. */
 [data-site] .site-lift {
   box-shadow:
     0.57px 0.57px 1.76px -0.42px rgb(0 0 0 / 18%),
@@ -634,6 +701,18 @@
     10.92px 10.92px 33.97px -2.08px rgb(0 0 0 / 18%),
     24px 24px 74.67px -2.5px rgb(0 0 0 / 18%),
     inset 0 -16px 48px 0 rgb(0 0 0);
+}
+
+@utility site-halo {
+  box-shadow: var(--site-shadow-halo);
+}
+
+@utility site-elevated {
+  box-shadow: var(--site-shadow-card);
+}
+
+@utility site-resting {
+  box-shadow: var(--site-shadow-raised);
 }
 
 [data-site] ::selection {
