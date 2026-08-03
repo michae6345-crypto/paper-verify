@@ -1,5 +1,9 @@
+"use client";
+
+import { useRef } from "react";
+
+import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
 import { Card, Container } from "@/components/site/ui";
-import { Reveal } from "@/components/site/reveal";
 import { SectionTag } from "@/components/site/section-tag";
 
 /**
@@ -13,6 +17,17 @@ import { SectionTag } from "@/components/site/section-tag";
  * The reference sets the descriptions at 12px in white at 50%, which is 12px of
  * text at 2.7:1. They are 13px at --site-muted-invert here, which is 5.9:1 on
  * this card. Same hierarchy, legible.
+ *
+ * Motion: the codes arrive one at a time against the section's own travel rather
+ * than together. They are a list of four reasons a check declines, and reading
+ * them as four separate admissions is the point — a card that fades in whole
+ * presents them as one block of small print. The windows overlap heavily
+ * (0.22→0.44, then every 0.05), so a reader who flicks past gets all four rather
+ * than a queue, and one who scrolls back runs them out again.
+ *
+ * Not pinned. The card is `min-h-[428px]` plus a section tag above it, which at
+ * 1100×640 leaves no margin inside a single viewport, and a pinned section whose
+ * contents exceed the screen puts its own lower half out of reach.
  */
 
 const REASONS: { code: string; description: string }[] = [
@@ -34,14 +49,26 @@ const REASONS: { code: string; description: string }[] = [
   },
 ];
 
+/** Where the first reason starts, and how far apart the four are. */
+const REASON_START = 0.22;
+const REASON_SPAN = 0.22;
+const REASON_STEP = 0.05;
+
 export function Decides() {
+  const section = useRef<HTMLElement>(null);
+  const progress = useSectionProgress(section);
+
   return (
-    <section id="decides" className="scroll-mt-20 py-14 three:pt-[120px] three:pb-[160px]">
+    <section
+      ref={section}
+      id="decides"
+      className="scroll-mt-20 py-14 three:pt-[120px] three:pb-[160px]"
+    >
       <Container>
         <SectionTag tag="How it decides" heading="A verdict is a pure function of its inputs" />
 
         <div className="mt-10 flex flex-col gap-12 three:mt-[60px] three:flex-row three:items-start three:gap-[60px]">
-          <Reveal className="three:flex-1">
+          <Scrub progress={progress} from={0.1} to={0.32} y={40} className="three:flex-1">
             <Card
               tone="dark"
               className="flex h-full flex-col items-start gap-7 p-10 three:min-h-[428px]"
@@ -58,30 +85,41 @@ export function Decides() {
                 Reasons a check declines to answer
               </h3>
               <ul className="flex w-full flex-col gap-6">
-                {REASONS.map((reason) => (
-                  <li key={reason.code} className="flex flex-col gap-1">
-                    <p
-                      className="site-mono"
-                      style={{ fontSize: "15px", lineHeight: 1.6, color: "#ffffff" }}
+                {REASONS.map((reason, i) => (
+                  // The Scrub sits inside the `li` rather than around it: a
+                  // `div` between `ul` and `li` is not a list any more.
+                  <li key={reason.code}>
+                    <Scrub
+                      progress={progress}
+                      from={REASON_START + i * REASON_STEP}
+                      to={REASON_START + i * REASON_STEP + REASON_SPAN}
+                      y={16}
+                      blur={4}
+                      className="flex flex-col gap-1"
                     >
-                      {reason.code}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: "13px",
-                        lineHeight: 1.5,
-                        color: "var(--site-muted-invert)",
-                      }}
-                    >
-                      {reason.description}
-                    </p>
+                      <p
+                        className="site-mono"
+                        style={{ fontSize: "15px", lineHeight: 1.6, color: "#ffffff" }}
+                      >
+                        {reason.code}
+                      </p>
+                      <p
+                        style={{
+                          fontSize: "13px",
+                          lineHeight: 1.5,
+                          color: "var(--site-muted-invert)",
+                        }}
+                      >
+                        {reason.description}
+                      </p>
+                    </Scrub>
                   </li>
                 ))}
               </ul>
             </Card>
-          </Reveal>
+          </Scrub>
 
-          <Reveal delay={0.08} className="three:flex-[2]">
+          <Scrub progress={progress} from={0.18} to={0.46} y={40} className="three:flex-[2]">
             <p
               className="max-w-[60ch]"
               style={{
@@ -97,7 +135,7 @@ export function Decides() {
               unverifiable with a stated reason rather than a guess. A run where much of the paper
               comes back unverifiable is a success, not a shortfall.
             </p>
-          </Reveal>
+          </Scrub>
         </div>
       </Container>
     </section>
