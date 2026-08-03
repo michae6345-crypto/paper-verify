@@ -29,10 +29,9 @@ import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
  */
 
 const SENTENCE =
-  "A paper states numbers in its abstract, its body text and its tables, and points " +
-  "outward at links and prior work. residual reads the LaTeX source, checks each of " +
-  "those, and reports where they disagree. The result is a permalink an author attaches " +
-  "to a submission and a reviewer opens.";
+  "A paper states numbers, prints links, and cites prior work. residual reads the LaTeX " +
+  "source, checks all three, and reports where they disagree. The result is a permalink " +
+  "you attach to a submission and a reviewer opens.";
 
 const VERDICTS = ["matches", "within_tolerance", "diverges", "unverifiable"] as const;
 

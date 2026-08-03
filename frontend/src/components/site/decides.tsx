@@ -129,11 +129,10 @@ export function Decides() {
                 color: "var(--site-ink)",
               }}
             >
-              The same paper checked twice gives the same answer. A language model never produces a
-              verdict. Models extract structure, and every verdict is computed by deterministic
-              Python from that structure. A check that cannot be made deterministic returns
-              unverifiable with a stated reason rather than a guess. A run where much of the paper
-              comes back unverifiable is a success, not a shortfall.
+              A language model never produces a verdict. Models extract structure; deterministic
+              Python computes every verdict from it. So the same paper checked twice gives the same
+              answer, and a check that cannot be made deterministic returns unverifiable with a
+              stated reason rather than a guess.
             </p>
           </Scrub>
         </div>

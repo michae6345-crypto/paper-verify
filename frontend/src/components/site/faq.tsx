@@ -15,7 +15,7 @@ import { SectionTag } from "@/components/site/section-tag";
  * its accordion out of a Framer component with a height tween.
  *
  * Two pieces of motion here, and keeping them apart is the point. The *arrival*
- * is scrubbed: the seven questions hold overlapping slices of the section's own
+ * is scrubbed: the questions hold overlapping slices of the section's own
  * travel, so they come up in order as the section crosses the screen and go back
  * down if the reader scrolls back up through it. The *disclosure* is CSS on the
  * open state, because a question opening has nothing to do with where the page
@@ -23,9 +23,10 @@ import { SectionTag } from "@/components/site/section-tag";
  * it. That also keeps `<details>` native — no height measurement, no JS
  * accordion, still works with the scripts off.
  *
- * The seven questions and their answers are the reference's, verbatim. The one
- * change is the apostrophe in "researcher's", which the capture holds as a
- * mojibake byte.
+ * Six, down from the reference's seven. "What does it check?" is gone because
+ * the checks section sits directly above this one and answers it in more detail;
+ * an accordion that restates the section above it is padding. The model question
+ * moved to second, which is where it gets asked.
  */
 
 const FAQS: { q: string; a: ReactNode }[] = [
@@ -33,22 +34,10 @@ const FAQS: { q: string; a: ReactNode }[] = [
     q: "Who is this for?",
     a: (
       <p>
-        Two people. An author, before submitting, who wants the paper checked and a report to
-        attach. A reviewer or area chair, who would otherwise work through a table, a set of URLs
-        and a bibliography by hand, or skip them. It verifies numbers, not content, so it does not
-        replace review. It takes one mechanical part off it.
-      </p>
-    ),
-  },
-  {
-    q: "What if you are wrong?",
-    a: (
-      <p>
-        Every finding carries a contest action one click away. Contested findings are recorded and
-        rechecked, and the recheck is deterministic, so a corrected input produces a corrected
-        verdict. Contesting a finding does not suppress it: if it did, contesting would become the
-        way to bury a true finding. Any high-severity diverges finding is held for human review
-        before it appears publicly.
+        Authors, before submitting, who want a report to attach. Reviewers and area chairs, who
+        would otherwise work through a table, a set of URLs and a bibliography by hand, or skip
+        them. It verifies numbers, not content, so it does not replace review. It takes one
+        mechanical part off it.
       </p>
     ),
   },
@@ -56,19 +45,20 @@ const FAQS: { q: string; a: ReactNode }[] = [
     q: "Does a language model decide any of this?",
     a: (
       <p>
-        No. A language model never produces a verdict. Models extract structure only, such as which
-        cells are in a table and which claim refers to which cell. Every verdict is computed by
-        deterministic Python from that structure. The four checks in the first release call no
-        model at all.
+        No. Models extract structure only, such as which cells are in a table. Every verdict is
+        computed by deterministic Python from that structure, and the four checks running today
+        call no model at all.
       </p>
     ),
   },
   {
-    q: "Is this AI detection?",
+    q: "What if you are wrong?",
     a: (
       <p>
-        No. It says nothing about how a paper was written. It reads the numbers the paper states
-        and recomputes them.
+        Every finding has a contest action one click away, and the recheck is deterministic, so a
+        corrected input produces a corrected verdict. Contesting does not suppress a finding: if it
+        did, contesting would become the way to bury a true one. High-severity divergences are held
+        for human review before they appear publicly.
       </p>
     ),
   },
@@ -78,20 +68,16 @@ const FAQS: { q: string; a: ReactNode }[] = [
       <p>
         Because saying nothing beats saying something wrong about a named researcher&rsquo;s work.
         When a table cannot be read without discarding something a verdict might rest on, the check
-        returns unverifiable with a stated reason and attaches the comparison as evidence, so you
-        still see the numbers. A run that declines to answer often is working as intended.
+        declines, states why, and attaches the comparison anyway, so you still see the numbers.
       </p>
     ),
   },
   {
-    q: "What does it check?",
+    q: "Is this AI detection?",
     a: (
       <p>
-        Four things, in two families. Against the paper itself: that each bolded value is the best
-        in its rule-delimited block, and that a column labelled average matches the mean of its
-        row. Against the world outside it: that the URLs printed in the paper still resolve, and
-        that every reference in the bibliography exists and has not been retracted. Anything beyond
-        those four is on the roadmap and is not running.
+        No. It says nothing about how a paper was written. It reads what the paper states and
+        checks it.
       </p>
     ),
   },

@@ -4,21 +4,21 @@ import { useEffect, useState } from "react";
 import { MotionValue, motion, useReducedMotion, useTransform } from "motion/react";
 import type { ReactNode } from "react";
 
-import { Container, GhostLink, PrimaryLink, Tag } from "@/components/site/ui";
+import { Container, PrimaryLink, Tag } from "@/components/site/ui";
 import { Reveal } from "@/components/site/reveal";
 import { DrawLine, Pin, Scrub } from "@/components/site/motion/scrub";
 import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
 
 /**
- * The hero. One claim, one sentence under it, and two ways in.
+ * The hero. One claim, one sentence under it, one way in.
  *
  * The reference's heading is 44 / 80 / 108px at its three breakpoints, all at
  * -0.06em. That is a curve rather than three decisions, so `site-h1` clamps it
  * and the breakpoints go away.
  *
- * The second control in the capture is an icon with no label, which is a link a
- * screen reader announces as nothing at all. It goes to the BERT report, so it
- * says so.
+ * There was a second control here pointing at the BERT report. It is gone: the
+ * hero asks for one thing. The report is still reached from the FAQ card and
+ * from `/check`, which is where someone looking for an example already is.
  *
  * ---
  *
@@ -242,15 +242,14 @@ function StaticHero() {
 
           <Reveal delay={0.06}>
             <h1 className="site-h1 mx-auto max-w-[1000px] text-balance">
-              A verification layer for papers under submission
+              The AI verification layer for academic conferences
             </h1>
           </Reveal>
 
           <Reveal delay={0.12}>
-            <p className="site-body mx-auto max-w-[560px] text-balance">
-              residual checks the numbers a paper states, the links it prints and the work it
-              cites. An author runs it before submitting and attaches the report. A reviewer or
-              chair reads that instead of checking by hand.
+            <p className="site-body mx-auto max-w-[520px] text-balance">
+              It checks the numbers a paper states, the links it prints and the work it cites.
+              Run it before you submit and attach the report.
             </p>
           </Reveal>
 
@@ -260,7 +259,6 @@ function StaticHero() {
               style={{ background: "var(--site-card)", borderRadius: "var(--site-radius-pill)" }}
             >
               <PrimaryLink href="/check">Check a paper</PrimaryLink>
-              <GhostLink href="/reports/1810.04805">See a finished report</GhostLink>
             </div>
           </Reveal>
         </div>
@@ -283,7 +281,7 @@ function PinnedHero() {
             </Exit>
 
             <h1 className="site-h1 mx-auto max-w-[1000px] text-balance">
-              A verification layer for papers under submission
+              The AI verification layer for academic conferences
             </h1>
 
             {/* One box with two occupants. The verdict leaves as the copy arrives,
@@ -301,10 +299,9 @@ function PinnedHero() {
                 className="absolute inset-0 flex flex-col items-center justify-start gap-3"
               >
                 <Scrub progress={progress} from={0.82} to={0.93} y={20}>
-                  <p className="site-body mx-auto max-w-[560px] text-balance">
-                    residual checks the numbers a paper states, the links it prints and the work
-                    it cites. An author runs it before submitting and attaches the report. A
-                    reviewer or chair reads that instead of checking by hand.
+                  <p className="site-body mx-auto max-w-[520px] text-balance">
+                    It checks the numbers a paper states, the links it prints and the work it
+                    cites. Run it before you submit and attach the report.
                   </p>
                 </Scrub>
 
@@ -317,7 +314,6 @@ function PinnedHero() {
                     }}
                   >
                     <PrimaryLink href="/check">Check a paper</PrimaryLink>
-                    <GhostLink href="/reports/1810.04805">See a finished report</GhostLink>
                   </div>
                 </Scrub>
               </Live>

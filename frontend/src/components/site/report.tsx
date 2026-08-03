@@ -42,23 +42,19 @@ import { SectionTag } from "@/components/site/section-tag";
 const PROPERTIES: { term: string; detail: string }[] = [
   {
     term: "A permalink, not a score",
-    detail:
-      "There is no pass mark and no aggregate. The report lists each check, the verdict it reached, and what that verdict rests on.",
+    detail: "No pass mark and no aggregate. Each check, its verdict, and what that verdict rests on.",
   },
   {
     term: "Every finding carries its comparison",
-    detail:
-      "Where in the source it sits, the value the paper printed, the value recomputed, and the difference between the two.",
+    detail: "Where in the source it sits, what the paper printed, what was computed, and the delta.",
   },
   {
     term: "High-severity divergences are held",
-    detail:
-      "A finding that diverges at high severity stays off the permalink until a person has read it. Holding is the default, and no setting turns it off.",
+    detail: "They stay off the permalink until a person reads them. No setting turns that off.",
   },
   {
     term: "An author answers without deleting",
-    detail:
-      "A contested finding stays on the report with the objection recorded beside it. The recheck is deterministic, so a corrected input gives a corrected verdict.",
+    detail: "A contest is recorded beside the finding, not in place of it. The recheck is deterministic.",
   },
 ];
 
@@ -135,11 +131,10 @@ export function Report() {
               color: "var(--site-ink)",
             }}
           >
-            A venue does not have to trust the run. Every verdict states the values it compared and
-            the rule it applied, so a chair who disagrees can check the comparison rather than the
-            tool. The other half of that does not exist yet. There is no signed identifier and no
-            endpoint a venue can call to confirm a report belongs to the paper in front of it, so a
-            report is something an author attaches, not something a venue can confirm on its own.
+            A venue does not have to trust the run. Every verdict states what it compared and which
+            rule it applied, so a chair who disagrees can check the comparison rather than the tool.
+            The other half is missing: there is no signed identifier and no endpoint a venue can
+            call, so a report is something an author attaches, not something a venue confirms.
           </p>
         </Scrub>
       </Container>

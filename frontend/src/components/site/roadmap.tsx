@@ -32,22 +32,22 @@ const ITEMS: { title: string; description: string }[] = [
   {
     title: "Rerun the experiments",
     description:
-      "The paper's code runs on hosted GPUs and what it produces is compared against what the paper prints. Recomputing a table says the paper agrees with itself. Running the code says whether the paper agrees with its own experiments.",
+      "The paper's code runs on hosted GPUs and what it produces is compared against what the paper prints. Recomputing a table says the paper agrees with itself. Running the code says whether it agrees with its own experiments.",
   },
   {
     title: "Reports a venue can verify",
     description:
-      "A signed report identifier and an endpoint a chair can call, so a venue can confirm a report belongs to the paper in front of it.",
+      "A signed identifier and an endpoint a chair can call, so a venue can confirm a report belongs to the paper in front of it.",
   },
   {
     title: "Claims against tables",
     description:
-      "Matching a number stated in the abstract or the body text to the table cell it refers to, and checking that reported variance is consistent.",
+      "Matching a number stated in the abstract to the cell it refers to, and checking that reported variance is consistent.",
   },
   {
     title: "Baselines and submission safety",
     description:
-      "Checking a baseline number against the paper it was taken from, and scanning a submission for text written to steer a model that reads it.",
+      "Checking a baseline against the paper it came from, and scanning a submission for text written to steer a model that reads it.",
   },
 ];
 
@@ -121,13 +121,11 @@ export function Roadmap() {
                 color: "var(--site-ink)",
               }}
             >
-              None of this runs yet. It is listed because it is the direction, not because you can
-              use it. Everything above this section works today on the corpus in this repository,
-              and nothing on the roadmap is counted in those numbers. The rerun is the least
-              settled of the four: a training run is not deterministic, and a layer whose whole
-              rule is that a verdict is a pure function of its inputs cannot report a seed&rsquo;s
-              worth of variance as a divergence. That question is open, which is why this is a
-              direction and not a date.
+              None of this runs yet, and none of it is counted in the numbers above. The rerun is
+              the least settled: a training run is not deterministic, and a layer whose rule is
+              that a verdict is a pure function of its inputs cannot report a seed&rsquo;s worth of
+              variance as a divergence. That question is open, which is why this is a direction and
+              not a date.
             </p>
           </Scrub>
         </div>

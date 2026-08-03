@@ -91,21 +91,18 @@ export function Checks() {
       <Container>
         <SectionTag tag="The checks" heading="What it checks today" />
 
-        <p className="site-body mx-auto mt-6 max-w-[62ch] text-center">
-          Four checks, in two families. Two read the paper against itself, and two read it against
-          the world outside it: the links it prints, and the work it cites.
+        <p className="site-body mx-auto mt-6 max-w-[58ch] text-center">
+          Four checks, in two families. Two read the paper against itself. Two read it against the
+          world outside it.
         </p>
 
         <ChecksGrid cards={cards}>
-          <p className="site-body mt-8 max-w-[70ch]">
-            The arithmetic is the smallest part of any of these. A false finding comes from
-            misreading the source rather than from a wrong sum, and reading{" "}
-            <Mono>86.7/85.9</Mono> as one number instead of two produced five of them on a single
-            table before the parser learned to split it. Most of the work is deciding what a cell
-            says, and declining when that cannot be decided. The first two need nothing but the
-            paper&rsquo;s own source, and every corpus figure on this page comes from running them
-            with the network switched off. The last two request URLs and look up identifiers, so
-            they are excluded from those figures rather than quietly folded into them.
+          <p className="site-body mt-8 max-w-[68ch]">
+            The arithmetic is the smallest part of this. A false finding comes from misreading the
+            source, not from a wrong sum: reading <Mono>86.7/85.9</Mono> as one number produced five
+            of them on a single table. The work is deciding what a cell says, and declining when
+            that cannot be decided. The corpus figures below come from the two checks that need no
+            network, not from all four.
           </p>
         </ChecksGrid>
       </Container>
