@@ -6,6 +6,7 @@ import { motion, useReducedMotion, useScroll, useTransform } from "motion/react"
 import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
 import { Container, Card } from "@/components/site/ui";
 import { Reveal } from "@/components/site/reveal";
+import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
 
 /**
  * The intro: what this refuses to do, and then what it does.
@@ -22,7 +23,9 @@ import { Reveal } from "@/components/site/reveal";
  * one who flicks past gets the whole paragraph rather than a dropped animation.
  *
  * The four verdicts sit under it, because the paragraph ends on what a run
- * produces and those four words are the whole vocabulary it produces it in.
+ * produces and those four words are the whole vocabulary it produces it in. They
+ * arrive one at a time on their own travel rather than all at once, which is the
+ * same argument the paragraph makes about itself.
  */
 
 const SENTENCE =
@@ -66,42 +69,25 @@ function Word({
   );
 }
 
-function ScrubbedParagraph() {
+const PARAGRAPH_STYLE = {
+  fontSize: "clamp(24px, 3.5vw, 44px)",
+  lineHeight: 1.4,
+  letterSpacing: "-0.04em",
+  color: "var(--site-ink)",
+} as const;
+
+function TrackedParagraph() {
   const track = useRef<HTMLDivElement>(null);
-  const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: track, offset: ["start start", "end end"] });
   const words = SENTENCE.split(" ");
 
-  // Under reduced motion there is no track, no sticky panel and no scroll
-  // subscription — the paragraph is simply a paragraph, at its final ink.
-  if (reduced) {
-    return (
-      <p
-        className="mx-auto max-w-[940px] text-center"
-        style={{
-          fontSize: "clamp(24px, 3.5vw, 44px)",
-          lineHeight: 1.4,
-          letterSpacing: "-0.04em",
-          color: "var(--site-ink)",
-        }}
-      >
-        {SENTENCE}
-      </p>
-    );
-  }
-
   return (
     <div ref={track} className="relative h-[260vh]">
-      <div className="sticky top-0 flex h-screen items-center justify-center">
-        <p
-          className="mx-auto max-w-[940px] text-center"
-          style={{
-            fontSize: "clamp(24px, 3.5vw, 44px)",
-            lineHeight: 1.4,
-            letterSpacing: "-0.04em",
-            color: "var(--site-ink)",
-          }}
-        >
+      {/* `dvh`, not `vh`: on a phone with a retracting toolbar the two differ by
+          the height of the toolbar, and the panel is the one thing here that must
+          be exactly one viewport. */}
+      <div className="sticky top-0 flex h-[100dvh] items-center justify-center">
+        <p className="mx-auto max-w-[940px] text-center" style={PARAGRAPH_STYLE}>
           {words.map((word, i) => (
             <Word
               key={`${word}-${i}`}
@@ -114,6 +100,90 @@ function ScrubbedParagraph() {
         </p>
       </div>
     </div>
+  );
+}
+
+/**
+ * Under reduced motion there is no track, no sticky panel and no scroll
+ * subscription — the paragraph is simply a paragraph, at its final ink. The
+ * branch is a different component rather than an early return so that the
+ * subscription is never opened, not merely ignored.
+ */
+function ScrubbedParagraph() {
+  const reduced = useReducedMotion();
+
+  if (reduced) {
+    return (
+      <p className="mx-auto max-w-[940px] text-center" style={PARAGRAPH_STYLE}>
+        {SENTENCE}
+      </p>
+    );
+  }
+
+  return <TrackedParagraph />;
+}
+
+/**
+ * The four verdicts, arriving in order as the row crosses the viewport.
+ *
+ * On their own travel rather than the paragraph's: the row sits below the track,
+ * so any window expressed in the track's progress would have to finish before the
+ * row was on screen. `useSectionProgress` starts when the row enters from the
+ * bottom and ends when it leaves the top, and the windows are placed around the
+ * middle of that, where the row is actually being looked at.
+ */
+function VerdictPill({ verdict }: { verdict: (typeof VERDICTS)[number] }) {
+  return (
+    <span
+      className="flex items-center gap-2.5 px-5 py-2.5"
+      style={{
+        background: "var(--site-card)",
+        borderRadius: "var(--site-radius-pill)",
+        boxShadow: "0 0 0 8px rgba(255,255,255,0.35)",
+      }}
+    >
+      <VerdictGlyph verdict={verdict} size={14} />
+      <span style={{ fontSize: "15px", color: "var(--site-ink)" }}>{VERDICT_WORDS[verdict]}</span>
+    </span>
+  );
+}
+
+function ScrubbedVerdicts() {
+  const row = useRef<HTMLUListElement>(null);
+  const progress = useSectionProgress(row);
+
+  return (
+    <ul ref={row} className="mt-4 flex flex-wrap items-center justify-center gap-3">
+      {VERDICTS.map((verdict, i) => (
+        <li key={verdict}>
+          <Scrub
+            progress={progress}
+            from={0.42 + i * 0.03}
+            to={0.56 + i * 0.03}
+            y={16}
+            scale={[0.96, 1]}
+          >
+            <VerdictPill verdict={verdict} />
+          </Scrub>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function VerdictRow() {
+  const reduced = useReducedMotion();
+
+  if (!reduced) return <ScrubbedVerdicts />;
+
+  return (
+    <ul className="mt-4 flex flex-wrap items-center justify-center gap-3">
+      {VERDICTS.map((verdict) => (
+        <li key={verdict}>
+          <VerdictPill verdict={verdict} />
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -155,7 +225,12 @@ export function Intro() {
         </Card>
       </section>
 
-      <section id="intro" className="scroll-mt-20 overflow-hidden py-20">
+      {/* No `overflow-hidden` on this section, deliberately. It clips nothing —
+          the tag rules and the paragraph are both inside the measure — and an
+          ancestor with a clipped overflow is a scroll container, which is what a
+          `position: sticky` descendant sticks to. The track below would pin to a
+          box that never scrolls, which is to say it would not pin at all. */}
+      <section id="intro" className="scroll-mt-20 py-20">
         <Container>
           <div className="flex items-center justify-center gap-6">
             <TagRule side="left" />
@@ -167,24 +242,7 @@ export function Intro() {
 
           <ScrubbedParagraph />
 
-          <ul className="mt-4 flex flex-wrap items-center justify-center gap-3">
-            {VERDICTS.map((verdict) => (
-              <li
-                key={verdict}
-                className="flex items-center gap-2.5 px-5 py-2.5"
-                style={{
-                  background: "var(--site-card)",
-                  borderRadius: "var(--site-radius-pill)",
-                  boxShadow: "0 0 0 8px rgba(255,255,255,0.35)",
-                }}
-              >
-                <VerdictGlyph verdict={verdict} size={14} />
-                <span style={{ fontSize: "15px", color: "var(--site-ink)" }}>
-                  {VERDICT_WORDS[verdict]}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <VerdictRow />
         </Container>
       </section>
     </>
