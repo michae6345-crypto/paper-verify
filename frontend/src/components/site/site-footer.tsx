@@ -1,9 +1,24 @@
+"use client";
+
+import { useRef } from "react";
+
 import { Container, PrimaryLink, Tag } from "@/components/site/ui";
-import { Reveal } from "@/components/site/reveal";
+import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
 
 /**
  * The closing card, which is the CTA and the footer in one object — the way the
  * reference has it, and the reason the site layout has no separate footer.
+ *
+ * It arrives the same way: one object. The tag, the heading, the sentence and
+ * the control were four staggered reveals, which read as a card assembling
+ * itself out of parts. They now share one window, so the whole CTA comes up as
+ * the thing it is, and only the status note and the foot of the card follow it.
+ *
+ * The windows all close by 0.34 of the section's travel, which looks early and
+ * is not. This is the last element in the document: its bottom edge can never
+ * reach the top of the viewport, so `useSectionProgress` here tops out somewhere
+ * around 0.4 on a tall screen and never delivers the other 0.6. A window past
+ * that point is a window that never opens.
  *
  * A black full-height panel carrying one light card: a soft white wash from the
  * lower left, the reference's own 256px noise tile over it, and a wedge notched
@@ -51,8 +66,11 @@ function Corner({ className, rotate }: { className: string; rotate: number }) {
 }
 
 export function SiteFooter() {
+  const section = useRef<HTMLElement>(null);
+  const progress = useSectionProgress(section);
+
   return (
-    <footer style={{ background: "var(--site-ink)" }}>
+    <footer ref={section} style={{ background: "var(--site-ink)" }}>
       <Container>
         <div
           className="relative my-6 flex min-h-[560px] flex-col justify-end overflow-hidden px-6 py-10 three:min-h-[834px] three:px-28"
@@ -88,31 +106,30 @@ export function SiteFooter() {
           <Corner className="right-0 bottom-0" rotate={180} />
           <Corner className="bottom-0 left-0" rotate={270} />
 
-          <div className="relative flex flex-col items-center gap-8 text-center">
-            <Reveal>
-              <Tag dot>Open to papers</Tag>
-            </Reveal>
-            <Reveal delay={0.06}>
-              <h2 className="site-h1">
-                <span style={{ color: "var(--site-muted)" }}>Let&rsquo;s </span>
-                check a paper
-              </h2>
-            </Reveal>
-            <Reveal delay={0.12}>
-              <p className="site-body mx-auto max-w-[52ch]">
-                residual verifies the numbers in a paper against the numbers its own tables state.
-              </p>
-            </Reveal>
-            <Reveal delay={0.18}>
-              <PrimaryLink href="/check">Check a paper</PrimaryLink>
-            </Reveal>
-          </div>
+          <Scrub
+            progress={progress}
+            from={0.06}
+            to={0.28}
+            y={44}
+            scale={[0.97, 1]}
+            className="relative flex flex-col items-center gap-8 text-center"
+          >
+            <Tag dot>Open to papers</Tag>
+            <h2 className="site-h1">
+              <span style={{ color: "var(--site-muted)" }}>Let&rsquo;s </span>
+              check a paper
+            </h2>
+            <p className="site-body mx-auto max-w-[52ch]">
+              residual verifies the numbers in a paper against the numbers its own tables state.
+            </p>
+            <PrimaryLink href="/check">Check a paper</PrimaryLink>
+          </Scrub>
 
           {/* Not in the capture, and kept anyway. This product's whole argument
               is that it says what it cannot do; a landing page that closes on
               "check a paper" without mentioning that runs do not survive a
               restart would be the one place it stopped doing that. */}
-          <Reveal delay={0.24} className="relative mt-14">
+          <Scrub progress={progress} from={0.18} to={0.32} y={24} className="relative mt-14">
             <p
               className="mx-auto max-w-[68ch] text-center"
               style={{ fontSize: "13px", lineHeight: 1.6, color: "var(--site-muted)" }}
@@ -121,40 +138,45 @@ export function SiteFooter() {
               repository. Runs are held in memory, so they do not survive a restart and permalinks
               are not durable yet.
             </p>
-          </Reveal>
+          </Scrub>
 
-          <div className="relative mt-10 flex flex-col items-center justify-between gap-6 two:flex-row">
-            <p
-              className="px-5 py-2.5"
-              style={{
-                background: "var(--site-card)",
-                borderRadius: "var(--site-radius-pill)",
-                fontSize: "14px",
-                color: "var(--site-ink)",
-              }}
-            >
-              &copy; residual, 2026
-            </p>
+          <Scrub progress={progress} from={0.22} to={0.34} y={20} className="relative mt-10">
+            <div className="flex flex-col items-center justify-between gap-6 two:flex-row">
+              <p
+                className="px-5 py-2.5"
+                style={{
+                  background: "var(--site-card)",
+                  borderRadius: "var(--site-radius-pill)",
+                  fontSize: "14px",
+                  color: "var(--site-ink)",
+                }}
+              >
+                &copy; residual, 2026
+              </p>
 
-            <nav aria-label="Elsewhere" className="flex flex-wrap items-center justify-center gap-2">
-              {SOCIAL.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  className="px-5 py-2.5 transition-colors"
-                  style={{
-                    border: "1px solid var(--site-line)",
-                    borderRadius: "var(--site-radius-pill)",
-                    fontSize: "14px",
-                    color: "var(--site-ink)",
-                    transitionDuration: "var(--dur-fast)",
-                  }}
-                >
-                  {item.label}
-                </a>
-              ))}
-            </nav>
-          </div>
+              <nav
+                aria-label="Elsewhere"
+                className="flex flex-wrap items-center justify-center gap-2"
+              >
+                {SOCIAL.map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    className="px-5 py-2.5 transition-colors"
+                    style={{
+                      border: "1px solid var(--site-line)",
+                      borderRadius: "var(--site-radius-pill)",
+                      fontSize: "14px",
+                      color: "var(--site-ink)",
+                      transitionDuration: "var(--dur-fast)",
+                    }}
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </nav>
+            </div>
+          </Scrub>
         </div>
       </Container>
     </footer>
