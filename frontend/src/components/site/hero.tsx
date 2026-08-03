@@ -35,7 +35,7 @@ import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
  *
  * **The arithmetic, because a pinned frame taller than the viewport hides its own
  * lower half.** The sticky child is exactly `100dvh`, and everything below is
- * measured against the smallest viewport we pin on, 1024 × 760:
+ * measured against the smallest viewport we pin on, 1024 × 700:
  *
  *      64  header clearance. The header is `fixed`, not absolute, so it stands
  *          over this frame for the whole pin rather than only at scroll 0. 64 is
@@ -43,12 +43,26 @@ import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
  *          but the first 140px of scroll.
  *      40  tag
  *      96  spine band
- *     304  headline: three lines at 88px, the cap this branch applies
+ *     248  headline: three lines at 72px, the cap this branch applies. Three is
+ *          the worst case and it only happens on a narrow viewport; at 1536 the
+ *          headline sets in two and this is 166.
  *     150  the band under the headline — the verdict, then the subhead and the
  *          controls, in the same box. Measured content is 138, so 12 spare
  *      60  three gaps
  *    ----
- *     714  against 760.
+ *     658  against 700.
+ *
+ * **Where 700 came from, and why the last two numbers were wrong.** They were
+ * derived on paper and never checked against a browser. A real Chromium at a
+ * 1920 × 1080 screen on 125% scaling reports `innerHeight` of **720** — the OS
+ * scaling takes it to 1536 × 864 and the browser's own chrome takes another 144.
+ * That is an ordinary Windows laptop, not an edge case, and both 860 and 760
+ * excluded it. The pin is the page's signature moment and it was not running for
+ * the people most likely to be looking at it.
+ *
+ * The lesson is the one this repo already writes down in another context: a
+ * number that was reasoned about rather than measured is a number that is
+ * probably wrong. `scripts/check-viewports.mjs` measures it now.
  *
  * **Why the headline is capped here and nowhere else.** `site-h1` is
  * `clamp(44px, 7.5vw, 108px)`, so the headline *grows with width* — which made
@@ -93,14 +107,19 @@ function stageWindow(i: number): [number, number] {
  * The headline size inside the pinned frame.
  *
  * Lower than `site-h1`'s 108px ceiling, and it is what makes the pin's budget
- * independent of viewport width. Three lines at 88px and line-height 1.15 is
- * 303.6px; the block comment budgets 304.
+ * independent of viewport width. Three lines at 72px and line-height 1.15 is
+ * 248.4px; the block comment budgets 248.
  *
- * The width still has to hold the line. At 88px in a 1000px measure a line takes
- * roughly 24 characters, so the current 46-character headline sets in two on a
+ * The width still has to hold the line. At 72px in a 1000px measure a line takes
+ * roughly 28 characters, so the current 46-character headline sets in two on a
  * wide screen and three on a narrow one, and three is what is budgeted.
+ *
+ * This is the size the pinned hero can afford, not the size it would like. The
+ * static hero keeps the full 108px. The trade is deliberate: a 72px headline
+ * that pins beats a 108px headline that turns the page's signature scroll
+ * moment off for anyone on a 720px viewport, which is most people.
  */
-const PINNED_HEADLINE = "clamp(44px, 6vw, 88px)";
+const PINNED_HEADLINE = "clamp(40px, 5vw, 72px)";
 
 /**
  * Has this viewport room for the pin?
@@ -118,7 +137,7 @@ function usePinnable(enabled: boolean) {
 
   useEffect(() => {
     if (!enabled) return;
-    const mq = window.matchMedia("(min-width: 1024px) and (min-height: 760px)");
+    const mq = window.matchMedia("(min-width: 1024px) and (min-height: 700px)");
     const update = () => setPinnable(mq.matches);
     update();
     mq.addEventListener("change", update);
