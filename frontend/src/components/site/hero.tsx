@@ -42,7 +42,10 @@ import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
  *      40  tag
  *      96  spine band
  *     373  headline: three lines at the clamp's 108px ceiling, which is its worst
- *          case, reached at 1440px wide and never exceeded above it
+ *          case, reached at 1440px wide and never exceeded above it. 373 is
+ *          exactly the budget, so the headline is length-constrained: at 108px in
+ *          a 1000px measure it holds about 20 characters a line, and a fourth
+ *          line does not fit. Keep it under roughly 50 characters.
  *     190  the band under the headline — the verdict, then the subhead and the
  *          controls, in the same box
  *      60  three gaps
@@ -242,7 +245,7 @@ function StaticHero() {
 
           <Reveal delay={0.06}>
             <h1 className="site-h1 mx-auto max-w-[1000px] text-balance">
-              The AI verification layer for academic conferences
+              AI-native verification for academic conferences
             </h1>
           </Reveal>
 
@@ -281,7 +284,7 @@ function PinnedHero() {
             </Exit>
 
             <h1 className="site-h1 mx-auto max-w-[1000px] text-balance">
-              The AI verification layer for academic conferences
+              AI-native verification for academic conferences
             </h1>
 
             {/* One box with two occupants. The verdict leaves as the copy arrives,
