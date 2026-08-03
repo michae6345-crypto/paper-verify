@@ -35,26 +35,38 @@ import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
  *
  * **The arithmetic, because a pinned frame taller than the viewport hides its own
  * lower half.** The sticky child is exactly `100dvh`, and everything below is
- * measured against the smallest viewport we pin on, 1100 × 860:
+ * measured against the smallest viewport we pin on, 1024 × 760:
  *
- *      80  header clearance — the header is `absolute`, so it covers the top of
- *          the frame at scroll 0 and never again
+ *      64  header clearance. The header is `fixed`, not absolute, so it stands
+ *          over this frame for the whole pin rather than only at scroll 0. 64 is
+ *          `SHORT` in `site-header.tsx`, which is the height it holds at for all
+ *          but the first 140px of scroll.
  *      40  tag
  *      96  spine band
- *     373  headline: three lines at the clamp's 108px ceiling, which is its worst
- *          case, reached at 1440px wide and never exceeded above it. 373 is
- *          exactly the budget, so the headline is length-constrained: at 108px in
- *          a 1000px measure it holds about 20 characters a line, and a fourth
- *          line does not fit. Keep it under roughly 50 characters.
- *     190  the band under the headline — the verdict, then the subhead and the
- *          controls, in the same box
+ *     304  headline: three lines at 88px, the cap this branch applies
+ *     150  the band under the headline — the verdict, then the subhead and the
+ *          controls, in the same box. Measured content is 138, so 12 spare
  *      60  three gaps
  *    ----
- *     839  against 860.
+ *     714  against 760.
  *
- * Below that we do not pin at all. The static hero underneath is the markup this
- * file has always rendered, so 390 × 700 gets a page that works rather than a pin
- * that eats half of itself.
+ * **Why the headline is capped here and nowhere else.** `site-h1` is
+ * `clamp(44px, 7.5vw, 108px)`, so the headline *grows with width* — which made
+ * the old gate the wrong shape. It read `(min-width: 1100px) and
+ * (min-height: 860px)`, treating width as permission when width is what spends
+ * the budget: at 1100px wide the hero needed 751px, at 1440px it needed 839. The
+ * true requirement was `466 + 0.2588 × width`, which no media query can express.
+ * Capping the headline inside the pinned frame makes the budget flat, and a flat
+ * budget is something a `min-height` query can actually answer.
+ *
+ * The old gate cost more than tidiness: at 860 it excluded a 1440 × 760 laptop,
+ * which is one of the most common screens there is, so the page's signature
+ * scroll moment simply never ran for most people who visited it.
+ *
+ * Below the gate we do not pin at all. The static hero underneath is the markup
+ * this file has always rendered, so 390 × 700 gets a page that works rather than
+ * a pin that eats half of itself. The static branch keeps the full 108px
+ * headline, because nothing is competing with it there.
  *
  * `prefers-reduced-motion` takes that same static branch: final state on the
  * first paint, no scroll subscription, and no media query listener either.
@@ -78,17 +90,35 @@ function stageWindow(i: number): [number, number] {
 }
 
 /**
+ * The headline size inside the pinned frame.
+ *
+ * Lower than `site-h1`'s 108px ceiling, and it is what makes the pin's budget
+ * independent of viewport width. Three lines at 88px and line-height 1.15 is
+ * 303.6px; the block comment budgets 304.
+ *
+ * The width still has to hold the line. At 88px in a 1000px measure a line takes
+ * roughly 24 characters, so the current 46-character headline sets in two on a
+ * wide screen and three on a narrow one, and three is what is budgeted.
+ */
+const PINNED_HEADLINE = "clamp(44px, 6vw, 88px)";
+
+/**
  * Has this viewport room for the pin?
  *
  * Deliberately not a Tailwind breakpoint. The constraint is height as much as
  * width, and it decides which tree renders rather than how one tree looks.
+ *
+ * Height is the real gate now that `PINNED_HEADLINE` has flattened the budget.
+ * The width term is no longer about vertical room at all — it is about the spine,
+ * which lays five stage labels across the frame and needs the horizontal space to
+ * do it without them colliding.
  */
 function usePinnable(enabled: boolean) {
   const [pinnable, setPinnable] = useState(false);
 
   useEffect(() => {
     if (!enabled) return;
-    const mq = window.matchMedia("(min-width: 1100px) and (min-height: 860px)");
+    const mq = window.matchMedia("(min-width: 1024px) and (min-height: 760px)");
     const update = () => setPinnable(mq.matches);
     update();
     mq.addEventListener("change", update);
@@ -290,21 +320,36 @@ function PinnedHero() {
   return (
     <div id="hero">
       <Pin height="320vh">
+        {/* `pt-16`, not `pt-20`. The header is fixed and condenses to 64px after
+            the first 140px of scroll, which is where it spends all but the very
+            start of this pin. Clearing 80 the whole way was clearing a height the
+            bar only has at scroll 0. */}
         {(progress) => (
-          <Container className="flex h-full flex-col items-center justify-center gap-5 pt-20 text-center">
+          <Container className="flex h-full flex-col items-center justify-center gap-5 pt-16 text-center">
             <Tag dot>Built for conference and workshop submissions</Tag>
 
             <Exit progress={progress} from={0.7} to={0.82} className="w-full">
               <Spine progress={progress} />
             </Exit>
 
-            <h1 className="site-h1 mx-auto max-w-[1000px] text-balance">
+            {/* The one place `site-h1` is overridden. See `PINNED_HEADLINE`: the
+                clamp's 108px ceiling makes the frame's height a function of its
+                width, and a budget that moves with the viewport is a budget no
+                media query can gate on. */}
+            <h1
+              className="site-h1 mx-auto max-w-[1000px] text-balance"
+              style={{ fontSize: PINNED_HEADLINE }}
+            >
               AI-native verification for academic conferences
             </h1>
 
             {/* One box with two occupants. The verdict leaves as the copy arrives,
-                so the frame never has to be tall enough to hold both at once. */}
-            <div className="relative h-[190px] w-full">
+                so the frame never has to be tall enough to hold both at once.
+                150, down from 190: the measured contents are 138 — a 44px verdict
+                pill, or a two-line subhead plus a 12px gap plus a 56px control
+                tray, plus 16 of `pt-4` — so 190 was carrying 52px of nothing at
+                the exact point in the budget that decides whether this pins. */}
+            <div className="relative h-[150px] w-full">
               <div className="absolute inset-0 flex items-start justify-center pt-4">
                 <Exit progress={progress} from={0.7} to={0.82}>
                   <Result progress={progress} />
