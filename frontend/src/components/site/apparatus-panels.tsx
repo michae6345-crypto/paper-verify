@@ -111,35 +111,74 @@ export type ApparatusData = {
  * ---
  *
  * **The pin arithmetic, because a pinned frame taller than the viewport hides
- * its own lower half.** `Pin`'s sticky child is exactly `100dvh`. Measured
- * against the smallest viewport this pins on, 1100 x 860, the same threshold
- * `hero.tsx` uses, and one threshold for the page's two pinned sections is
- * better than two:
+ * its own lower half.** `Pin`'s sticky child is exactly `100dvh` and it does not
+ * scroll. Anything below its fold is unreachable, with no scrollbar to recover
+ * it, and the frame clips, so the missing half looks like a design decision
+ * rather than a fault. This is the failure the whole page is built to avoid.
  *
- *      72  header clearance. The bar is fixed and condenses to 64, plus air.
- *      29  section tag, Instrument Serif italic 24px at line-height 1.2
- *      10  gap
- *      56  heading. clamp(28px, 3.6vw, 48px) is 39.6px at 1100 wide, at
- *          line-height 1.4. One line, so the heading is length-constrained:
- *          keep it under about 30 characters or this budget is wrong.
- *      16  gap
- *      54  lede, two lines of 16px at 1.7. Held to 70ch so it cannot become
- *          three lines on a wide viewport.
- *      24  gap
- *     432  the well: a 380px panel inside 26px of shadow margin
- *      24  gap
- *      40  the tally row, one line of pills
+ * **Every number below was measured in a headless Chromium, not derived.** The
+ * previous version of this comment was derived, and two of its lines were wrong
+ * in the same direction. It put the heading at 56, but `clamp(28px, 3.6vw, 48px)`
+ * at line-height 1.4 measures **67.2** at any width where `3.6vw` reaches the
+ * 48px ceiling, which is everything above 1333. And it claimed the lede "drops to
+ * one line and gives back 27" on a wide viewport, which a 70ch measure never
+ * does: it is two lines at 1920 exactly as it is at 1100. The real budget was
+ * **799**, not 789, and it grew with viewport width instead of shrinking.
+ *
+ * That is the same shape of error as the gate itself. A budget nobody opened a
+ * browser to check is a budget that is probably wrong, and this one turned the
+ * page's signature scroll moment off for every ordinary visitor: a 1920 x 1080
+ * screen at the 125% scaling Windows ships by default reports an `innerHeight`
+ * of **720**, and the gate asked for 860. `scripts/check-viewports.mjs` measures
+ * it now, at that viewport, and fails the build script if this section stops
+ * pinning there.
+ *
+ * Measured at 1536 x 720 and again at the 1100 x 700 floor:
+ *
+ *      64  header clearance. The bar is fixed and condenses to 64 (`SHORT` in
+ *          `site-header.tsx`) over the first 140px of scroll. This section is
+ *          far enough down the page that it is only ever seen at 64, so the old
+ *          72 was clearing a bar that is not there.
+ *      95  the header row: a 29px tag, 10px of gap, and a 56px heading, with the
+ *          lede beside it rather than under it
+ *      20  gap
+ *     386  the well: a 334px panel inside 26px of shadow margin
+ *      20  gap
+ *      39  the tally row, one line of pills
  *      32  bottom
  *     ---
- *     789  against 860.
+ *     656  against 700, so 44 spare at the floor and 64 at the viewport that
+ *          prompted this. The frame centres its contents, so that spare is split
+ *          top and bottom and overflow would appear at both ends at once.
  *
- * At 1440 wide the heading reaches its 48px ceiling and gains 11px, and the lede
- * drops to one line and gives back 27. The budget only gets looser above the
- * threshold, which is the direction it needs to fail in.
+ * **The budget is flat, which is the property that makes a `min-height` query
+ * able to answer it.** Two changes buy that, and they are the same two `hero.tsx`
+ * made:
  *
- * The 380px panel is itself budgeted, in `PanelFrame`.
+ *   - The heading is capped at 40px inside the pin (`PINNED_HEADING`) rather than
+ *     the 48 the rest of the page uses. `3.6vw` reaches 40 at 1112, so from just
+ *     above the 1100 floor to any width at all the heading box is 56 and stops
+ *     tracking the viewport. The static branch keeps the full 48.
+ *   - The lede sits in a narrow right-hand column beside the heading instead of
+ *     under it. That is `MOTION_TEARDOWN.md` §5's density pattern rather than a
+ *     saving invented here, and it is what makes the lede's own wrapping free:
+ *     the row is as tall as the taller column, the tag-and-heading column is 95,
+ *     and the lede would have to reach **four** lines (109) before it added a
+ *     single pixel. At its 34ch measure it sets in two.
  *
- * Below 1100 x 860 there is no pin at all: `StaticApparatus` stacks the two
+ * Where the other ~130px came from, and what was refused:
+ *
+ *   - 46 out of the panel, which is budgeted line by line in `PanelFrame`. No
+ *     type size in the table changed; the leading did.
+ *   - 8 off the header clearance, above.
+ *   - 8 off the two stack gaps, 24 to 20.
+ *   - **Not** `WELL_PAD`, which stays 26. It is the room the halo's ring and drop
+ *     need, and clipping a shadow to save 12px would put a hard horizontal edge
+ *     across the bottom of the well.
+ *   - **Not** the tally, and **not** a column of the table. The tally is the key
+ *     to the marks, and this is a section about not discarding data.
+ *
+ * Below 1100 x 700 there is no pin at all: `StaticApparatus` stacks the two
  * panels down the page at their natural height, both fully resolved. That is
  * also the `prefers-reduced-motion` branch, and it is a separate component
  * rather than an early return so that no scroll subscription is ever opened:
@@ -175,7 +214,9 @@ export type ApparatusData = {
    Geometry. Every number here is shared by both panels by construction.
    --------------------------------------------------------------------------- */
 
-const PANEL_H = 380;
+const PANEL_H = 334;
+/** The panel's own margin. 24 rather than 28: see the budget in `PanelFrame`. */
+const PANEL_PAD = 24;
 /** Room around the panels for the halo's ring and drop. See the note above. */
 const WELL_PAD = 26;
 const WELL_H = PANEL_H + WELL_PAD * 2;
@@ -188,20 +229,50 @@ const SIGLUM_W = 40;
  * plus 8px of cell padding.
  *
  * What is left over is what sets the rest, and it is worth checking because the
- * widest thing in the table is a *header*, not a value. At the 1100px pin
- * threshold the container is 1004 wide, the panel takes 56 of it in padding, and
- * 948 - 40 - 128 leaves 86.7px for each of the nine numeric columns.
+ * widest thing in the table is a *header*, not a value. Measured at the 1100px
+ * pin threshold: the stack is 1004 wide, the well takes 26 of it on each side,
+ * leaving 952 of panel; the panel takes 24 on each side, leaving 904 of content;
+ * and 904 - 40 - 128 leaves 81.8px for each of the nine numeric columns.
  * `MNLI-(m/mm)` at 11px is 72.6px and `86.7/85.9` at 12px is 64.8px, so the
- * header is the binding constraint and it clears with 6px to spare.
+ * header is the binding constraint and it clears with 9.2px to spare.
+ *
+ * Two corrections to the version of this note that stood here before, both found
+ * by measuring rather than by reading it again. It went straight from the 1004
+ * container to the panel and forgot the well's own 26px each side, so its 948
+ * was 952 minus nothing; and trimming the panel's padding from 28 to 24 for the
+ * height budget moved this the *safe* way, from 80.9px per column to 81.8. The
+ * height cut did not cost the table any width.
  */
 const LABEL_W = 128;
 /** Cell padding, kept small for the reason above. */
 const CELL_PAD = 4;
 
-/** 4px of lead, a 16px value line, and the 12px strip that carries the mark. */
-const ROW_H = 32;
-const VALUE_H = 16;
-const STRIP_H = 12;
+/**
+ * The table's vertical rhythm, and the only place the height cut is visible.
+ *
+ * 3px of lead, a 15px value line, and the 10px strip that carries the mark. It
+ * was 4 / 16 / 12, and five body rows at 32 were 20 of the ~130px this section
+ * had to find. **No type size changed**: values are still 12px, row labels and
+ * headers still 11. What tightened is the leading and the strip, and the strip
+ * is now exactly the 10px the glyph is drawn at rather than 12 with air around
+ * it. A row of digits at 12px in a 15px line box is a dense table, which is what
+ * a results table in a paper is; a row of digits at 10px would be a smaller
+ * table, which is the thing that was not worth doing to make a pin fit.
+ *
+ * `ROW_LEAD + VALUE_H + STRIP_H` must equal `ROW_H`. The `height` on a `td` is a
+ * minimum, so if these stop agreeing the rows silently grow and the panel clips
+ * its own foot instead of failing loudly.
+ */
+const ROW_H = 28;
+const ROW_LEAD = 3;
+const VALUE_H = 15;
+const STRIP_H = 10;
+
+/**
+ * The two header rows of the source table. The first carries the air above the
+ * table, the second sits directly on the rule under it.
+ */
+const HEAD_H = [20, 18];
 
 /* ---------------------------------------------------------------------------
    The scroll score. Windows in the pin's own 0..1 travel, never milliseconds,
@@ -287,21 +358,38 @@ const READING: Record<Tone, string> = {
    --------------------------------------------------------------------------- */
 
 /**
- * The frame both panels are, and the 380px budget it holds:
+ * The frame both panels are, and the 334px budget it holds:
  *
- *      28  padding
+ *      24  padding
  *      18  the head line: paper id, table label, which reading this is
- *      18  gap
- *     206  the grid: two header rows at 24 and 20, a rule, five body rows at 32,
+ *      12  gap
+ *     180  the grid: two header rows at 20 and 18, a rule, five body rows at 28,
  *          and the rule the source draws between its two blocks
- *      25  slack, collected in one flexing spacer so nothing else has to be
+ *      21  slack, collected in one flexing spacer so nothing else has to be
  *          exact and so `height: auto` degrades cleanly
  *       1  the apparatus rule
- *      12  gap
+ *      10  gap
  *      44  two foot lines at 20, with a 4px gap
- *      28  padding
+ *      24  padding
  *     ---
- *     380
+ *     334
+ *
+ * It was 380, and the 46 came off the five things that were air: 8 of padding,
+ * 6 of the gap under the head line, 26 out of the grid (6 off the two header
+ * rows, 20 off the five body rows at `ROW_H`), 2 off the gap above the foot, and
+ * 4 out of the slack, which is 21 now rather than 25.
+ *
+ * What is deliberately untouched is the foot: two lines at 20px, in both panels.
+ * They carry the apparatus entry (the one finding in this table, with its
+ * claimed, computed and delta) and the sentence about the five two-valued
+ * cells. Those two lines are the argument the section exists to make, and a
+ * panel that fits by dropping them would be a panel about nothing.
+ *
+ * The slack is a floor, not a target. It is `min-h-[14px] flex-1`, so if the
+ * fixed content above ever grows past 320 the spacer stops absorbing it and the
+ * foot is clipped by `overflow: hidden` rather than pushing the panel taller.
+ * That is the safe direction, since the pin's budget cannot be broken from in
+ * here, but it is silent, so the measurement script exists.
  */
 function PanelFrame({
   tone,
@@ -321,7 +409,7 @@ function PanelFrame({
       className={`${p.shadow} flex flex-col overflow-hidden`}
       style={{
         height,
-        padding: 28,
+        padding: PANEL_PAD,
         background: p.field,
         borderRadius: "var(--site-radius-card)",
         color: p.ink,
@@ -334,7 +422,7 @@ function PanelFrame({
         </span>
         <span style={{ fontSize: 12, color: p.muted }}>{READING[tone]}</span>
       </div>
-      <div style={{ height: 18 }} />
+      <div style={{ height: 12 }} />
       {children}
     </div>
   );
@@ -393,7 +481,7 @@ function PanelGrid({
                 key={c}
                 scope="col"
                 style={{
-                  height: r === 0 ? 24 : 20,
+                  height: HEAD_H[r] ?? HEAD_H[1],
                   padding: `0 ${CELL_PAD}px`,
                   fontSize: 11,
                   lineHeight: 1.2,
@@ -416,7 +504,7 @@ function PanelGrid({
           <tr key={r} style={{ borderTop: row.ruleAbove ? `1px solid ${p.rule}` : undefined }}>
             <td
               style={{
-                padding: "4px 0 0",
+                padding: `${ROW_LEAD}px 0 0`,
                 fontSize: 11,
                 lineHeight: `${VALUE_H}px`,
                 textAlign: "center",
@@ -432,7 +520,7 @@ function PanelGrid({
                 key={c}
                 style={{
                   height: ROW_H,
-                  padding: `4px ${CELL_PAD}px 0`,
+                  padding: `${ROW_LEAD}px ${CELL_PAD}px 0`,
                   verticalAlign: "top",
                   textAlign: c === 0 ? "left" : "center",
                 }}
@@ -500,8 +588,11 @@ const FOOT_GAP = 24;
 function FootLine({ tone, children }: { tone: Tone; children: ReactNode }) {
   return (
     // Wrapping matters only in the static branch, where the panel is 800px wide
-    // and takes its natural height. Inside the pin the entry measures 699px
-    // against 948 of panel, so it stays on one line and the 380px budget holds.
+    // and takes its natural height. Inside the pin all four foot lines measure
+    // exactly the 904px of panel content at the 1100 floor with nothing
+    // overflowing, so each stays on one line and the 334px budget holds.
+    // Trimming the panel's padding to 24 gave this measure 8px more room; the
+    // foot got safer, not tighter.
     <div
       className="flex flex-wrap items-center gap-x-6 gap-y-1"
       style={{ minHeight: 20, fontSize: 12, lineHeight: "20px", color: PALETTE[tone].muted }}
@@ -680,26 +771,61 @@ function readColumnHeader(data: ApparatusData): string {
    The section.
    --------------------------------------------------------------------------- */
 
+/* ---------------------------------------------------------------------------
+   The section's own words. One copy of each, read by both branches, because a
+   heading that says something different depending on the viewport is two
+   headings to keep true.
+   --------------------------------------------------------------------------- */
+
+const TAG = "The apparatus";
+const HEADING = "The same table, read twice";
+
 /**
- * One flex child, not three. Inside the pinned `Container` the gap is 24px, and
- * a fragment here would put that gap between the tag, the heading and the lede
- * as well, which is 48px the budget below does not have.
+ * The heading size inside the pin. Lower than the 48px the rest of the page
+ * reaches, and it is what stops this section's height budget following the
+ * viewport's width. See `PinnedHeading`.
+ */
+const PINNED_HEADING = "clamp(28px, 3.6vw, 40px)";
+
+/**
+ * The lede.
  *
- * Not `SectionTag`, for two reasons. Its `Reveal` is a fire-once entrance and
- * everything inside a pin has to be scrubbed, and its `max-w-[20ch]` heading
- * wraps to three lines at any heading long enough to say what this section is.
- * The type is `SectionTag`'s exactly, so the section still looks like the rest
- * of the page.
+ * It used to open "One table from 1810.04805, as the paper prints it and as the
+ * run reads it", and that sentence is now gone rather than shortened for space:
+ * both panels already carry the paper id, the table label and which reading they
+ * are, on their own head lines, in the reader's eye at the same moment. What is
+ * left is the part nothing else on the page says, and it is the claim the whole
+ * section rests on.
+ */
+function lede(data: ApparatusData): string {
+  return `Every mark comes from the committed report for ${data.paperId}.`;
+}
+
+/** The section tag. `SectionTag`'s type exactly, without its fire-once `Reveal`. */
+function SectionName() {
+  return (
+    <span
+      className="site-display block"
+      style={{ fontSize: 24, lineHeight: 1.2, color: "var(--site-muted)" }}
+    >
+      {TAG}
+    </span>
+  );
+}
+
+/**
+ * The heading as the static branch sets it: stacked, and at the page's full
+ * heading size, because nothing down there is competing for height.
+ *
+ * Not `SectionTag`, for two reasons that hold in both branches. Its `Reveal` is
+ * a fire-once entrance and everything inside a pin has to be scrubbed, and its
+ * `max-w-[20ch]` heading wraps to three lines at any heading long enough to say
+ * what this section is.
  */
 function Heading({ data }: { data: ApparatusData }) {
   return (
     <header>
-      <span
-        className="site-display block"
-        style={{ fontSize: 24, lineHeight: 1.2, color: "var(--site-muted)" }}
-      >
-        The apparatus
-      </span>
+      <SectionName />
       <h2
         className="mt-2.5"
         style={{
@@ -710,12 +836,75 @@ function Heading({ data }: { data: ApparatusData }) {
           color: "var(--site-ink)",
         }}
       >
-        The same table, read twice
+        {HEADING}
       </h2>
-      <p className="site-body mt-4 max-w-[70ch]">
-        One table from {data.paperId}, as the paper prints it and as the run reads it. Every mark
-        comes from the committed report.
-      </p>
+      <p className="site-body mt-4 max-w-[70ch]">{lede(data)}</p>
+    </header>
+  );
+}
+
+/**
+ * The same heading inside the pin, where 165px of stacked header was the single
+ * largest thing standing between this section and a viewport that people
+ * actually have.
+ *
+ * Two differences from the static one, both of them height and neither of them
+ * copy:
+ *
+ * **The lede sits beside the heading.** `MOTION_TEARDOWN.md` §5 reads the
+ * reference's density as body copy confined to a narrow right-hand column with
+ * the left kept open, so this is the reference's own arrangement rather than a
+ * saving invented under pressure, but the saving is why it is here. A row is as
+ * tall as its taller column: the tag and heading come to 95, the lede at 34ch
+ * sets in two lines at 54, and it would have to reach four lines before it added
+ * a pixel to the section. Stacked, those same two lines cost 70.
+ *
+ * That bound is the point. The recurring catastrophe on this page is a pinned
+ * frame that overflows because something wrapped, and here wrapping is free
+ * until it doubles.
+ *
+ * **The heading is capped at 40px.** `clamp(28px, 3.6vw, 48px)` measures 67.2 as
+ * soon as `3.6vw` reaches the ceiling, so the old budget silently grew by 11px
+ * on every viewport wide enough to matter. `3.6vw` passes 40 at 1112, which is
+ * 12px above this section's own floor, so from just inside the gate outwards the
+ * heading box is a flat 56. `hero.tsx` capped its headline for exactly this
+ * reason and records the same finding: a budget that tracks viewport width is
+ * not something a `min-height` media query can answer.
+ *
+ * `items-end` rather than `items-baseline`: the two columns hold different type
+ * at different sizes, and aligning their last baselines would leave the lede
+ * sitting below the heading's descenders on some faces and above them on others.
+ * Their bottom edges are the thing that should agree.
+ *
+ * The `nowrap` on the heading is a guard, not a layout instruction. It is one
+ * line at every width this branch runs at: measured at the 1100 floor the
+ * heading is 465px and the lede 343, which with the 40px gap leaves 155 of the
+ * row's 1004 unspent. The declaration is there so that a longer heading, some
+ * day, breaks in the horizontal direction where the frame clips and someone sees
+ * it, rather than in the vertical direction where it would quietly push the
+ * bottom of the panel past the fold. The lede keeps the shrinking, which is the
+ * column that can afford it: three lines still cost this row nothing.
+ */
+function PinnedHeading({ data }: { data: ApparatusData }) {
+  return (
+    <header className="flex items-end justify-between gap-10">
+      <div>
+        <SectionName />
+        <h2
+          className="mt-2.5"
+          style={{
+            fontSize: PINNED_HEADING,
+            fontWeight: 400,
+            letterSpacing: "-0.04em",
+            lineHeight: 1.4,
+            color: "var(--site-ink)",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {HEADING}
+        </h2>
+      </div>
+      <p className="site-body max-w-[34ch]">{lede(data)}</p>
     </header>
   );
 }
@@ -799,7 +988,7 @@ function PaperPanel({
 
       <div className="min-h-[14px] flex-1" />
       <ApparatusRule tone="paper" />
-      <div style={{ height: 12 }} />
+      <div style={{ height: 10 }} />
 
       <div className="flex flex-col gap-1">
         {/* The caption is the paper's own, quoted, so it keeps the paper's
@@ -861,7 +1050,7 @@ function InstrumentPanel({
 
       <div className="min-h-[14px] flex-1" />
       <ApparatusRule tone="instrument" progress={progress} />
-      <div style={{ height: 12 }} />
+      <div style={{ height: 10 }} />
 
       <div className="flex flex-col gap-1">
         {progress ? (
@@ -912,30 +1101,45 @@ function MultiValueNote({ data }: { data: ApparatusData }) {
  * constraint is height as much as width, and it decides which tree renders
  * rather than how one tree looks.
  *
- * **This is deliberately not the hero's threshold, and it must not be "fixed" to
- * match it.** The hero gates at 1024 × 760 because its only tall element is a
- * headline, and a headline can be capped — which is exactly what it does, so its
- * budget is flat and 760 is honest. This section's tall element is a table with
- * forty-five body cells in it, and a table cannot be capped. It can only be made
- * smaller, and a table small enough to fit 760 is a table nobody can read.
+ * **The height term is 700, and the previous 860 meant this section had never
+ * pinned for an ordinary visitor.** A headless Chromium on a 1920 x 1080 screen
+ * at the 125% scaling Windows ships by default reports `innerHeight` 720: the OS
+ * scaling takes the screen to 1536 x 864 and the browser's own chrome takes
+ * another ~144. Everyone on that machine got `StaticApparatus`, so the
+ * panel-over-panel cover, which is the page's signature scroll moment and the
+ * whole of `MOTION_TEARDOWN.md` §3, ran for nobody. Every static check passed the
+ * whole time, because a `curl` of the HTML cannot see a pin that did not happen.
  *
- * The budget is 789 against 860. Trimming the header clearance, the foot and the
- * well together recovers about 24px, which lands at 765 — still above 760, and
- * with a margin thin enough that one wrapped header cell would push the lower
- * half of the panel off the screen. That is the failure this whole codebase is
- * built to avoid, and it is not worth taking on to make two numbers match.
+ * An earlier version of this comment argued at length that 860 was principled:
+ * that the hero can cap a headline but this section's tall element is a table
+ * that cannot be capped, and that trimming would recover "about 24px" and leave
+ * a margin too thin to be safe. The first half is true and the second half was
+ * arithmetic, not measurement. Measured, the recoverable height was ~143: the
+ * header row gives up 70 by putting the lede beside the heading instead of under
+ * it, the heading gives up 11 by being capped the way the hero's is, the panel
+ * gives up 46 of leading and padding, and the clearance and gaps give up 16. The
+ * table keeps all ten of its columns and all five of its rows, and no type size
+ * in it changed.
  *
- * Below the threshold `StaticApparatus` stacks both readings at natural height.
- * A reader on a 760px laptop sees the hero pin and reads this section as two
- * panels rather than one covering the other. That is a smaller loss than a
- * panel whose bottom rows cannot be reached.
+ * **The width term is still 1100, and it is not about height at all.** It is the
+ * measure: ten columns, a 40px siglum margin and a 128px label column need about
+ * 1000px of container before the header cells start colliding, and `LABEL_W`
+ * above works that through. A narrower viewport does not get a smaller table; it
+ * gets the static branch, which scrolls the table sideways in its own box the
+ * way a paper's table does on a phone.
+ *
+ * Below the gate `StaticApparatus` stacks both readings at natural height. That
+ * is a smaller loss than a panel whose bottom rows cannot be reached, which is
+ * why the floor here is 700 with 44px of measured slack rather than 660 with
+ * none. `scripts/check-viewports.mjs` asserts both directions: that the section
+ * pins at 1536 x 720, and that it does *not* pin below its own floor.
  */
 function usePinnable(enabled: boolean) {
   const [pinnable, setPinnable] = useState(false);
 
   useEffect(() => {
     if (!enabled) return;
-    const mq = window.matchMedia("(min-width: 1100px) and (min-height: 860px)");
+    const mq = window.matchMedia("(min-width: 1100px) and (min-height: 700px)");
     const update = () => setPinnable(mq.matches);
     update();
     mq.addEventListener("change", update);
@@ -971,12 +1175,15 @@ function PinnedApparatus({ data }: { data: ApparatusData }) {
     <div id="apparatus" className="scroll-mt-20">
       <Pin height="320vh">
         {(progress) => (
-          <Container className="flex h-full flex-col justify-center pt-[72px] pb-8">
+          // `pt-16` is 64: the fixed bar condenses to `SHORT` over the first
+          // 140px of scroll and this section is nowhere near the top of the
+          // page, so it is only ever seen at 64. The old 72 was clearing air.
+          <Container className="flex h-full flex-col justify-center pt-16 pb-8">
             {/* One measure for all three, so the heading's left edge is the
                 panel's left edge. `Container` runs to 1440 and the well caps at
                 1200, and without this the two would part company above 1440. */}
-            <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-6">
-              <Heading data={data} />
+            <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-5">
+              <PinnedHeading data={data} />
               <Well data={data} progress={progress} />
               <Scrub progress={progress} from={TALLY_FROM} to={TALLY_TO} y={12}>
                 <Tally data={data} />

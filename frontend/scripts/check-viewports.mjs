@@ -55,11 +55,23 @@ const VIEWPORTS = [
   { name: "phone", width: 390, height: 664 },
 ];
 
-/** Sections expected to render a pinned tree, and the floor each needs. */
+/**
+ * Sections expected to render a pinned tree, and the floor each needs.
+ *
+ * These must be the same numbers as the `matchMedia` queries in the components,
+ * and the point of the list is that they are asserted in both directions: a
+ * section that fits its floor and does not pin is a failure, and so is a section
+ * that pins below its floor, because that one is hiding its own lower half.
+ *
+ * `apparatus` was 1100 x 860, which no ordinary laptop has ever satisfied: the
+ * default Windows machine in the first row of `VIEWPORTS` reports 720. Its
+ * budget is now measured at 656 and its floor is 700; the derivation is in the
+ * block comment in `apparatus-panels.tsx`.
+ */
 const PINNED = [
   { id: "hero", minWidth: 1024, minHeight: 700 },
   { id: "intro", minWidth: 0, minHeight: 0 },
-  { id: "apparatus", minWidth: 1100, minHeight: 860 },
+  { id: "apparatus", minWidth: 1100, minHeight: 700 },
 ];
 
 async function measure(page) {
