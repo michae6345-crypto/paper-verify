@@ -8,6 +8,7 @@ import { Measured } from "@/components/site/measured";
 import { Process } from "@/components/site/process";
 import { Report } from "@/components/site/report";
 import { Roadmap } from "@/components/site/roadmap";
+import { Showcase } from "@/components/site/showcase";
 
 /**
  * The landing page.
@@ -38,6 +39,13 @@ import { Roadmap } from "@/components/site/roadmap";
  * BERT finding as six evidence rows. Two sections apart, the panel reads as a
  * callback: the finding you were shown as a list, now in its place on the table
  * it came from. Adjacent, it would have read as a repeat.
+ *
+ * `Showcase` sits between `Process` and `Checks`. The reader has just been told
+ * the five stages a run moves through, so four real tables from four real papers
+ * are what extraction actually yields, and seeing that earns the checks that
+ * follow. It deliberately does not sit next to `Measured`: the showcase binds
+ * `PAPERS`, `TABLES` and `CELLS` from `corpus.ts` and `Measured` states the same
+ * constants as rows, so adjacent they would read as saying it twice.
  */
 export default function SitePage() {
   return (
@@ -45,6 +53,7 @@ export default function SitePage() {
       <Hero />
       <Intro />
       <Process />
+      <Showcase />
       <Checks />
       <Decides />
       <Apparatus />

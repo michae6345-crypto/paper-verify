@@ -5,6 +5,7 @@ import { MotionValue, motion, useTransform } from "motion/react";
 import type { ReactNode } from "react";
 
 import { Container, PrimaryLink, Tag } from "@/components/site/ui";
+import { HeroBubbles } from "@/components/site/bubbles";
 import { Reveal } from "@/components/site/reveal";
 import { DrawLine, Pin, Scrub, useReducedMotionGate } from "@/components/site/motion/scrub";
 import { Rise, SpineList, type SpineWindow } from "@/components/site/motion/mobile";
@@ -463,9 +464,13 @@ function FlowHero() {
           </Reveal>
 
           <Reveal delay={0.06}>
-            <h1 className="site-h1 mx-auto max-w-[1000px] text-balance">
-              AI-native verification for academic conferences
-            </h1>
+            {/* No `progress`, so nothing here opens a scroll subscription. The
+                static hero is also the reduced-motion branch. */}
+            <HeroBubbles>
+              <h1 className="site-h1 mx-auto max-w-[1000px] text-balance">
+                AI-native verification for academic conferences
+              </h1>
+            </HeroBubbles>
           </Reveal>
 
           <Reveal delay={0.12}>
@@ -574,13 +579,21 @@ function PinnedHero() {
             {/* The one place `site-h1` is overridden. See `PINNED_HEADLINE`: the
                 clamp's 108px ceiling makes the frame's height a function of its
                 width, and a budget that moves with the viewport is a budget no
-                media query can gate on. */}
-            <h1
-              className="site-h1 mx-auto max-w-[1000px] text-balance"
-              style={{ fontSize: PINNED_HEADLINE }}
-            >
-              AI-native verification for academic conferences
-            </h1>
+                media query can gate on.
+
+                The bubbles cost this frame nothing. They are absolutely
+                positioned beside the headline, measured at 0px of added height
+                across seven widths, and they only render at 1280 and above,
+                where there is clear space either side of a 1000px measure. The
+                pin's budget is unchanged at 608 against 700. */}
+            <HeroBubbles progress={progress}>
+              <h1
+                className="site-h1 mx-auto max-w-[1000px] text-balance"
+                style={{ fontSize: PINNED_HEADLINE }}
+              >
+                AI-native verification for academic conferences
+              </h1>
+            </HeroBubbles>
 
             {/* One box, three occupants, none of them on screen at the same time
                 as another. The input arrives during the draw and leaves as the
