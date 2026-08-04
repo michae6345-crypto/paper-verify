@@ -3,6 +3,7 @@
 import { useRef } from "react";
 
 import { Container, PrimaryLink, Tag } from "@/components/site/ui";
+import { MotionControl } from "@/components/site/motion-control";
 import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
 
 /**
@@ -183,6 +184,16 @@ export function SiteFooter() {
                   </a>
                 ))}
               </nav>
+
+              {/* The motion control sits here, at the foot, quiet and findable.
+                  Not in the header: a control that decides whether the page
+                  animates is a setting, and a setting competing with the one
+                  call to action is a worse header. This page is entirely
+                  scroll-driven, so a reader whose device reports
+                  `prefers-reduced-motion` sees a still page and has no way to
+                  know there was anything to see. The footer is where they end
+                  up, and it is where the answer is. */}
+              <MotionControl tone="light" />
             </div>
           </Scrub>
         </div>

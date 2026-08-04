@@ -97,6 +97,61 @@ const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : us
 const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
 
 /**
+ * The reader's own answer, when they have given one.
+ *
+ * `system` follows `prefers-reduced-motion`. `full` animates whatever the system
+ * says. `off` stays still whatever the system says.
+ *
+ * **Why a page may override an accessibility preference at all**, since that is
+ * normally the wrong thing to do. On Windows, `prefers-reduced-motion` is driven
+ * by Settings > Accessibility > Visual effects > Animation effects, and that one
+ * switch is very widely used as a *performance* tweak on modest hardware. So the
+ * query conflates two different readers: one who is made unwell by motion, and
+ * one who turned off window animations years ago and has no idea it reaches the
+ * web. The first must keep a still page; the second is entitled to ask for the
+ * animation back.
+ *
+ * Which is why the default is `system` and nothing here ever changes it on a
+ * reader's behalf. There is no prompt, no banner, and no first-visit nudge. A
+ * reader who needs stillness never has to defend it; a reader who wants motion
+ * has to say so once, and it is remembered.
+ */
+export type MotionPreference = "system" | "full" | "off";
+
+const MOTION_KEY = "residual.motion.v1";
+
+/** Read the stored preference. Safe on the server and in private browsing. */
+export function readMotionPreference(): MotionPreference {
+  if (typeof window === "undefined") return "system";
+  try {
+    const stored = window.localStorage.getItem(MOTION_KEY);
+    return stored === "full" || stored === "off" ? stored : "system";
+  } catch {
+    // Private browsing throws on `localStorage`. The system preference is the
+    // right answer when we cannot remember anything.
+    return "system";
+  }
+}
+
+/** Store it, and tell every gate on the page at once. */
+export function writeMotionPreference(next: MotionPreference): void {
+  try {
+    if (next === "system") window.localStorage.removeItem(MOTION_KEY);
+    else window.localStorage.setItem(MOTION_KEY, next);
+  } catch {
+    // Nothing to do. The change still applies for this page view, because the
+    // event below fires regardless of whether the write landed.
+  }
+  window.dispatchEvent(new Event(MOTION_EVENT));
+}
+
+/**
+ * A same-document change signal. `storage` only fires in *other* tabs, so a
+ * control that writes the preference would not update the page it sits on.
+ */
+export const MOTION_EVENT = "residual:motionpreference";
+
+/**
  * Does this reader want less motion? `false` until the DOM exists.
  *
  * Deliberately *not* `useReducedMotion()` from `motion/react` — see the module
@@ -109,18 +164,36 @@ const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
  * do, which is the right pattern) needs it too. A section using plain
  * `useReducedMotion()` to pick between two different trees has the same bug.
  *
- * It listens for changes rather than reading once. Toggling the OS setting is
- * something a reader does *because of* a page they are on.
+ * **It returns `false` on the server and on the first client render, always**,
+ * including when the stored preference is `off`. That looks like a bug and is
+ * not: the server cannot read `localStorage`, so any other first value would
+ * disagree with the markup it sent and React would throw the whole subtree away.
+ * The real value lands in a layout effect, which runs before paint, so nothing
+ * is ever visible in the wrong state. This is the same shape `components/gate/`
+ * uses for the same reason.
+ *
+ * It listens for changes rather than reading once, on both the media query and
+ * the in-page event, because a reader toggles either *because of* the page they
+ * are on.
  */
 export function useReducedMotionGate(): boolean {
   const [reduced, setReduced] = useState(false);
 
   useIsomorphicLayoutEffect(() => {
     const query = window.matchMedia(REDUCED_QUERY);
-    const update = () => setReduced(query.matches);
+    const update = () => {
+      const preference = readMotionPreference();
+      if (preference === "full") setReduced(false);
+      else if (preference === "off") setReduced(true);
+      else setReduced(query.matches);
+    };
     update();
     query.addEventListener("change", update);
-    return () => query.removeEventListener("change", update);
+    window.addEventListener(MOTION_EVENT, update);
+    return () => {
+      query.removeEventListener("change", update);
+      window.removeEventListener(MOTION_EVENT, update);
+    };
   }, []);
 
   return reduced;
