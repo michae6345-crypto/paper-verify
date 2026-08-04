@@ -1,64 +1,76 @@
+import { ChecksDirection } from "@/components/site/checks-direction";
 import { ChecksGrid, type CardSpec } from "@/components/site/checks-grid";
 import { checkFrom, findingFrom } from "@/components/site/corpus.server";
 import { Container, Mono } from "@/components/site/ui";
 import { SectionTag } from "@/components/site/section-tag";
 
 /**
- * What it checks today. Four, and the count is the count.
+ * What runs on a paper today, and what it is designed to run next.
  *
- * The four are two families, and the heading says so rather than leaving a
- * reader to infer it from four cards in a 2x2. Two of them read the paper
- * against itself and two read it against the world outside it, which the card
- * titles then make plain. The lede that used to spell this out under the heading
- * is gone: it restated the heading in three short sentences, and the grid
- * underneath is the demonstration.
+ * **The taxonomy is gone.** This section was headed "Four checks, in two
+ * families" and laid out as a 2x2 to prove it. Both were a shape put on the work
+ * from outside: nobody reading a report cares which family a check belongs to,
+ * the count is an accident of what happened to be finished, and a heading that
+ * announces a count ages the moment a fifth check lands. The section now says
+ * what runs and shows it.
  *
- * The first two carry their own title and description out of
+ * **Dead links and citation existence are one card.** They ask the same
+ * question, which is whether the things this paper points at exist:
+ * `dead_links` requests every URL in the paper, `citation_existence` looks up
+ * every reference in Crossref and OpenAlex. Two cards said it twice and made the
+ * grid look like a taxonomy again. The merged card names both checkers so a
+ * reader who meets either at the top of a report can find it here.
+ *
+ * The first two cards carry their own title and description out of
  * `src/fixtures/reports/1810.04805.json` rather than out of this file, because
  * those strings are the checker's `display_name` and `description` and they
- * should go stale here the moment they change there. The other two do not
+ * should go stale here the moment they change there. The merged card does not
  * appear in any committed report: `dead_links` and `citation_existence` need the
- * network, and the corpus runs without it. Their strings are copied verbatim
- * from `DISPLAY_NAME` and `DESCRIPTION` in `backend/pv/checks/links.py` and
- * `backend/pv/checks/citations.py`, so a reader who meets one of these in a
- * report meets the same words. Copied, not bound: change them there and they
- * must be changed here.
+ * network, and the corpus runs without it. Its sentence is the two `DESCRIPTION`
+ * constants in `backend/pv/checks/links.py` and `backend/pv/checks/citations.py`
+ * joined, so a reader who meets one of these in a report meets the same words.
+ * Copied, not bound: change them there and they must be changed here.
  *
  * The evidence card is the BERT finding, every field read from that same file.
- * Nothing on it is typed out here — not the claimed value, not the computed one,
+ * Nothing on it is typed out here, not the claimed value, not the computed one,
  * not the delta, and not the locator, which reads `column "Average -"` because
  * that is the column header the paper actually prints.
  *
- * The order is not a ranking, and it is load-bearing for a different reason: the
- * evidence panel's rows open at 0.2 of the grid's travel, which is after the
- * second card's window and before the third's. Moving the card that carries them
- * puts six rows on screen before the card holding them has arrived.
+ * The evidence is also what raises its card off the page and gives it the tall
+ * column. `checks-grid.tsx` reads the presence of an `evidence` field rather
+ * than a position, so both follow the finding wherever the finding goes, but
+ * there should stay exactly one of them. Two lead cards in a group is a group
+ * with no foreground.
  *
- * The evidence is also what raises its card off the page. `checks-grid.tsx` reads
- * the presence of an `evidence` field, not a position, so the elevation follows
- * the finding wherever the finding goes — but there should stay exactly one of
- * them. Two cards standing off the page in a 2x2 is a grid with no foreground.
+ * **The second band is the direction, and it is written so it cannot be read as
+ * capability.** The page used to carry a roadmap section at the foot whose
+ * closing paragraph disowned everything in it; that section is being removed, so
+ * `checks-direction.tsx` carries the disclaiming itself, in the band heading, on
+ * every row, and in the closing paragraph. Nothing in it is described in the
+ * present tense.
  *
- * This file reads those reports off disk, so it stays a server component and
- * hands the assembled cards to `checks-grid.tsx`, which is the client half and
- * owns the scroll motion. The split is a rendering boundary and nothing more:
- * every string still originates here or in the report.
+ * This file reads the reports off disk, so it stays a server component and hands
+ * the assembled cards to the two client halves that own the scroll motion. The
+ * split is a rendering boundary and nothing more: every string still originates
+ * here or in the report.
  */
 
 const BERT = "1810.04805";
 
-const NETWORK_CHECKS = [
-  {
-    title: "Dead links",
-    description:
-      "Requests every URL in the paper and reports the ones the server says are gone.",
-  },
-  {
-    title: "Citation existence",
-    description:
-      "Looks up each reference in Crossref and OpenAlex and reports confirmed retractions.",
-  },
-];
+/**
+ * The one card not bound to a committed report.
+ *
+ * Both halves are their checker's own `DESCRIPTION`, joined by "then" rather
+ * than rewritten, because the point of copying them is that the words match what
+ * a report prints.
+ */
+const POINTS_AT: CardSpec = {
+  title: "What the paper points at",
+  description:
+    "Requests every URL in the paper and reports the ones the server says are gone, then looks up " +
+    "each reference in Crossref and OpenAlex and reports confirmed retractions.",
+  checkers: ["dead_links", "citation_existence"],
+};
 
 export function Checks() {
   const bold = checkFrom(BERT, "bold_extreme");
@@ -89,20 +101,22 @@ export function Checks() {
     });
   }
 
-  cards.push(...NETWORK_CHECKS);
+  cards.push(POINTS_AT);
 
   return (
     <section id="checks" className="site-section scroll-mt-20">
       <Container>
-        <SectionTag tag="The checks" heading="Four checks, in two families" />
+        <SectionTag tag="The checks" heading="What runs on a paper today" />
 
         <ChecksGrid cards={cards}>
-          <p className="site-body mt-8 max-w-[68ch]">
+          <p className="site-body max-w-[68ch]">
             A false finding comes from misreading the source, not from a wrong sum: reading{" "}
-            <Mono>86.7/85.9</Mono> as one number produced five of them on one table. The corpus
-            figures below come only from the two checks that need no network.
+            <Mono>86.7/85.9</Mono> as one number produced five of them on one table. Every corpus
+            figure on this page comes from the two checks that read nothing but the source.
           </p>
         </ChecksGrid>
+
+        <ChecksDirection />
       </Container>
     </section>
   );

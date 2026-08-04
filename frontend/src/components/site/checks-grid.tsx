@@ -10,43 +10,45 @@ import { VERDICT_LABEL } from "@/lib/verdict";
 import type { Verdict } from "@/types/run-report";
 
 /**
- * The four check cards, and the one of them that carries evidence.
+ * What runs today, and the one card that quotes a real finding.
  *
  * This exists as a separate file only because `checks.tsx` reads the committed
  * run reports off disk and so cannot be a client component. Every string here
  * arrives as a prop; nothing about a check is decided in this file.
  *
+ * **Three cards, and the layout is no longer a grid of equals.** It was a 2x2 of
+ * four cards under the heading "four checks, in two families", and both halves
+ * of that were wrong. The taxonomy was a shape imposed on the work rather than
+ * read off it, and two of the four cards asked the same question: `dead_links`
+ * requests every URL the paper prints, `citation_existence` looks up every
+ * reference, and both of them are "does the thing this paper points at exist".
+ * They are one card now, naming both checkers so a reader who meets either in a
+ * report still recognises it.
+ *
+ * With three, the arrangement can say something a 2x2 could not. The card
+ * carrying the finding takes the full-height right column and the other two
+ * stack beside it, so the one concrete result on the page is the tallest object
+ * in the section rather than one quarter of a square. Document order is
+ * unchanged: the placement classes are `three:` only, and below that breakpoint
+ * the three go on a rail in the order they are given.
+ *
  * The motion: one progress track spans the whole grid, and each card maps its
  * own window of it. Windows rather than delays, so a reader who flicks through
- * gets the whole sequence compressed instead of four animations queued behind
- * a scroll that has already finished.
+ * gets the whole sequence compressed instead of three animations queued behind a
+ * scroll that has already finished.
  *
  * The evidence card gets the most of it. `71.0` claimed against `70.944`
- * computed is the only concrete result on this page, and six figures landing
- * one after another as the reader descends is worth more than a panel fading in
- * whole — the reader ends up having read each line rather than having seen a
+ * computed is the only concrete result on this page, and six figures landing one
+ * after another as the reader descends is worth more than a panel fading in
+ * whole: the reader ends up having read each line rather than having seen a
  * block of monospace appear.
  *
- * On a narrow screen the four cards no longer stack. They were 2,000px of
- * column, one card to a screen, which is the wrong shape for the one thing this
- * section is saying: *four* checks, in two families. A set you cannot see the
- * extent of is not presented as a set. Below `WIDE` they go on a rail — one
- * gesture, the whole group, the next card visible at the edge — and the section
- * loses about 1,400px of page.
+ * Below `WIDE` the cards go on a rail. Stacked they were 1,500px of column, one
+ * card to a screen, which is the wrong shape for a set a reader is meant to see
+ * the extent of. On the rail it is one gesture, the whole group, the next card
+ * visible at the edge.
  *
- * The paragraph that used to be true here and no longer is, kept because the
- * reasoning is what changed rather than the layout: stacking *does* sequence
- * cards by geometry, so windows expressed in the grid's travel have nothing left
- * to do. What that argument missed is that they still have something to get
- * wrong. Measured at 390 x 844, three of the four cards and every one of the six
- * evidence rows was at an opacity between 0.02 and 0.39 on the frame its centre
- * crossed the fold — not resolved early, resolved *late*, which is the direction
- * that costs the reader the content. The grid's travel on a phone is nearly
- * three times what it is here, and none of these constants knew that. Below the
- * breakpoint every element is measured against itself instead; see
- * `motion/mobile.tsx`.
- *
- * Nothing here is pinned. Four cards at this size exceed a 640px viewport at
+ * Nothing here is pinned. Three cards at this size exceed a 640px viewport at
  * every breakpoint, and a pinned section taller than the screen puts its own
  * lower half out of reach.
  */
@@ -54,6 +56,12 @@ import type { Verdict } from "@/types/run-report";
 export type CardSpec = {
   title: string;
   description: string;
+  /**
+   * The checker names behind a card that stands for more than one of them.
+   * Only the merged card carries these; a card bound to a single checker is
+   * already titled with that checker's own `display_name`.
+   */
+  checkers?: string[];
   /** Present on the one card that quotes a real finding. */
   evidence?: Evidence;
 };
@@ -70,84 +78,94 @@ export type Evidence = {
 
 /**
  * Where each card's window opens, and it is the grid's own geometry rather than
- * four numbers that looked reasonable.
+ * three numbers that looked reasonable.
  *
- * The track is the grid, 660px tall, so travel at a 720px viewport is 1380px.
- * The two rows of the grid are 350px apart, which is 0.25 of that travel, and
- * that gap is where the separation between the two groups comes from — §4 of the
- * teardown asks for windows that overlap heavily inside a group and are clearly
- * apart between groups, and here that falls straight out of the fact that the
- * second row is lower down the page. Only the 0.03 between the left and right
- * card of a row is authored, because those two are side by side and geometry has
- * nothing to say about which is read first.
+ * The track is the grid, about 470px tall at 1536 x 720, so travel is near
+ * 1190px. The two cards in the left column are 246px apart, which is the 0.207
+ * between the first window and the third, and that gap is where the separation
+ * between the top of the grid and the bottom of it comes from. Only the 0.03
+ * between the first card and the tall one is authored, because those two are
+ * side by side and geometry has nothing to say about which is read first.
  *
- * What these replace: `[0.02, 0.06, 0.2, 0.24]`, which opened the first card 27px
- * into a 1380px travel. Driving a browser through it showed the top-left card at
- * **opacity 0.64 and the two bottom cards at 0.95 and 0.78 on the frame their
- * centres first came over the fold** — three of the four had done most or all of
- * their animating below the fold, where the reader cannot be looking. That is the
- * whole of the "it fades in like a slow paint" complaint, and it was invisible
- * from the source, because a window can be perfectly well formed and still be
- * pointed somewhere nobody is looking.
+ * The rule these are placed against, from `motion/scrub.tsx`: an element's
+ * window should open on the frame its top edge reaches the fold, which is its
+ * own offset over the travel, and close before its centre reaches the middle of
+ * the screen, which is where it is being read. A window that closes early costs
+ * a little movement. A window that opens late costs the reader the content.
  */
-const CARD_STARTS = [0.0, 0.03, 0.341, 0.371];
+const CARD_STARTS = [0.0, 0.03, 0.207];
 
-/** 0.313 of 1380px is 432px of scrolling, against 331px before. */
-const CARD_SPAN = 0.313;
+/** 0.30 of 1190px is 357px of scrolling, comfortably inside the surface budget. */
+const CARD_SPAN = 0.3;
+
+/**
+ * Where in the grid each card sits above `three:`.
+ *
+ * Static strings rather than a template, because Tailwind reads the source for
+ * class names and cannot see one that is assembled at runtime. The left column
+ * takes cards in the order they arrive and the card carrying evidence takes the
+ * right column whole, so moving the finding to a different card moves the tall
+ * column with it.
+ */
+const LEFT_ROWS = ["three:row-start-1", "three:row-start-2", "three:row-start-3"];
+const LEAD_PLACEMENT = "three:col-start-2 three:row-start-1 three:row-span-2";
+
+function placements(cards: CardSpec[]): string[] {
+  let left = 0;
+  return cards.map((card) =>
+    card.evidence
+      ? LEAD_PLACEMENT
+      : `three:col-start-1 ${LEFT_ROWS[Math.min(left++, LEFT_ROWS.length - 1)]}`,
+  );
+}
 
 /**
  * The six evidence rows, opening after the card that holds them.
  *
- * Their `from` values are geometric — the rows are 26px apart, which is 0.019 of
- * the travel — but the step is 0.035 rather than 0.019, and that is deliberate.
- * The doc comment above says these six should read as figures landing one after
- * another; at the geometric spacing they are 26px of scrolling apart, which
- * arrives as one event. 0.035 is 48px, far enough apart to count them and still
- * a 87% overlap between neighbours, so a fast scroll compresses them into one
- * gesture instead of queueing six.
+ * Their `from` values are geometric, but the step is 0.03 rather than the 0.019
+ * the row spacing works out to, and that is deliberate. These six should read as
+ * figures landing one after another; at the geometric spacing they are 26px of
+ * scrolling apart, which arrives as one event. 0.03 is around 36px, far enough
+ * apart to count them and still an 89% overlap between neighbours, so a fast
+ * scroll compresses them into one gesture instead of queueing six.
  */
-const ROW_START = 0.165;
-const ROW_SPAN = 0.278;
-const ROW_STEP = 0.035;
-
-/** The closing paragraph, last. It sits below the grid, so its window is past 1. */
-const NOTE_FROM = 0.489;
-const NOTE_TO = 0.81;
+const ROW_START = 0.1;
+const ROW_SPAN = 0.28;
+const ROW_STEP = 0.03;
 
 /**
- * One of the four.
+ * One of the three.
  *
- * These were `rgba(255,255,255,0.5)` and no shadow, which is a card that is
- * neither on the page nor off it: half the field showing through it, and no
- * elevation to say which side of the field it is on. A translucent pane cannot be
- * lifted convincingly either, because a shadow under something you can see
- * through is a contradiction the eye resolves as dirt. So they are opaque now and
- * they carry the elevation tokens.
+ * Opaque, and carrying the elevation tokens. These were `rgba(255,255,255,0.5)`
+ * and no shadow, which is a card that is neither on the page nor off it: half
+ * the field showing through it, and no elevation to say which side of the field
+ * it is on. A translucent pane cannot be lifted convincingly either, because a
+ * shadow under something you can see through is a contradiction the eye resolves
+ * as dirt.
  *
- * The one that quotes a real finding stands off the page and the other three
- * rest. `71.0` claimed against `70.944` computed is the only concrete result on
- * the page, and in a 2x2 of otherwise equal cards nothing says which one to read
- * first — which is the whole distinction those two tokens exist to draw. Which
- * token a card gets is decided by the presence of evidence, one level up, where
- * the scrub that carries the shadow lives.
+ * The one that quotes a real finding stands off the page and the other two rest.
+ * Which token a card gets is decided by the presence of evidence, one level up,
+ * where the scrub that carries the shadow lives.
  */
 function CheckCard({
   title,
   description,
+  checkers,
   children,
 }: {
   title: string;
   description: string;
+  checkers?: string[];
   children?: ReactNode;
 }) {
   return (
     // No shadow class. The elevation is on a scrubbed layer outside this card so
-    // that it arrives with it; `leads` still decides *which* token, it is just
-    // decided one level up now. Two shadows on one surface reads as fog.
+    // that it arrives with it; the card only decides its own fill and padding.
+    // Two shadows on one surface reads as fog.
     //
     // `p-6` below the breakpoint. At 390 the gutter takes 48 and the reference's
     // 32px of card padding took another 64, leaving a 278px measure for a
-    // paragraph — about 34 characters, which is half of what a line of body copy
+    // paragraph, about 34 characters, which is half of what a line of body copy
     // wants. 24 gives it 294 and the difference is a line of text per card.
     <div
       className="flex h-full w-full flex-col items-start gap-3 p-6 two:gap-4 two:p-8 three:p-10"
@@ -167,6 +185,19 @@ function CheckCard({
       <p className="site-body" style={{ fontSize: "15px" }}>
         {description}
       </p>
+      {/* The checker names, for the card that stands for two of them. A reader
+          who meets `dead_links` at the top of a report should be able to find
+          which card on this page described it. */}
+      {checkers && (
+        <p className="mt-auto pt-2" style={{ fontSize: "13px", color: "var(--site-muted)" }}>
+          {checkers.map((name, i) => (
+            <span key={name}>
+              {i > 0 && ", "}
+              <Mono>{name}</Mono>
+            </span>
+          ))}
+        </p>
+      )}
       {children}
     </div>
   );
@@ -176,8 +207,8 @@ function CheckCard({
  * One label/value pair on the evidence card.
  *
  * 13px rather than 12 below the breakpoint. Twelve is the floor for body text
- * and this is a table of figures a reader is meant to compare — `71.0` against
- * `70.944` — at arm's length on a phone rather than at desk distance.
+ * and this is a table of figures a reader is meant to compare, `71.0` against
+ * `70.944`, at arm's length on a phone rather than at desk distance.
  */
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -230,9 +261,8 @@ function evidenceRows(evidence: Evidence): { label: string; value: ReactNode }[]
  *
  * A well, not a card. This sits inside a card that is already standing off the
  * page, and a second shadow on top of that one reads as fog rather than as two
- * levels — so it goes down instead of up. The fill is the page field, so it
- * reads as punched into the card rather than laid on it, and it was white on
- * white the moment the card behind it stopped being translucent.
+ * levels, so it goes down instead of up. The fill is the page field, so it reads
+ * as punched into the card rather than laid on it.
  */
 function EvidenceWell({ children }: { children: ReactNode }) {
   return (
@@ -270,12 +300,12 @@ function EvidencePanel({
 /**
  * The same six rows on the rail, each measured against its own travel.
  *
- * The stagger is authored rather than geometric, and this is one of the two
- * places on the page where that is the right answer: the six rows are 22px
- * apart, so measured against themselves they would arrive within a few pixels
- * of each other and land as one block of monospace. 0.03 of a row's travel is
- * about 28px of scrolling, which is far enough apart to count them and still
- * leaves neighbours overlapping by more than nine tenths.
+ * The stagger is authored rather than geometric, and this is one of the places
+ * where that is the right answer: the six rows are 22px apart, so measured
+ * against themselves they would arrive within a few pixels of each other and
+ * land as one block of monospace. 0.03 of a row's travel is about 28px of
+ * scrolling, far enough apart to count them and still leaving neighbours
+ * overlapping by more than nine tenths.
  */
 function RailEvidence({ evidence }: { evidence: Evidence }) {
   return (
@@ -289,25 +319,49 @@ function RailEvidence({ evidence }: { evidence: Evidence }) {
   );
 }
 
-/** Above the breakpoint: the 2x2, on the grid's own travel. */
+/**
+ * The paragraph under the grid, measured against itself.
+ *
+ * It used to hold a window in the grid's travel, which put it past 0.48 of a
+ * track it is not on: the note sits below the grid, so a fraction of the grid's
+ * progress describes where the grid is, not where the note is. `Rise` gives it
+ * its own track, starting when the note reaches the fold and ending when it
+ * leaves the top, whatever is above it, so nothing has to be right twice for the
+ * grid layout and for the rail. The rule worth taking from it: an element whose
+ * place in its section changes with the layout should be measured against
+ * itself.
+ */
+function ClosingNote({ children }: { children: ReactNode }) {
+  return (
+    <Rise y={20} boxClassName="mt-8 two:mt-10">
+      {children}
+    </Rise>
+  );
+}
+
+/** Above the breakpoint: two stacked cards and one tall one, on the grid's travel. */
 function CardGrid({ cards, children }: { cards: CardSpec[]; children: ReactNode }) {
   const grid = useRef<HTMLDivElement>(null);
   const progress = useSectionProgress(grid);
+  const place = placements(cards);
 
   return (
     <>
-      <div ref={grid} className="site-stack grid gap-6 three:grid-cols-2 three:gap-10">
+      <div
+        ref={grid}
+        className="site-stack grid gap-6 three:grid-cols-[1fr_1.04fr] three:gap-10"
+      >
         {cards.map((card, i) => {
           const from = CARD_STARTS[Math.min(i, CARD_STARTS.length - 1)];
           return (
-            // No blur, and 12px of travel rather than 40. §4 of the teardown
-            // spends blur exactly once, on the one element that matters, and the
-            // hero's verdict is already that element — four cards resolving out
-            // of a 6px blur is the effect stated four times in one section, and
-            // on a card carrying a table of figures it reads as the page failing
-            // to render rather than as depth. 40px alongside a scale is a slide
-            // from off screen, which §4 rules out in the same sentence that asks
-            // for the scale.
+            // No blur, and 12px of travel rather than 40. Section 4 of the
+            // teardown spends blur exactly once, on the one element that
+            // matters, and the hero's verdict is already that element. Three
+            // cards resolving out of a 6px blur is the effect stated three times
+            // in one section, and on a card carrying a table of figures it reads
+            // as the page failing to render rather than as depth. 40px alongside
+            // a scale is a slide from off screen, which the same sentence rules
+            // out.
             <Scrub
               key={card.title}
               progress={progress}
@@ -317,8 +371,13 @@ function CardGrid({ cards, children }: { cards: CardSpec[]; children: ReactNode 
               scale={[0.96, 1]}
               lift={card.evidence ? "card" : "raised"}
               liftRadius="inner"
+              className={place[i]}
             >
-              <CheckCard title={card.title} description={card.description}>
+              <CheckCard
+                title={card.title}
+                description={card.description}
+                checkers={card.checkers}
+              >
                 {card.evidence && <EvidencePanel evidence={card.evidence} progress={progress} />}
               </CheckCard>
             </Scrub>
@@ -326,32 +385,29 @@ function CardGrid({ cards, children }: { cards: CardSpec[]; children: ReactNode 
         })}
       </div>
 
-      <Scrub progress={progress} from={NOTE_FROM} to={NOTE_TO} y={24}>
-        {children}
-      </Scrub>
+      <ClosingNote>{children}</ClosingNote>
     </>
   );
 }
 
 /**
- * Below it: the four on a rail, and the note under it.
+ * Below it: the three on a rail, and the note under it.
  *
- * The four cards are the one group on this page whose members sit at the same
- * height as each other, so the geometric stagger every other narrow-viewport
- * group gets for free is not available — they would all arrive together. `lead`
- * is what replaces it, and 0.035 of a card's travel is about 40px of scrolling
- * between one and the next. They still overlap by nine tenths, so the four
- * arrive as one object with an internal order rather than as a queue.
+ * The cards are the one group here whose members sit at the same height as each
+ * other, so the geometric stagger every other narrow-viewport group gets for
+ * free is not available. `lead` is what replaces it, and 0.035 of a card's
+ * travel is about 40px of scrolling between one and the next. They still overlap
+ * by nine tenths, so the three arrive as one object with an internal order
+ * rather than as a queue.
  *
- * The evidence card keeps the heavier elevation. That distinction is the whole
- * reason both tokens exist, and on a rail it does more work than it does in a
- * grid: it is the only thing saying which of the four to read first when only
- * one and a half of them are on screen.
+ * The evidence card keeps the heavier elevation, and on a rail that distinction
+ * does more work than it does in a grid: it is the only thing saying which card
+ * to read first when one and a half of them are on screen.
  */
 function CardRail({ cards, children }: { cards: CardSpec[]; children: ReactNode }) {
   return (
     <>
-      <Rail label="The four checks" className="site-stack">
+      <Rail label="What runs on a paper today" className="site-stack">
         {cards.map((card, i) => (
           <Rise
             key={card.title}
@@ -364,16 +420,14 @@ function CardRail({ cards, children }: { cards: CardSpec[]; children: ReactNode 
             boxClassName="flex w-full"
             className="flex w-full"
           >
-            <CheckCard title={card.title} description={card.description}>
+            <CheckCard title={card.title} description={card.description} checkers={card.checkers}>
               {card.evidence && <RailEvidence evidence={card.evidence} />}
             </CheckCard>
           </Rise>
         ))}
       </Rail>
 
-      <Rise y={20} className="mt-2">
-        {children}
-      </Rise>
+      <ClosingNote>{children}</ClosingNote>
     </>
   );
 }
