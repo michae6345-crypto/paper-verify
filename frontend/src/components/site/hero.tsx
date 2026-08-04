@@ -18,18 +18,11 @@ import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
  * -0.06em. That is a curve rather than three decisions, so `site-h1` clamps it
  * and the breakpoints go away.
  *
- * There was a second control here pointing at the BERT report. It is gone: the
- * hero asks for one thing. The report is still reached from the FAQ card and
- * from `/check`, which is where someone looking for an example already is.
- *
- * ---
- *
  * On a large enough viewport the section pins and the pipeline runs once against
- * scroll (`docs/MOTION_TEARDOWN.md` §1). Their spine is a marketing funnel; ours
- * is the real one — the five `RunStage` values a run passes through in
- * `backend/pv/orchestrator.py` — and the thing at the end of it is a verdict,
- * which is the only thing a run produces. Copy arrives as the pin releases,
- * after the demonstration has already made the argument.
+ * scroll (`docs/MOTION_TEARDOWN.md` §1). The spine is the five `RunStage` values
+ * a run passes through in `backend/pv/orchestrator.py`, and the thing at the end
+ * of it is a verdict, which is the only thing a run produces. Copy arrives as
+ * the pin releases, after the demonstration has made the argument.
  *
  * The tag and the headline are present at progress 0 and never move. A landing
  * page whose first claim is only legible after you scroll is a worse page than a
@@ -37,7 +30,7 @@ import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
  *
  * **The arithmetic, because a pinned frame taller than the viewport hides its own
  * lower half.** The sticky child is exactly `100dvh`, and everything below is
- * measured against the smallest viewport we pin on, 1024 × 700:
+ * measured against the smallest viewport we pin on, 1024 x 700:
  *
  *      64  header clearance. The header is `fixed`, not absolute, so it stands
  *          over this frame for the whole pin rather than only at scroll 0. 64 is
@@ -47,7 +40,7 @@ import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
  *     128  spine band: the rule and its five nodes, each carrying a stage name
  *          and, 24px under it, the artifact that stage produces
  *     166  headline: two lines at 72px, the cap this branch applies
- *     150  the band under the headline. Three occupants, never two at once —
+ *     150  the band under the headline. Three occupants, never two at once:
  *          the submitted identifier, then the verdict, then the subhead and the
  *          controls. Measured content is 138, so 12 spare
  *      60  three gaps
@@ -59,45 +52,31 @@ import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
  * `min(72px, 5vw)`, so the characters per line only ever move between about 27
  * at 1440 and 36 at 1024, and a 45-character headline does not reach three at
  * either end. Three lines would cost 82 more and land at 690, which still fits,
- * so the frame survives a longer headline — but only just, and
+ * so the frame survives a longer headline, but only just, and
  * `scripts/check-viewports.mjs` is what would say so.
  *
- * **Where 700 came from, and why the last two numbers were wrong.** They were
- * derived on paper and never checked against a browser. A real Chromium at a
- * 1920 × 1080 screen on 125% scaling reports `innerHeight` of **720** — the OS
- * scaling takes it to 1536 × 864 and the browser's own chrome takes another 144.
- * That is an ordinary Windows laptop, not an edge case, and both 860 and 760
- * excluded it. The pin is the page's signature moment and it was not running for
- * the people most likely to be looking at it.
- *
- * The lesson is the one this repo already writes down in another context: a
- * number that was reasoned about rather than measured is a number that is
- * probably wrong. `scripts/check-viewports.mjs` measures it now.
+ * **Where 700 came from.** A real Chromium at a 1920 x 1080 screen on 125%
+ * scaling reports `innerHeight` of **720**: the OS scaling takes it to
+ * 1536 x 864 and the browser's own chrome takes another 144. That is an ordinary
+ * Windows laptop, and the earlier floors of 860 and 760 both excluded it, so the
+ * page's signature moment was not running for the people most likely to be
+ * looking at it. `scripts/check-viewports.mjs` measures it now.
  *
  * **Why the headline is capped here and nowhere else.** `site-h1` is
- * `clamp(44px, 7.5vw, 108px)`, so the headline *grows with width* — which made
- * the old gate the wrong shape. It read `(min-width: 1100px) and
- * (min-height: 860px)`, treating width as permission when width is what spends
- * the budget: at 1100px wide the hero needed 751px, at 1440px it needed 839. The
- * true requirement was `466 + 0.2588 × width`, which no media query can express.
- * Capping the headline inside the pinned frame makes the budget flat, and a flat
- * budget is something a `min-height` query can actually answer.
+ * `clamp(44px, 7.5vw, 108px)`, so the headline grows with width, which is what
+ * made a width-based gate the wrong shape: at 1100px wide the hero needed 751px
+ * and at 1440px it needed 839, a requirement of `466 + 0.2588 x width` that no
+ * media query can express. Capping the headline inside the pinned frame makes
+ * the budget flat, and a flat budget is something a `min-height` query can
+ * answer.
  *
- * The old gate cost more than tidiness: at 860 it excluded a 1440 × 760 laptop,
- * which is one of the most common screens there is, so the page's signature
- * scroll moment simply never ran for most people who visited it.
- *
- * Below the gate we do not pin at all, and what is underneath is no longer a
- * still page. `FlowHero` runs the same sequence down the screen instead of
- * across it: the claim first, then the pipeline drawn vertically as the reader
- * scrolls through it, ending on the verdict. See its own comment for why the
- * order is inverted rather than transposed.
+ * Below the gate nothing pins. `FlowHero` runs the same sequence down the screen
+ * instead of across it: the claim first, then the pipeline drawn vertically as
+ * the reader scrolls through it, ending on the verdict.
  *
  * `prefers-reduced-motion` takes that same branch, resolved: `Rise`, `SpineList`
  * and `DrawLine` all paint their final state on the first frame, so a reader who
- * asked for less motion gets the whole demonstration as a static diagram rather
- * than losing it. That is a change from the version of this file that sent them
- * to a hero with no pipeline in it at all.
+ * asked for less motion gets the whole demonstration as a static diagram.
  */
 
 /**
@@ -106,13 +85,10 @@ import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
  * The names are `RunStage` in `backend/pv/orchestrator.py`, minus the states a
  * run waits in and the ones it ends in.
  *
- * The artifacts are §1's "mono list items reveal beneath each stage label". They
- * are deliberately nouns and not counts: a count on this page would be a claim
- * about a specific paper, and the hero is not running a specific paper. Every one
- * of these is a real object the pipeline produces — `ingest` assembles the arXiv
- * source, `parse` builds the macro table before anything is read, `mining` turns
- * cells into claims, the checks produce comparisons, and adjudication is the only
- * step that produces a verdict.
+ * The artifacts are §1's "mono list items reveal beneath each stage label", and
+ * they are nouns rather than counts on purpose: a count here would be a claim
+ * about a specific paper, and the hero is not running one. Each is a real object
+ * the pipeline produces.
  */
 const STAGES = [
   { name: "resolving", artifact: "arxiv source" },
@@ -125,26 +101,24 @@ const STAGES = [
 /**
  * The claim, the sentence under it, and the one control.
  *
- * Stated once because the hero renders twice — pinned above 1024 x 700, in flow
- * below it — and copy that disagreed with itself across a breakpoint is the same
- * shape of failure as the two `latexutil.py` modules `CLAUDE.md` records: nothing
+ * Stated once because the hero renders twice, pinned above 1024 x 700 and in
+ * flow below it, and copy that disagreed with itself across a breakpoint is the
+ * failure `CLAUDE.md` records about the two `latexutil.py` modules: nothing
  * reads both, so no file read reveals the drift.
  *
- * **What the headline argues.** A venue's problem is not that it lacks judgement,
- * it is that submissions arrive faster than there are hours to read them. So the
- * claim is about order rather than about intelligence: the mechanical pass runs
- * before a reviewer spends attention, and what a reviewer then opens is a paper
- * whose arithmetic has already been checked. `residual` does not rank the work,
- * and the sentence under the headline says in its second clause what the run
- * declined to settle, because that is the half a chair has to be able to see.
+ * The claim is about order. The mechanical pass runs before a reviewer spends
+ * attention, so what a reviewer opens is a paper whose arithmetic has already
+ * been checked. `residual` does not rank the work, and the second clause of the
+ * subhead says what the run declined to settle, because that is the half a chair
+ * has to be able to see.
  *
- * No figure appears here, and none is coming. The honest version of "submissions
- * grow faster than reviewer hours" needs no number, and this page has a rule that
- * every number on it traces to something in the repository.
+ * No figure appears here and none is coming: this page holds every number on it
+ * to something in the repository, and conference submission growth is not in the
+ * repository.
  *
- * 45 characters, which is what `PINNED_HEADLINE`'s two-line budget affords. The
- * arithmetic is in the block comment at the top of this file and
- * `scripts/check-viewports.mjs` is what enforces it.
+ * The headline is 45 characters, which is what `PINNED_HEADLINE`'s two-line
+ * budget affords. The arithmetic is at the top of this file and
+ * `scripts/check-viewports.mjs` enforces it.
  */
 const TAG = "Built for conference and workshop intake";
 const HEADLINE = "Check every submission before a reviewer does";
@@ -198,10 +172,9 @@ function artifactWindow(i: number): [number, number] {
  * roughly 28 characters, so the current 45-character headline sets in two on a
  * wide screen and three on a narrow one, and three is what is budgeted.
  *
- * This is the size the pinned hero can afford, not the size it would like. The
- * static hero keeps the full 108px. The trade is deliberate: a 72px headline
- * that pins beats a 108px headline that turns the page's signature scroll
- * moment off for anyone on a 720px viewport, which is most people.
+ * The static hero keeps the full 108px. The trade is deliberate: a 72px headline
+ * that pins beats a 108px headline that turns the page's signature scroll moment
+ * off for anyone on a 720px viewport, which is most people.
  */
 const PINNED_HEADLINE = "clamp(40px, 5vw, 72px)";
 
@@ -212,9 +185,8 @@ const PINNED_HEADLINE = "clamp(40px, 5vw, 72px)";
  * width, and it decides which tree renders rather than how one tree looks.
  *
  * Height is the real gate now that `PINNED_HEADLINE` has flattened the budget.
- * The width term is no longer about vertical room at all — it is about the spine,
- * which lays five stage labels across the frame and needs the horizontal space to
- * do it without them colliding.
+ * The width term is about the spine, which lays five stage labels across the
+ * frame and needs the horizontal space to do it without them colliding.
  */
 function usePinnable(enabled: boolean) {
   const [pinnable, setPinnable] = useState(false);
@@ -289,8 +261,8 @@ function Live({
  * over it, each node carrying its stage name and then the artifact it produces.
  *
  * `h-32` rather than `h-24`: the artifact line adds 24px under the label, and
- * the block comment's budget counts 124 for this band. It is measured, not
- * assumed — `scripts/check-viewports.mjs` fails if the frame stops fitting.
+ * the block comment's budget counts 124 for this band. It is measured rather than
+ * assumed, and `scripts/check-viewports.mjs` fails if the frame stops fitting.
  */
 function Spine({ progress }: { progress: MotionValue<number> }) {
   return (
@@ -370,17 +342,13 @@ function Spine({ progress }: { progress: MotionValue<number> }) {
  *
  * §1's prompt card, which in the reference "fades and scales in at the left,
  * carrying a sentence of user intent". Ours carries the only intent this product
- * takes: an arXiv identifier. `1810.04805` is BERT, and it is in the committed
- * corpus, so the card is not illustrating with an invented paper.
+ * takes, an arXiv identifier. `1810.04805` is BERT and it is in the committed
+ * corpus, so the card illustrates with a real paper.
  *
- * It shares the band with the verdict and the copy rather than getting a box of
- * its own, and the three never overlap in time: the input arrives during the
- * draw, leaves as the verdict resolves, and the verdict leaves as the copy
- * lands. One 150px box, three occupants, and the frame never has to be tall
- * enough to hold more than one.
- *
- * The scale is 0.96 -> 1, which is §4's figure. It does not slide in from off
- * screen, which §4 rules out in the same sentence.
+ * It shares the 150px band with the verdict and the copy, and the three never
+ * overlap in time: the input arrives during the draw, leaves as the verdict
+ * resolves, and the verdict leaves as the copy lands. The scale is 0.96 -> 1,
+ * which is §4's figure, and nothing slides in from off screen.
  */
 function Prompt() {
   return (
@@ -412,12 +380,10 @@ function ScrubbedPrompt({ progress }: { progress: MotionValue<number> }) {
 /**
  * What the pipeline produces at the end of the spine: one verdict, resolving out of blur.
  *
- * The halo, and the whole of it. This carried the white ring on its own for a
- * while, which is half of `--site-shadow-halo` — the half that separates the pill
- * from the spine it is sitting over, without the drop that puts it in front of it.
- * A ring with no drop reads as a gap in the page rather than an object above it,
- * and this is the one element in the hero that has to read as the thing produced
- * rather than as part of the diagram producing it.
+ * The whole halo, ring and drop. The ring separates the pill from the spine it
+ * sits over; without the drop it reads as a gap in the page rather than an
+ * object above it, and this is the one element in the hero that has to read as
+ * the thing produced rather than as part of the diagram producing it.
  */
 function Result() {
   return (
@@ -441,7 +407,7 @@ function Result() {
  * The pinned branch's arrival for it, carrying the blur.
  *
  * §4 of the teardown spends blur exactly once, on the one element that matters,
- * and this is that element in both branches — the flow hero passes `blur` to its
+ * and this is that element in both branches. The flow hero passes `blur` to its
  * `Rise` for the same reason, and nothing else on the page has it.
  */
 function ScrubbedResult({ progress }: { progress: MotionValue<number> }) {
@@ -455,40 +421,29 @@ function ScrubbedResult({ progress }: { progress: MotionValue<number> }) {
 /**
  * The hero where it cannot pin: the same sequence, run down the screen.
  *
- * **Why this is not the pinned hero with the pin removed.** A pinned frame is
- * one viewport tall and holds still while its contents advance, which is what
- * buys the pinned branch the right to open on a diagram and arrive at the copy
- * 80% of the way through — the reader cannot leave until it has finished. Take
- * the pin away and that ordering becomes a landing page whose first screen is an
- * unexplained line with five words on it, and whose claim is three hundred
- * pixels below the fold. So the order inverts: **the claim is still, and the
- * demonstration is what scrolls.**
+ * **The order inverts.** A pinned frame holds still while its contents advance,
+ * which is what buys the pinned branch the right to open on a diagram and arrive
+ * at the copy 80% of the way through, since the reader cannot leave until it has
+ * finished. Take the pin away and that ordering becomes a landing page whose
+ * first screen is an unexplained line with five words on it and whose claim is
+ * three hundred pixels below the fold. So here the claim is still and the
+ * demonstration is what scrolls.
  *
- * That is the same trade the pinned branch's own comment already makes about the
- * headline — "a landing page whose first claim is only legible after you scroll
- * is a worse page than a still one" — applied to the whole sequence rather than
- * to one element.
+ * **The spine is vertical.** The width term in `usePinnable` is about the five
+ * stage labels needing room to sit side by side. At 390px they do not have it,
+ * and no type size rescues five words across 342 pixels. Turned through ninety
+ * degrees the spine runs the same way the reader's thumb already is.
+ * `SpineList` in `motion/mobile.tsx` owns the mechanic.
  *
- * **Why the spine is vertical.** The width term in `usePinnable` is not about
- * height at all: it is that five stage labels laid across the frame need the
- * room to sit side by side. At 390px they do not have it, and no type size
- * rescues five words across 342 pixels. Turned through ninety degrees the spine
- * stops competing for width and starts running the same way the reader's thumb
- * already is, which is the one arrangement a horizontal spine on a phone can
- * never manage. `SpineList` in `motion/mobile.tsx` owns the mechanic.
+ * The three elements the pin shares between one 150px band are not sharing
+ * anything here. With no height budget to meet, the identifier sits at the head
+ * of the pipeline where it is the input and the verdict sits at the foot where
+ * it is the output, both on screen at once by the end.
  *
- * The three elements the pin shares between one 150px band — the submitted
- * identifier, the verdict, the copy — are not sharing anything here. There is no
- * height budget to meet, so the identifier sits at the head of the pipeline
- * where it is the input, and the verdict sits at the foot where it is the
- * output, and both are on screen at once by the end. The pin could not afford
- * that and it is the better arrangement.
- *
- * Everything below the fold is scrubbed against its own travel rather than
- * tweened on arrival, so it runs backwards, stalls when the reader stalls, and
- * compresses under a flick. The four elements above the fold are `Reveal`,
- * because an element that is already on screen when the page loads has no scroll
- * position to be driven by.
+ * Everything below the fold is scrubbed against its own travel, so it runs
+ * backwards, stalls when the reader stalls, and compresses under a flick. The
+ * four elements above the fold are `Reveal`, because an element already on
+ * screen when the page loads has no scroll position to be driven by.
  */
 function FlowHero() {
   return (
@@ -558,7 +513,7 @@ function FlowHero() {
  * behind, on one line.
  *
  * Set as a ledger rather than as a centred pair, because that is what the two
- * strings are — a stage and its artifact — and a phone has exactly enough width
+ * strings are, a stage and its artifact, and a phone has exactly enough width
  * for the relationship to be legible if it is stated as one. The artifact still
  * trails its stage, on the same offset every stage uses, so the five pairs read
  * as one gesture repeated.
@@ -634,9 +589,9 @@ function PinnedHero() {
                 frame never has to be tall enough to hold more than one, which is
                 what keeps this at 150 rather than at the sum of three.
 
-                150, down from 190: the measured contents are 138 — a 44px verdict
-                pill, or a two-line subhead plus a 12px gap plus a 56px control
-                tray, plus 16 of `pt-4` — so 190 was carrying 52px of nothing at
+                150 rather than 190: the measured contents are 138, which is a 44px
+                verdict pill, or a two-line subhead plus a 12px gap plus a 56px
+                control tray, plus 16 of `pt-4`. 190 carried 52px of nothing at
                 the exact point in the budget that decides whether this pins. */}
             <div className="relative h-[150px] w-full">
               <div className="absolute inset-0 flex items-start justify-center pt-4">
@@ -685,7 +640,7 @@ function PinnedHero() {
 export function Hero() {
   // The gate, not `motion`'s `useReducedMotion`. This picks between two
   // structurally different trees, and `motion`'s hook reads `false` on the
-  // server and the truth on a reduced-motion reader's first client render —
+  // server and the truth on a reduced-motion reader's first client render,
   // the hazard `motion/scrub.tsx` documents at length. It was survivable here
   // only because `usePinnable` also starts `false`, which is a coincidence of
   // initial state rather than a reason.

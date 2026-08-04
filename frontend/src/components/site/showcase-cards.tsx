@@ -18,56 +18,35 @@ import type { Verdict } from "@/types/run-report";
  * every figure here arrives as a prop; nothing about a paper or a table is
  * decided in this file.
  *
- * ---
- *
- * **The row, and why it is a row on a phone too.**
- *
- * The template's cards were a grid at desktop and the thing worth keeping from
- * them was that they read as a *set* — four objects of one kind, side by side,
- * differing only in content. Stacking them into four full-width cards at 390px
- * keeps the content and loses the argument: a reader scrolling past four tall
- * cards one at a time never sees that the four tables are different shapes,
- * which is the only reason the row is here.
- *
- * So below `two:` it is a horizontally scrolled row with snap points, at 78vw a
+ * **Why it is a row on a phone too.** The four cards read as a set, four objects
+ * of one kind differing only in content. Stacked into four full-width cards at
+ * 390px they keep the content and lose the argument, because a reader passing
+ * them one at a time never sees that the four tables are different shapes. So
+ * below `two:` it is a horizontally scrolled row with snap points at 78vw a
  * card, and above it a two-up and then a four-up grid. The row is a real scroll
  * container with `tabIndex` and a label, so it is reachable from the keyboard
- * rather than being a gesture-only region.
- *
- * ---
+ * and not a gesture-only region, and `overscroll-x-contain` stops a flick at the
+ * end of it turning into a browser back-navigation.
  *
  * **The motion.** Each card measures its own track and takes the surface budget
  * out of it, which is `Rise`'s whole job: progress 0 is the frame that card's
  * own top edge reaches the fold, at every viewport and every card height, and
  * the window is `0.55 H` of scrolling from there. Nothing here is a fraction of
- * a section, so nothing here can be right at 1536 and wrong at 390 — which is
- * the failure `motion/mobile.tsx` was written after, and this row's four windows
- * used to be four such fractions.
+ * a section, so nothing here can be right at 1536 and wrong at 390.
  *
- * The stagger survives it. `lead` shifts a card's window along its *own* travel,
- * so the four still arrive left to right by a fixed distance of scrolling rather
- * than by four delays in milliseconds. Above `two:` the second row of the grid
- * also sits lower on the page, so it arrives later for free, and the lead only
- * separates the pair beside each other.
- *
- * The hairline above them draws left to right on the same principle, and it is
- * the section's own idea rather than an import: a dark field with a header
- * ranged left wants a rule across it, and a rule on this page is drawn rather
- * than placed (`DrawLine`, the hero's spine, the process connector, the
- * apparatus rule).
+ * `lead` shifts a card's window along its own travel, so the four arrive left to
+ * right by a fixed distance of scrolling rather than by four delays in
+ * milliseconds. Above `two:` the second row of the grid sits lower on the page
+ * and arrives later for free, so the lead only separates the pair beside each
+ * other.
  *
  * Each card carries `lift`, so its shadow arrives with it and slightly behind
  * it: the surface reaches full opacity while its elevation is still coming in,
- * which is what makes it read as settling onto the page rather than as a picture
- * that happens to include a shadow. That requires `elevation="none"` on the
- * `Card` inside, because two shadows on one surface reads as fog — `ui.tsx` says
- * so and `scrub.tsx` says so, and this is the one prop pairing that is easy to
- * get wrong.
+ * which reads as settling onto the page. That requires `elevation="none"` on the
+ * `Card` inside, because two shadows on one surface reads as fog.
  *
  * Under `prefers-reduced-motion` every one of these renders resolved on the
  * first paint, including the lift layer, and no scroll subscription is read.
- * That is `Scrub`'s own behaviour and this file does nothing to help or hinder
- * it — which is the point of the primitive.
  */
 
 export type ShowcaseItem = {
@@ -169,7 +148,7 @@ function ShowcaseCard({ item }: { item: ShowcaseItem }) {
         <span className="mt-4 flex flex-1 flex-col gap-2 px-2 pb-2">
           {/* `site-mono` directly rather than `<Mono>`: that component takes no
               `style`, and `ui.tsx` belongs to another workstream. Same utility,
-              same face, same tabular figures — `hero.tsx` sets its own monospace
+              same face, same tabular figures, and `hero.tsx` sets its own monospace
               the same way. */}
           <span className="site-mono" style={{ fontSize: "12px", color: "var(--site-muted)" }}>
             {item.label}
@@ -208,7 +187,7 @@ function ShowcaseCard({ item }: { item: ShowcaseItem }) {
  * wanted here and is the reason nothing on this page pins inside it.
  */
 const ROW =
-  "mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 " +
+  "mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain pb-3 " +
   "two:mt-10 two:grid two:grid-cols-2 two:gap-6 two:overflow-visible two:pb-0 three:grid-cols-4";
 
 /** One card's slot in the row, at both layouts. */

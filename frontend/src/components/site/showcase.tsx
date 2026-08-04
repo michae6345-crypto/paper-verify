@@ -9,49 +9,26 @@ import type { Table } from "@/types/run-report";
 /**
  * Four real tables, drawn as the parser sees them.
  *
- * The Framer template this page came from carried a row of image cards partway
- * down, and they were the best-looking thing on it. What they held was stock
- * product photography, which is exactly the kind of content this product cannot
- * ship: a decorative image of work nobody did, on the marketing page of a tool
- * whose entire claim is that it publishes nothing it cannot support. The row is
- * worth keeping. The photographs are not.
- *
- * So the cards hold the only imagery this site is entitled to — its own output.
- * Each plate is one real table from `fixtures/papers/`, drawn from the parsed
- * structure in the committed run report: one mark per cell, a rule wherever the
- * block index changes, the genuinely bold cells in ink, the spacer column drawn
- * as the gap it is, and nothing at all where a cell is empty, because an empty
- * cell means "not reported" and never zero.
- *
- * That turns "some nice image cards" into "the thing the product actually
- * produces", which is both honest and a better argument than a photograph would
- * have been. A reader who looks at four of these has seen four papers' tables
- * disagree in shape, which is the whole reason the parser is hard.
- *
- * ---
+ * The cards hold the only imagery this site is entitled to, which is its own
+ * output. Each plate is one real table from `fixtures/papers/`, drawn from the
+ * parsed structure in the committed run report: one mark per cell, a rule
+ * wherever the block index changes, the genuinely bold cells in ink, the spacer
+ * column drawn as the gap it is, and nothing at all where a cell is empty,
+ * because an empty cell means "not reported" and never zero. A reader who looks
+ * at four of these has seen four papers' tables disagree in shape, which is the
+ * whole reason the parser is hard.
  *
  * **This file is the server half.** It reads the committed reports off disk,
  * derives every figure on every card, and hands plain objects to
  * `showcase-cards.tsx`, which owns the motion and can therefore be a client
- * component. That split is `checks.tsx` / `checks-grid.tsx`'s, and
- * `apparatus.tsx` / `apparatus-panels.tsx`'s, and it is the reason nothing in
- * the client file decides anything about a paper.
+ * component. Not one number below is typed: the corpus totals come from
+ * `corpus.ts` and the per-card figures are counted out of the report's own
+ * parsed cells at build time.
  *
- * Not one number below is typed. The corpus totals come from `corpus.ts`, which
- * exists so that a checker change moves this page with it. The per-card figures
- * are counted out of the report's own parsed cells, here, at build time. A
- * `104 cells` written into JSX would be a claim with no provenance and it would
- * go stale silently, which is the failure `measured.tsx` was built to avoid.
- *
- * ---
- *
- * **Which four tables, and why these.**
- *
- * One per paper, chosen for a different structural story each time rather than
- * by a rule. A rule was tried first and does not work: "most cells" picks CLIP's
+ * **Which four tables.** One per paper, each chosen for a different structural
+ * story. A rule was tried first and does not work: "most cells" picks CLIP's
  * 2,010-cell linear-probe table, whose plate is a grey mist at card size, and
- * "most bold" picks the same table the hero windows already carry. The choice of
- * *which* real table to show is editorial. Every mark drawn inside it is not.
+ * "most bold" picks the same table the hero windows already carry.
  *
  *   tab:arch          ResNet, eight rule-delimited blocks, and the only table
  *                     here carrying real parse warnings: two of its rows cover
@@ -60,62 +37,44 @@ import type { Table } from "@/types/run-report";
  *                     about. Four blocks, four bold cells across two of them,
  *                     and the empty spacer column at index 3 that makes column
  *                     index and cell index part company.
- *   tab:squad_results BERT's, four blocks and eight bold cells, with the bold
- *                     concentrated in the last block rather than spread.
+ *   tab:squad_results BERT's, four blocks and eight bold cells, the bold
+ *                     concentrated in the last block.
  *   table:retrieval   CLIP's, thirteen bold cells across fourteen columns. The
  *                     widest table in the corpus that still reads at card size.
  *
- * ---
+ * `tab:glue_official` is deliberately not among them. It carries the corpus's
+ * one real finding and `apparatus.tsx` already builds the page's signature
+ * scroll moment out of it, so a third appearance would read as the corpus
+ * having one table in it.
  *
- * **Why this section is the dark one.** The page runs light for four sections
- * and then light for four more, and a reader scrolling through them stops seeing
- * the section boundary at all. This is the one section whose content asks for
- * the inversion rather than merely tolerating it: four white plates on a near
- * black field are a gallery wall, and the plates are the only images the site
- * has. On the page field they were four white cards on grey, which is the same
- * object every other section already puts there.
- *
- * `--site-deep` rather than `--field-deep`, because #0d0d0d is the apparatus's
- * instrument panel and that colour is doing a specific job two sections later.
- * A second near-black would make the two read as the same surface.
- *
- * The header is ranged left with the corpus line beside it, which is
- * `MOTION_TEARDOWN.md` §5's density pattern and the arrangement `apparatus.tsx`
- * uses inside its pin. `process.tsx` immediately above keeps the centred header,
- * so the two sections differ in field, in alignment and in what they hold.
- *
- * ---
- *
- * `tab:glue_official` is deliberately not among them. It is BERT's GLUE table,
- * it carries the corpus's one real finding, and `apparatus.tsx` already builds
- * the page's signature scroll moment out of it. A third appearance would read as
- * the corpus having one table in it.
+ * **Why this section is the dark one.** Four white plates on a near black field
+ * are a gallery wall, and the plates are the only images the site has. On the
+ * page field they were four white cards on grey, which is the object every other
+ * section already puts there. `--site-deep` and not `--field-deep`, because
+ * #0d0d0d is the apparatus's instrument panel two sections later and a second
+ * near-black would make the two read as the same surface.
  *
  * Regenerate the plates from the repo root:
  *
  *     python fixtures/make_plates.py
  *
  * The plates and this file share a table label, and `plateFor` throws at build
- * time if a label stops resolving — so a plate that goes stale fails the build
- * rather than shipping a picture of a table that is no longer there.
+ * time if a label stops resolving, so a stale plate fails the build instead of
+ * shipping a picture of a table that is no longer there.
  */
 
 /**
  * The four, as identifiers only. Everything else about them is read.
  *
  * `note` is the one editorial line per card: what this particular table does to
- * a parser. It names structure, never a verdict — none of these four cards makes
- * a claim about whether a paper is right, and the vocabulary is kept clear of
- * `matches`, `within tolerance`, `diverges` and `unverifiable` for that reason.
- * The verdict strip underneath is where the run's own answers go.
+ * a parser. It names structure and never a verdict, so the vocabulary is kept
+ * clear of `matches`, `within tolerance`, `diverges` and `unverifiable`. The
+ * verdict strip underneath is where the run's own answers go.
  *
- * Each note is prose and so cannot be derived, which makes it the one thing on
- * this card that could be wrong while everything around it is right. Two of the
- * four were wrong when first written — `table:retrieval`'s bold sits in two of
- * its three blocks rather than all three, and `tab:wmt-results`'s spacer column
- * is a column and therefore not "between" two blocks, which are row groups.
- * Both were caught by checking rather than by reading. Check them again after
- * any change here, from the repo root:
+ * Each note is prose and cannot be derived, which makes it the one thing on this
+ * card that could be wrong while everything around it is right. Two of the four
+ * were wrong when first written, and both were caught by running this rather
+ * than by reading. Run it again after any change here, from the repo root:
  *
  *     python - <<'PY'
  *     import json
@@ -163,9 +122,9 @@ const CHOSEN = [
 /**
  * The chosen table out of a report, or a build failure.
  *
- * Throwing is deliberate. If a label stops resolving — the fixture is
- * regenerated, a table is relabelled, `is_nested` starts catching one — the
- * alternative to throwing is a card whose plate shows one table and whose
+ * Throwing is deliberate. If a label stops resolving, because the fixture was
+ * regenerated or a table was relabelled or `is_nested` started catching one,
+ * the alternative to throwing is a card whose plate shows one table and whose
  * figures count another. That is precisely `CLAUDE.md`'s recurring bug: a lossy
  * read that silently produces a confident statement. A build that stops is the
  * cheap failure.

@@ -16,37 +16,22 @@ import type { Verdict } from "@/types/run-report";
  * run reports off disk and so cannot be a client component. Every string here
  * arrives as a prop; nothing about a check is decided in this file.
  *
- * **Three cards, and the layout is no longer a grid of equals.** It was a 2x2 of
- * four cards under the heading "four checks, in two families", and both halves
- * of that were wrong. The taxonomy was a shape imposed on the work rather than
- * read off it, and two of the four cards asked the same question: `dead_links`
- * requests every URL the paper prints, `citation_existence` looks up every
- * reference, and both of them are "does the thing this paper points at exist".
- * They are one card now, naming both checkers so a reader who meets either in a
- * report still recognises it.
- *
- * With three, the arrangement can say something a 2x2 could not. The card
- * carrying the finding takes the full-height right column and the other two
- * stack beside it, so the one concrete result on the page is the tallest object
- * in the section rather than one quarter of a square. Document order is
- * unchanged: the placement classes are `three:` only, and below that breakpoint
- * the three go on a rail in the order they are given.
+ * The card carrying the finding takes the full-height right column and the other
+ * two stack beside it, so the one concrete result on the page is the tallest
+ * object in the section. Document order is unchanged: the placement classes are
+ * `three:` only, and below that breakpoint the three go on a rail in the order
+ * they are given.
  *
  * The motion: one progress track spans the whole grid, and each card maps its
  * own window of it. Windows rather than delays, so a reader who flicks through
- * gets the whole sequence compressed instead of three animations queued behind a
- * scroll that has already finished.
+ * gets the sequence compressed instead of three animations queued behind a
+ * scroll that has already finished. The evidence card gets the most of it.
+ * `71.0` claimed against `70.944` computed is the only concrete result on this
+ * page, and six figures landing one after another leaves the reader having read
+ * each line instead of having watched a block of monospace appear.
  *
- * The evidence card gets the most of it. `71.0` claimed against `70.944`
- * computed is the only concrete result on this page, and six figures landing one
- * after another as the reader descends is worth more than a panel fading in
- * whole: the reader ends up having read each line rather than having seen a
- * block of monospace appear.
- *
- * Below `WIDE` the cards go on a rail. Stacked they were 1,500px of column, one
- * card to a screen, which is the wrong shape for a set a reader is meant to see
- * the extent of. On the rail it is one gesture, the whole group, the next card
- * visible at the edge.
+ * Below `WIDE` the cards go on a rail: stacked they were 1,500px of column, one
+ * card to a screen, for a set the reader is meant to see the extent of.
  *
  * Nothing here is pinned. Three cards at this size exceed a 640px viewport at
  * every breakpoint, and a pinned section taller than the screen puts its own
@@ -134,14 +119,8 @@ const ROW_SPAN = 0.28;
 const ROW_STEP = 0.03;
 
 /**
- * One of the three.
- *
- * Opaque, and carrying the elevation tokens. These were `rgba(255,255,255,0.5)`
- * and no shadow, which is a card that is neither on the page nor off it: half
- * the field showing through it, and no elevation to say which side of the field
- * it is on. A translucent pane cannot be lifted convincingly either, because a
- * shadow under something you can see through is a contradiction the eye resolves
- * as dirt.
+ * One of the three. Opaque, because a shadow under something you can see through
+ * is a contradiction the eye resolves as dirt.
  *
  * The one that quotes a real finding stands off the page and the other two rest.
  * Which token a card gets is decided by the presence of evidence, one level up,
@@ -322,14 +301,11 @@ function RailEvidence({ evidence }: { evidence: Evidence }) {
 /**
  * The paragraph under the grid, measured against itself.
  *
- * It used to hold a window in the grid's travel, which put it past 0.48 of a
- * track it is not on: the note sits below the grid, so a fraction of the grid's
- * progress describes where the grid is, not where the note is. `Rise` gives it
- * its own track, starting when the note reaches the fold and ending when it
- * leaves the top, whatever is above it, so nothing has to be right twice for the
- * grid layout and for the rail. The rule worth taking from it: an element whose
- * place in its section changes with the layout should be measured against
- * itself.
+ * The note sits below the grid, so a fraction of the grid's progress describes
+ * where the grid is and not where the note is. `Rise` gives it its own track,
+ * opening when the note reaches the fold and closing when it leaves the top,
+ * whatever is above it, so nothing has to be right twice for the grid layout and
+ * for the rail.
  */
 function ClosingNote({ children }: { children: ReactNode }) {
   return (

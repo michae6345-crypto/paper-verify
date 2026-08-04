@@ -19,67 +19,47 @@ import { cn } from "@/lib/utils";
  * How a run proceeds.
  *
  * The five names are `RunStage` in `backend/pv/orchestrator.py`, and they are
- * the five a run actually passes through. The enum holds five more — `queued`,
- * `awaiting_artifact`, `planning`, and the three terminal states — which are
- * either a state a run waits in or the state it ends in, not a stage it moves
- * through. Listing those here would be padding.
+ * the five a run passes through. The enum holds five more, which are either a
+ * state a run waits in or the state it ends in.
  *
  * The reference scatters the cards vertically by 62 / 0 / 64 / 12 / 48px, and
  * that is kept: a straight row of five equal cards reads as a table of contents,
  * and this is meant to read as a sequence. The scatter is on the `three:`
- * breakpoint only, because below it the cards stack and an offset would just be
- * five cards at five wrong heights.
+ * breakpoint only, because below it the cards stack.
  *
- * The scatter is also where the depth comes from. Five cards at one elevation are
- * five planes at five heights, which is jitter; the offset has to mean something
- * or it is noise. So elevation agrees with it: a card the scatter pushes down the
- * frame sits nearer the reader by the ground-plane convention every flat layout
+ * Elevation agrees with the scatter. A card the scatter pushes down the frame
+ * sits nearer the reader by the ground-plane convention every flat layout
  * borrows from, and takes `--site-shadow-card`, while the two the scatter holds
- * up take the lighter `--site-shadow-raised`. Vertical offset and shadow weight
- * then describe the same thing instead of contradicting each other.
- *
- * Both come off at the same breakpoint, and that is why the shadow is a class here
- * rather than the `elevation` prop: a prop cannot hold a breakpoint. Below `three:`
- * every card is at `mt-0` and every card rests, because there is no scatter left
- * for the elevation to agree with. `elevation="none"` on the `Card` is what keeps
- * this to one shadow — the prop writes an inline `box-shadow`, which no class can
- * override, so the two mechanisms cannot both be live at once.
+ * up take the lighter `--site-shadow-raised`. Both come off at the same
+ * breakpoint, which is why the shadow is a class here and not the `elevation`
+ * prop: a prop cannot hold a breakpoint. `elevation="none"` on the `Card` keeps
+ * this to one shadow, since the prop writes an inline `box-shadow` that no class
+ * can override.
  *
  * ---
  *
  * A sequence should arrive in sequence. Above `three:` the five sit side by side
  * with nothing to say in what order they are read, so a rule draws left to right
- * above them and each card comes up as the rule reaches its node — the stagger is
+ * above them and each card comes up as the rule reaches its node. The stagger is
  * a consequence of the draw, expressed as overlapping windows in the row's own
- * scroll progress rather than as five delays in milliseconds. A reader who flicks
- * past gets the whole row; one who scrolls slowly gets five stages in order.
+ * scroll progress. Below `three:` the same rule runs downward past a node on
+ * each card, which is the direction a phone is already moving in.
  *
- * Below `three:` the same rule runs the other way. It used to be five stacked
- * cards fading in on a timeline, which is the arrangement in which the sequence
- * is carried by nothing at all — the scatter and the elevation that make the row
- * read as an order are both off at that width by design, and a fade tells the
- * reader nothing about what follows what. `SpineStages` turns the rule through
- * ninety degrees instead, so it draws downward past a node on each card, which is
- * the direction a phone is already moving in.
- *
- * Three branches, then, and the two questions are asked separately: width picks
- * the layout, and the motion preference picks whether it arrives. A wide viewport
+ * Three branches, and the two questions are asked separately: width picks the
+ * layout, and the motion preference picks whether it arrives. A wide viewport
  * with `prefers-reduced-motion` gets `StackedList`, which is the row resolved.
  */
 
 /**
- * `stagger` is how far down the frame the scatter puts a card, and `elevation` is
- * the shadow that agrees with it. The two are written next to each other so they
- * cannot drift: change one offset to zero and its elevation should go back to
- * resting in the same edit.
+ * `stagger` is how far down the frame the scatter puts a card, and `elevation`
+ * is the shadow that agrees with it. The two are written next to each other so
+ * they cannot drift.
  *
- * `lift` is the same shadow again, as a scrubbed layer rather than a class, and
- * it exists because the two are needed in different branches. `ScrubbedRow` only
- * ever renders above `three:`, so inside it the breakpoint is already satisfied
- * and the shadow can arrive with the card instead of being painted on from the
- * first frame. `StackedList` is the branch that still needs the class, because
- * it is also what a wide viewport with `prefers-reduced-motion` renders, and
- * there the scatter is present and nothing animates.
+ * `lift` is the same shadow again, as a scrubbed layer rather than a class,
+ * because the two are needed in different branches. `ScrubbedRow` only renders
+ * above `three:`, so the shadow can arrive with the card. `StackedList` needs
+ * the class, because it is also what a wide viewport with reduced motion gets,
+ * and there nothing animates.
  */
 const STAGES: {
   name: string;
@@ -128,20 +108,13 @@ const STAGES: {
 /**
  * The rule draws across this slice of the row's travel; the cards follow it.
  *
- * The row's track is 504px tall, so travel at a 720px viewport is 1224px and the
- * old 0.18 → 0.42 draw was 294px of scrolling for the whole spine. It is 343px
- * now, and it starts later rather than earlier, which is the opposite of what
- * the rest of this directory needed.
- *
- * The reason is the scatter. Stage 1 carries the largest offset, `mt-[62px]`, so
- * it is the lowest card on the screen, and it also has to be the first to
- * arrive. Those two pull against each other and no choice of numbers satisfies
- * both: a window that closes early enough to lead the other four necessarily
- * closes while its own card is still low. 0.08 is where that trade was measured
- * out rather than argued — at 0, stage 1 was 68% resolved before its centre had
- * cleared the fold; here it is 41%, and the four behind it are all under 10%.
- * The alternative was to flatten the scatter, and the scatter is the reference's
- * and is doing a different job.
+ * The draw starts late because of the scatter. Stage 1 carries the largest
+ * offset, `mt-[62px]`, so it is the lowest card on the screen and it also has to
+ * be the first to arrive. No choice of numbers satisfies both: a window that
+ * closes early enough to lead the other four necessarily closes while its own
+ * card is still low. 0.08 is where that trade was measured out. At 0, stage 1
+ * was 68% resolved before its centre had cleared the fold; here it is 41%, and
+ * the four behind it are all under 10%.
  */
 const DRAW_FROM = 0.08;
 const DRAW_TO = 0.36;
@@ -149,9 +122,9 @@ const DRAW_TO = 0.36;
 /**
  * How long a card takes once the rule has reached it, and how long a node takes.
  *
- * 0.32 of 1224px is 392px of scrolling, against 220px before. The node is short
- * on purpose: a 6px dot fading over 400px is not a dot lighting up, it is a dot
- * that was always there. It should read as the line arriving at something.
+ * The node is short on purpose: a 6px dot fading over 400px is not a dot lighting
+ * up, it is a dot that was always there. It should read as the line arriving at
+ * something.
  */
 const CARD_SPAN = 0.32;
 const NODE_SPAN = 0.05;
@@ -159,26 +132,23 @@ const NODE_SPAN = 0.05;
 /**
  * How far behind its own card the stage's name and description arrive.
  *
- * The card is a surface and the words on it are content, and until now they were
- * one object: a numeral, a name and a sentence all reaching full opacity on the
- * same frame as the panel under them. Splitting them by 0.03 of the row's travel
- * — about 37px of scrolling — is the difference between a picture of a card that
- * has writing on it and a card that arrives and is then written on.
- *
- * Small on purpose. §4 of the teardown puts items within a group close enough to
- * read as one gesture, and this is a group of two.
+ * The card is a surface and the words on it are content. Splitting them by 0.03
+ * of the row's travel, about 37px of scrolling, is the difference between a
+ * picture of a card that has writing on it and a card that arrives and is then
+ * written on. Small on purpose: §4 of the teardown puts items within a group
+ * close enough to read as one gesture, and this is a group of two.
  */
 const TEXT_LEAD = 0.03;
 
 /**
  * Where the rule reaches stage `i`. Every other window here is derived from it.
  *
- * This is the one section whose stagger is *not* geometric. Everywhere else on
+ * This is the one section whose stagger is not geometric. Everywhere else on
  * this page an element's window comes from where it sits, and the reading order
  * falls out of the layout for free. Here the scatter deliberately puts stage 1
  * lower on the screen than stage 2, so geometry would deliver the five cards in
  * the order 2, 4, 5, 1, 3. The sequence is the entire content of this section,
- * so the draw orders them instead and the scatter is left to do its other job.
+ * so the draw orders them and the scatter is left to do its other job.
  */
 function stageArrival(i: number): number {
   return DRAW_FROM + (DRAW_TO - DRAW_FROM) * ((i + 0.5) / STAGES.length);
@@ -212,6 +182,14 @@ function useRowLayout(enabled: boolean) {
   return row;
 }
 
+/**
+ * One stage of the row.
+ *
+ * `three:min-h-[320px]` is what holds the five to a common height. Measured
+ * content at 1440 is about 313px: 64 of padding, a 90px numeral, the 40px gap,
+ * and three lines of description under a name. The floor was 454, which put 134
+ * pixels of empty card under every stage and a screen of nothing into the page.
+ */
 function StageCard({
   stage,
   index,
@@ -245,7 +223,7 @@ function StageCard({
     <Card
       elevation="none"
       className={cn(
-        "flex h-full flex-col justify-between gap-10 p-8 three:min-h-[454px]",
+        "flex h-full flex-col justify-between gap-8 p-8 three:min-h-[320px]",
         !lifted && "site-resting",
         !lifted && stage.elevation,
       )}
@@ -387,26 +365,16 @@ function StackedList() {
 /**
  * The narrow branch: the same five stages on a spine that draws downward.
  *
- * What this replaces is five cards the height of the desktop's, stacked, each
- * one fading in on a timeline as it arrived — 2,400px of scrolling through a
- * sequence whose whole content is that it is a sequence, with nothing on screen
- * connecting one card to the next. The scatter and the elevation that make the
- * desktop row read as an order are both off at this width by design, so the
- * order was carried by nothing at all.
+ * `ScrubbedRow` draws a rule left to right and lights a node over each card as
+ * it reaches it. This is that, rotated, which is the arrangement that fits the
+ * direction a phone scrolls. `SpineList` in `motion/mobile.tsx` owns the
+ * mechanic; what is here is the card.
  *
- * The spine carries it instead, and it is the section's own idea rather than a
- * mobile pattern borrowed from somewhere: `ScrubbedRow` above already draws a
- * rule left to right and lights a node over each card as it reaches it. This is
- * that, rotated, which is the arrangement that fits the direction a phone
- * scrolls. `SpineList` in `motion/mobile.tsx` owns the mechanic; what is here is
- * the card.
- *
- * The card is also much shorter. `three:min-h-[454px]` and `justify-between`
- * exist to make five cards of unequal copy agree on a height in a row; stacked,
- * they produced a floating numeral, four hundred pixels of nothing, and a
- * centred caption at the bottom — a desktop card's internal layout applied to a
- * shape it was not for. Here the number, the stage and the description are one
- * block, read top to bottom.
+ * The card is much shorter than the row's. `three:min-h-[320px]` and
+ * `justify-between` exist to make five cards of unequal copy agree on a height
+ * in a row; stacked, that produces a floating numeral, a field of nothing, and a
+ * centred caption at the bottom. Here the number, the stage and the description
+ * are one block, read top to bottom.
  */
 function SpineStages() {
   return (
@@ -453,15 +421,12 @@ function SpineStages() {
 export function Process() {
   // The gate, not `motion`'s `useReducedMotion`. This picks between structurally
   // different trees, which is the case the module comment in `motion/scrub.tsx`
-  // describes at length: `useReducedMotion` reads null on the server and the
-  // truth on the client's first render, so the two disagree and React keeps the
-  // server's attributes on a node the client thinks it owns.
+  // describes at length.
   //
-  // The two questions are now asked separately, because they are separate. Width
-  // decides the *layout* — a row of five or a spine — and it is asked whatever
-  // the motion preference is, so a reduced-motion reader on a wide screen still
-  // gets the row rather than a phone's spine at 1440px. The preference then
-  // decides only whether that row arrives or is simply there.
+  // The two questions are asked separately, because they are separate. Width
+  // decides the layout, a row of five or a spine, and it is asked whatever the
+  // motion preference is, so a reduced-motion reader on a wide screen still gets
+  // the row. The preference then decides only whether that row arrives.
   const reduced = useReducedMotionGate();
   const row = useRowLayout(true);
 
