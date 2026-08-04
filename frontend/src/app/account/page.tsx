@@ -5,7 +5,7 @@ import { Measure, PageHead } from "@/components/auth/auth-shell";
 import { listReports } from "@/lib/reports";
 
 export const metadata: Metadata = {
-  title: "Account — residual",
+  title: "residual: your submissions",
   description: "Your submissions, their verification records, and the reports behind them.",
 };
 

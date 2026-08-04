@@ -238,8 +238,8 @@ export function Ledger({
       >
         {claimCount === 0 ? (
           <p className="px-4 py-6 t-body" style={{ color: "var(--chrome-dim)" }}>
-            No claims to list. Nothing in this paper matched a check that is running yet — the
-            paper pane still shows what the parser read.
+            No claims to list. Nothing in this paper has matched a running check yet. The paper
+            pane still shows what the parser read.
           </p>
         ) : (
           <div

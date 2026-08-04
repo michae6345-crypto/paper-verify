@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useReducedMotion } from "motion/react";
 
 import type { RunReport } from "@/types/run-report";
+import { useReducedMotionGate } from "@/components/site/motion/scrub";
 import { NavRail } from "@/components/shell/nav-rail";
 import { appFonts } from "@/components/shell/fonts";
 import { Gutter } from "@/components/shell/gutter";
@@ -41,7 +41,13 @@ export function ReportView({ report }: { report: RunReport }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const paneRef = useRef<HTMLDivElement | null>(null);
   const cancelScroll = useRef<(() => void) | null>(null);
-  const reduced = useReducedMotion() ?? false;
+  // `useReducedMotionGate`, never `useReducedMotion` from motion/react. This
+  // value reaches the sheet's inline `transition`, and `useReducedMotion` reads
+  // false on the server and the truth on the client's first render. React
+  // reconciles hydration on element type rather than on attributes, so the
+  // server's transition string would survive onto a node the client believes has
+  // none. The gate agrees with the server until a layout effect has run.
+  const reduced = useReducedMotionGate();
 
   const marks = useMemo(() => deriveMarks(report), [report]);
   const claims = useMemo(() => countClaims(report, marks), [report, marks]);

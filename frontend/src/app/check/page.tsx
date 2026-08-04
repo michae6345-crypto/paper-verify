@@ -128,8 +128,8 @@ export default function SubmitPage() {
                 them. §12: colour is never the only signal, and a glyph nobody
                 has been introduced to is not a signal at all. */}
             <p className="mt-4 t-body" style={{ color: "var(--paper-dim)" }}>
-              One mark per check, in a fixed order — the same marks the report
-              puts in the margin beside the paper.
+              One mark per check, in a fixed order. The report puts the same marks
+              in the margin beside the paper.
             </p>
           </section>
         </div>

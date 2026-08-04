@@ -35,8 +35,8 @@ export function NoAuthNotice() {
             lineHeight: 1.5,
           }}
         >
-          No authentication yet. Sessions are stored in this browser only, anyone can sign in as
-          anyone, and nothing here is private or protected.
+          No authentication yet. This browser holds the session, anyone can sign in as anyone, and
+          nothing here is protected.
         </p>
       </div>
     </div>

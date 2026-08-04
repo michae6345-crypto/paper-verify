@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 
 import type { RunReport } from "@/types/run-report";
+import { useReducedMotionGate } from "@/components/site/motion/scrub";
 import { useCheckStream } from "@/hooks/use-check-stream";
 import { recordedElapsedSeconds } from "@/lib/stream";
 import { NavRail } from "@/components/shell/nav-rail";
@@ -32,7 +33,10 @@ export function RunView({ report }: { report: RunReport }) {
   const [replayKey, setReplayKey] = useState(0);
   const [selectedChecker, setSelectedChecker] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const reduced = useReducedMotion();
+  // The gate, not `motion`'s `useReducedMotion`. See `motion/scrub.tsx`: the
+  // latter disagrees with the server on the first client render, and this value
+  // sets the sheet's initial offset.
+  const reduced = useReducedMotionGate();
 
   const { rows, progress, complete } = useCheckStream(report, replayKey);
 

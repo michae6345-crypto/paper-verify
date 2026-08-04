@@ -5,7 +5,7 @@ import { Measure, PageHead } from "@/components/auth/auth-shell";
 import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = {
-  title: "Sign in — residual",
+  title: "residual: sign in",
   description: "Create a session so submissions and verification records have somewhere to sit.",
 };
 

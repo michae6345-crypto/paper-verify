@@ -71,8 +71,12 @@ import { Container } from "@/components/site/ui";
  * `app/(site)/page.tsx` composes the sections and several of them are owned by
  * other people; an id listed here that no longer exists is a link that silently
  * does nothing. Four of four resolve at the time of writing.
+ *
+ * Exported because `site-footer.tsx` lists the same four. One list can be wrong
+ * once and get fixed once; two lists drift, and the drift is silent because a
+ * dead anchor throws nothing.
  */
-const SECTIONS = [
+export const SECTIONS = [
   { href: "#intro", label: "What it does" },
   { href: "#checks", label: "The checks" },
   { href: "#report", label: "The report" },
@@ -290,7 +294,12 @@ function Menu({ onNavigate }: { onNavigate: () => void }) {
       style={{ background: "var(--site-base)" }}
     >
       <Container>
-        <nav aria-label="Sections" className="flex flex-col py-3">
+        {/* `pb-10` rather than `py-3`. Four rows and the control come to about
+            330px, which fits a 390 x 844 phone with room over. A phone held
+            sideways has 390px of height and 310 of it under the bar, so the panel
+            scrolls, and without the bottom padding the control ends flush against
+            the edge of the screen with nothing under it to show it is the end. */}
+        <nav aria-label="Sections" className="flex flex-col pt-3 pb-10">
           {SECTIONS.map((item) => (
             <a key={item.href} href={item.href} onClick={onNavigate} className="border-t py-4" style={MENU_LINK}>
               {item.label}
@@ -300,7 +309,7 @@ function Menu({ onNavigate }: { onNavigate: () => void }) {
             href={CTA.href}
             prefetch={false}
             onClick={onNavigate}
-            className="mt-6 inline-flex h-14 items-center justify-center two:hidden"
+            className="mt-6 inline-flex h-14 w-full items-center justify-center two:hidden"
             style={{
               background: "var(--site-ink)",
               borderRadius: "var(--site-radius-pill)",
@@ -377,7 +386,7 @@ function AnimatedMenu({ onNavigate }: { onNavigate: () => void }) {
       <Container>
         <motion.nav
           aria-label="Sections"
-          className="flex flex-col py-3"
+          className="flex flex-col pt-3 pb-10"
           variants={MENU_LIST}
           initial="hidden"
           animate="shown"

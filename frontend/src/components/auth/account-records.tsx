@@ -88,7 +88,8 @@ export function AccountRecords({ titles }: { titles: Record<string, string> }) {
           {session.email}
         </p>
         <p className="site-body mt-3 max-w-[62ch]">
-          Asserted, not verified. Since {formatDate(session.signedInAt)}, in this browser only.
+          Typed in here and never checked. Since {formatDate(session.signedInAt)}, in this browser
+          only.
         </p>
       </Panel>
 
@@ -151,15 +152,15 @@ export function AccountRecords({ titles }: { titles: Record<string, string> }) {
         <ul className="mt-4 flex flex-col gap-3">
           <li className="site-body max-w-[62ch]">
             It names one submission: the paper, the repository, and how the submitter says the work
-            runs. Send it to the conference alongside those two things.
+            runs. Send it to the conference with the paper and the repository.
           </li>
           <li className="site-body max-w-[62ch]">
-            It is issued in this browser. No server has seen it, no endpoint resolves it, and a
-            conference cannot check one against residual today. Clearing site data deletes it.
+            It is issued in this browser. No server has seen it, so a conference cannot check one
+            against residual today. Clearing site data deletes it.
           </li>
           <li className="site-body max-w-[62ch]">
-            It carries no judgement about the paper. Where a report exists, the report is the
-            finding, and it reports matches, divergences and the checks residual could not make.
+            It carries no judgement about the paper. Where a report exists, that report holds the
+            findings, including the checks residual could not make.
           </li>
         </ul>
       </Panel>
@@ -234,7 +235,8 @@ function RecordCard({
             </span>
           ) : (
             <span style={{ color: "var(--site-muted)" }}>
-              None. Uploads are recorded, not read. Submit the arXiv ID to have the checks run.
+              None. residual records an upload without reading it. Submit the arXiv ID to have the
+              checks run.
             </span>
           )}
         </Row>

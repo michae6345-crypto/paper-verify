@@ -495,9 +495,12 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Motion — §6. Reduced motion collapses everything to opacity-only or nothing.
-   Framer Motion components read the same preference via useReducedMotion(); this
-   block covers the CSS transitions.
+   Motion. §6. Reduced motion collapses everything to opacity-only or nothing.
+   The React components read the same preference through `useReducedMotionGate`
+   in `components/site/motion/scrub.tsx`, never through `useReducedMotion` from
+   `motion/react`; that module's header records why the distinction is load
+   bearing. This block covers the CSS transitions, and the `[data-scrub]` rules
+   below cover the reader whose JavaScript never arrives.
    --------------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {

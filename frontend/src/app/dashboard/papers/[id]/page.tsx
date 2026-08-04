@@ -144,8 +144,9 @@ export default async function PaperScreen({ params }: { params: Promise<{ id: st
               })}
             </RowList>
             <p className="t-body max-w-[76ch]" style={{ color: "var(--chrome-faint)" }}>
-              This is an absence, not a verdict. The corpus was produced without network access, so
-              the two checkers that reach outside the paper have no result to record here.
+              No verdict was recorded here, and none is implied. The corpus was produced without
+              network access, so the two checkers that reach outside the paper have nothing to
+              record.
             </p>
           </div>
         </Panel>

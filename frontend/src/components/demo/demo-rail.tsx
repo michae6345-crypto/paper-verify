@@ -10,8 +10,8 @@ import { Card, Tag } from "@/components/site/ui";
  * The column the form is answered against.
  *
  * It holds what a demo actually is, which is the thing a request form usually
- * leaves the reader to guess. Three lines, and the last of them is the sentence
- * this whole product is built to be able to say.
+ * leaves the reader to guess. Three lines, and the third is the one that costs
+ * something to say: most runs decline to call at least one check.
  *
  * **Why it is sticky, and why only sometimes.** Above 1100px the form is the
  * taller column by a good margin, and a reader half way down it should still be
@@ -30,8 +30,8 @@ import { Card, Tag } from "@/components/site/ui";
 
 const COVERED = [
   "One run on a paper you choose, from the LaTeX source through to the report.",
-  "Where its numbers match, where they diverge, and where residual declines to say either.",
-  "Why a check comes back unverifiable, which is a normal outcome and not a failure.",
+  "Which of its numbers match, which diverge, and which residual declines to call.",
+  "Why a check comes back unverifiable, and why that is an ordinary way for a run to end.",
 ];
 
 export function DemoRail() {
@@ -52,7 +52,7 @@ export function DemoRail() {
             color: "var(--site-ink)",
           }}
         >
-          See it run on a paper you know
+          See it run on a paper you pick
         </h1>
 
         <p className="site-lede mt-5 max-w-[46ch]">
@@ -76,8 +76,8 @@ export function DemoRail() {
 
       <Reveal y={16} delay={0.14} className="mt-6">
         <p className="max-w-[46ch]" style={{ fontSize: "15px", lineHeight: 1.6, color: "var(--site-muted)" }}>
-          residual does not judge whether a paper is good, novel or true. It checks whether the
-          paper agrees with itself, and shows its working either way.
+          residual checks a paper against itself, and shows its working either way. Whether the work
+          is worth publishing stays a question for the reviewer.
         </p>
       </Reveal>
     </div>

@@ -226,7 +226,10 @@ export function FindingBlock({ item, href }: { item: CorpusFinding; href?: strin
           <div key={label} className="contents">
             <dt className="t-label self-baseline">{label}</dt>
             <dd className="t-num min-w-0 break-words" style={{ color: "var(--chrome-text)" }}>
-              {value ?? "—"}
+              {/* An absence, spelled out. A dash here would be read as a value,
+                  and the contract stores these as strings precisely so a missing
+                  one cannot be mistaken for a zero. */}
+              {value ?? "not recorded"}
             </dd>
           </div>
         ))}

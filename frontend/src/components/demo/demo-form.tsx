@@ -45,9 +45,8 @@ import { Card } from "@/components/site/ui";
  * heard about us.
  *
  * **What submitting does.** It writes the request to `localStorage` and shows
- * what it wrote. No email is sent, nothing is transmitted, nobody is notified,
- * and the success state says all three in its first sentence. See
- * `demo-requests.ts`.
+ * what it wrote. Nothing leaves the browser, and the confirmation says so before
+ * it says anything else. See `demo-requests.ts`.
  */
 
 /**
@@ -69,7 +68,7 @@ type FieldKey = "name" | "email" | "useCase";
 type Errors = Partial<Record<FieldKey | "store", string>>;
 
 function nameProblem(raw: string): string | null {
-  if (!raw.trim()) return "Enter a name. A request with nobody's name on it is hard to answer.";
+  if (!raw.trim()) return "Enter a name, so a reply has somebody to go to.";
   return null;
 }
 
@@ -210,7 +209,7 @@ export function DemoForm() {
       setBusy(false);
       setErrors({
         store:
-          "This browser refused to store the request, which private browsing and blocked site data both do. Nothing was kept and nothing was sent. Try a normal window.",
+          "This browser refused to store the request, which private browsing and blocked site data both do. Nothing was kept. Try a normal window.",
       });
       return;
     }
@@ -264,9 +263,9 @@ export function DemoForm() {
         </p>
       )}
 
-      <h2 className="site-h3">Tell us what to put in front of it</h2>
+      <h2 className="site-h3">What should the demo show?</h2>
       <p className="site-body mt-2 max-w-[54ch]">
-        Three questions that change what a demo shows, and three you can skip.
+        Three questions that change the answer, and three you can skip.
       </p>
 
       <form onSubmit={onSubmit} noValidate className="mt-8">
@@ -321,9 +320,7 @@ export function DemoForm() {
                   ref={emailRef}
                 />
               </div>
-              <FieldHelp id="demo-email-help">
-                Where an answer would go. Nothing is sent from this form yet.
-              </FieldHelp>
+              <FieldHelp id="demo-email-help">Where an answer would go.</FieldHelp>
               {errors.email && <FieldError id="demo-email-error">{errors.email}</FieldError>}
             </Field>
 
@@ -390,7 +387,7 @@ export function DemoForm() {
                   />
                 </div>
                 <FieldHelp id="demo-volume-help">
-                  It changes what is worth showing and nothing else.
+                  It only changes what is worth showing.
                 </FieldHelp>
               </Field>
             )}
@@ -430,7 +427,7 @@ export function DemoForm() {
               className="max-w-[38ch]"
               style={{ fontSize: "14px", lineHeight: 1.6, color: "var(--site-muted)" }}
             >
-              Recorded in this browser. Nothing is sent, and no email goes anywhere yet.
+              Recorded in this browser. Nothing is sent yet.
             </p>
           </div>
         </fieldset>
@@ -486,11 +483,10 @@ function Optional() {
 /**
  * What the success state is allowed to say.
  *
- * "We'll be in touch shortly" would be a lie: no email was sent, no queue
- * received anything, and nobody at residual knows this happened. So the first
- * sentence says where the request is, the two lists say what happened and what
- * did not, and the one route that reaches a person today is offered as a link
- * rather than implied by silence.
+ * "We'll be in touch shortly" would be a lie. Nothing was sent and nobody at
+ * residual knows this happened, so the first sentence says where the request
+ * actually is. The summary below it prints what was kept, and the one route that
+ * does reach a person today is on the screen as a link.
  *
  * The recorded values are printed back for the same reason a report prints the
  * numbers it compared: the person should be able to see exactly what is being
@@ -532,9 +528,8 @@ function Recorded({
         Request recorded
       </h2>
       <p className="site-body mt-3 max-w-[58ch]">
-        It is stored in this browser and nowhere else. No email was sent, nothing left this machine,
-        and nobody at residual has been notified. This form has no service behind it yet, and it
-        would rather say so than show you a confirmation it cannot support.
+        It is stored in this browser and nowhere else. No email went out and nobody at residual has
+        been notified, because there is no service behind this form yet.
       </p>
 
       <dl className="mt-8 flex flex-col gap-4">
@@ -548,7 +543,7 @@ function Recorded({
         {request.notes && <Row label="To check">{request.notes}</Row>}
         <Row label="Recorded">{formatRequestedAt(request.requestedAt)}, in this browser</Row>
         <Row label="Not done">
-          Sent, queued, emailed, or seen by anyone. Clearing this browser&rsquo;s site data deletes
+          Nobody has seen it and nothing was sent. Clearing this browser&rsquo;s site data deletes
           it.
         </Row>
       </dl>

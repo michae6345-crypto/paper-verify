@@ -20,16 +20,16 @@ const RULES = [
     body: "A finding with no decision recorded is held. The screen must never present no decision as a state that resolves itself by waiting.",
   },
   {
-    title: "Suppress is not delete",
+    title: "Suppress keeps the finding",
     body: "A suppressed finding stays in the full report and stays out of the public one. The screen says which of the two a reader is looking at, always.",
   },
   {
     title: "The reason is part of the record",
-    body: "Release and suppress both write a reason string. A gate whose decisions carry no justification is a gate that will be operated carelessly.",
+    body: "Release and suppress both write a reason string. Without one, nobody can work out later why a finding about a named researcher was published.",
   },
   {
     title: "No bulk release",
-    body: "One at a time. A release all button is how a queue of twelve becomes twelve unread accusations. This is a deliberate refusal to add an affordance, not an omission.",
+    body: "One at a time. A release all button is how a queue of twelve becomes twelve unread accusations. The affordance is missing on purpose.",
   },
 ];
 

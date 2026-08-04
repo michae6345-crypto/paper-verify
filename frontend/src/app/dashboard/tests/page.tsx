@@ -129,7 +129,7 @@ export default function TestsScreen() {
           <Panel>
             <PanelHead
               title="What has to be built underneath"
-              note="Four things that are not just another module behind the existing checker interface."
+              note="Four things that need more than another module behind the existing checker interface."
             />
             <dl className="flex flex-col gap-4">
               {UNDERNEATH.map((item) => (

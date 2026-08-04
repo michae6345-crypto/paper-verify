@@ -1,8 +1,9 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 
 import type { StreamRow } from "@/hooks/use-check-stream";
+import { useReducedMotionGate } from "@/components/site/motion/scrub";
 import { ROW_STAGGER_MS } from "@/lib/stream";
 import { VERDICT_LABEL } from "@/lib/verdict";
 import { cn } from "@/lib/utils";
@@ -32,7 +33,9 @@ export function CheckRow({
   onSelect: () => void;
   id: string;
 }) {
-  const reduced = useReducedMotion();
+  // The gate, not `motion`'s `useReducedMotion`. It decides this row's `initial`
+  // offset, which is an attribute React will not patch during hydration.
+  const reduced = useReducedMotionGate();
   const { check, state } = row;
   const running = state === "running";
   const findings = check.findings ?? [];

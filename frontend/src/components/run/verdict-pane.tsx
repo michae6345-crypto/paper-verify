@@ -234,8 +234,8 @@ function NotCheckedList({ report }: { report: RunReport }) {
       ) : (
         <>
           <p className="mt-2 t-body" style={{ color: "var(--chrome-dim)" }}>
-            What the checker declined to call, and why. This list is part of the result, not a
-            shortfall in it.
+            What the checker declined to call, and why. On most papers this is the longest section
+            of the report.
           </p>
           <ul className="mt-4 flex flex-col">
             {items.map((item, i) => {

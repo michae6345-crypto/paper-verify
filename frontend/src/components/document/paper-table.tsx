@@ -256,10 +256,7 @@ export function PaperTable({
           >
             {/* Verbatim. `86.7/85.9` stays `86.7/85.9`. */}
             {cell.text}
-            <span className="sr-only">
-              {" "}
-              — {mark.locator}. Select this claim.
-            </span>
+            <span className="sr-only">. {mark.locator}. Select this claim.</span>
           </button>
         ) : (
           cell.text
@@ -380,7 +377,7 @@ export function PaperTable({
             style={{ ...LABEL_STYLE, color: "inherit" }}
           >
             Table {index + 1}
-            <span className="sr-only"> — {tableMark.locator}. Select this claim.</span>
+            <span className="sr-only">. {tableMark.locator}. Select this claim.</span>
           </button>
         ) : (
           <span style={LABEL_STYLE}>Table {index + 1}</span>

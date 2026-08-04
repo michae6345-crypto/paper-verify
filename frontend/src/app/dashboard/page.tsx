@@ -59,7 +59,7 @@ export default function DashboardOverview() {
       <Panel>
         <PanelHead
           title="The corpus"
-          note="Totals across every committed report. Counts, not rates: a percentage over four papers would read as a measurement of the literature."
+          note="Totals across every committed report. Counts rather than rates, because a percentage over four papers would read as a measurement of the literature."
         />
         <div className="grid grid-cols-2 gap-x-6 gap-y-5 two:grid-cols-3 three:grid-cols-6">
           <Stat label="papers" value={totals.papers} note="real arXiv sources" />

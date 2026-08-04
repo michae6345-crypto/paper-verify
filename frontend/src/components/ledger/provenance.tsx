@@ -92,10 +92,7 @@ export function ProvenanceChip({
       >
         {inferred ? "Inferred" : "Extracted"}
       </span>
-      <span className="sr-only">
-        {" "}
-        — {PROVENANCE_TITLE[provenance]}
-      </span>
+      <span className="sr-only">. {PROVENANCE_TITLE[provenance]}</span>
     </span>
   );
 }
