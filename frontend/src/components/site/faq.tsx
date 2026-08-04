@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRef, type ReactNode } from "react";
 
 import { Card, Container, Mono, PrimaryLink } from "@/components/site/ui";
-import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
+import { useSectionProgress } from "@/components/site/motion/scrub";
+import { Arrive } from "@/components/site/motion/mobile";
 import { SectionTag } from "@/components/site/section-tag";
 
 /**
@@ -128,19 +129,20 @@ export function Faq() {
   const progress = useSectionProgress(section);
 
   return (
-    <section id="faq" ref={section} className="scroll-mt-20 py-14 three:py-[120px]">
+    <section id="faq" ref={section} className="site-section scroll-mt-20">
       <Container>
         <SectionTag tag="FAQ" heading="Questions worth asking" />
 
-        <div className="mt-10 flex flex-col gap-6 three:mt-12 three:flex-row three:items-start three:gap-10">
-          <Scrub
+        <div className="site-stack flex flex-col gap-6 three:flex-row three:items-start three:gap-10">
+          <Arrive
             progress={progress}
             from={CARD_FROM}
             to={CARD_TO}
+            kind="surface"
             y={12}
             scale={[0.96, 1]}
             lift="card"
-            className="three:w-[380px] three:shrink-0"
+            boxClassName="three:w-[380px] three:shrink-0"
           >
             {/* The card stands off the page and the questions beside it do not get
                 a surface at all. They are `<details>`, so a card behind them would
@@ -150,7 +152,7 @@ export function Faq() {
 
                 `elevation="none"`: the shadow is scrubbed on the layer above so
                 it arrives with the card, and the prop would write a second one. */}
-            <Card elevation="none" className="flex flex-col gap-6 p-8">
+            <Card elevation="none" className="flex flex-col gap-5 p-6 two:gap-6 two:p-8">
               <h3
                 style={{
                   fontSize: "20px",
@@ -174,11 +176,11 @@ export function Faq() {
                 .
               </p>
             </Card>
-          </Scrub>
+          </Arrive>
 
           <div className="min-w-0 three:flex-1">
             {FAQS.map((item, i) => (
-              <Scrub
+              <Arrive
                 key={item.q}
                 progress={progress}
                 from={FIRST + i * SPACING}
@@ -218,7 +220,7 @@ export function Faq() {
                     {item.a}
                   </div>
                 </details>
-              </Scrub>
+              </Arrive>
             ))}
           </div>
         </div>

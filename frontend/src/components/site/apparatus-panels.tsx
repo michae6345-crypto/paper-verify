@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { MotionValue, motion, useTransform } from "motion/react";
 
 import { DrawLine, Pin, Scrub, useReducedMotionGate } from "@/components/site/motion/scrub";
+import { CoverUp, Rise, useBoxHeight, useScoreTrack } from "@/components/site/motion/mobile";
 import { Container, Mono } from "@/components/site/ui";
 import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
 import { VERDICT_LABEL } from "@/lib/verdict";
@@ -398,7 +399,8 @@ function PanelFrame({
   children,
 }: {
   tone: Tone;
-  height: number | "auto";
+  /** A number inside the pin, `auto` stacked, `100%` in a grid stack that sizes both. */
+  height: number | string;
   data: ApparatusData;
   children: ReactNode;
 }) {
@@ -962,7 +964,7 @@ function PaperPanel({
   progress,
 }: {
   data: ApparatusData;
-  height: number | "auto";
+  height: number | string;
   progress?: MotionValue<number>;
 }) {
   return (
@@ -1013,7 +1015,7 @@ function InstrumentPanel({
   progress,
 }: {
   data: ApparatusData;
-  height: number | "auto";
+  height: number | string;
   progress?: MotionValue<number>;
 }) {
   const windows = useMemo(() => markWindows(data.body), [data.body]);
@@ -1199,35 +1201,192 @@ function PinnedApparatus({ data }: { data: ApparatusData }) {
 /**
  * Both readings, stacked and resolved, with no scroll subscription anywhere.
  *
- * The panels take their natural height here rather than the pinned 380, and each
+ * The panels take their natural height here rather than the pinned 334, and each
  * scrolls horizontally inside its own box. Ten columns and an apparatus entry
  * need about 800px and a phone has 390, and a table that scrolls sideways is
  * what a paper's table does on a phone. Squeezing it to fit would mean dropping
  * columns, which is the one thing a section about not discarding data can do
  * least of all.
+ *
+ * This is now the `prefers-reduced-motion` branch and nothing else, which is the
+ * job it is actually right for. Its own comment already said why: "a panel that
+ * has covered another panel is just a panel", so the resolved state of this
+ * device is not a state but a motion, and the honest way to render it without
+ * motion is both readings in document order. What it was *also* doing, until
+ * now, was standing in for every viewport under 1100 — which meant the page's
+ * signature scroll moment did not exist on a phone at all.
  */
 function StaticApparatus({ data }: { data: ApparatusData }) {
   return (
-    <section id="apparatus" className="scroll-mt-20 py-14 three:py-[120px]">
+    <section id="apparatus" className="site-section scroll-mt-20">
       <Container className="mx-auto max-w-[1200px]">
         <Heading data={data} />
 
-        <div className="mt-10 flex flex-col gap-6">
-          <div className="overflow-x-auto">
-            <div className="min-w-[800px]">
-              <PaperPanel data={data} height="auto" />
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <div className="min-w-[800px]">
-              <InstrumentPanel data={data} height="auto" />
-            </div>
-          </div>
+        <div className="site-stack flex flex-col gap-6">
+          <SideScroller>
+            <PaperPanel data={data} height="auto" />
+          </SideScroller>
+          <SideScroller>
+            <InstrumentPanel data={data} height="auto" />
+          </SideScroller>
         </div>
 
         <div className="mt-8">
           <Tally data={data} />
         </div>
+      </Container>
+    </section>
+  );
+}
+
+/**
+ * The box a panel scrolls sideways inside.
+ *
+ * The bleed is the point: the scroller undoes the page gutter and reapplies it
+ * as padding, so the table can use the whole width of the screen while its left
+ * edge still lines up with the heading above it. Without that, a 390px phone was
+ * reading a ten-column table through a 342px slot for no reason.
+ *
+ * 800px is the measure `LABEL_W`'s note works through — a 40px siglum margin, a
+ * 128px label column, and nine numeric columns wide enough that `MNLI-(m/mm)`
+ * does not collide with its neighbour.
+ */
+function SideScroller({ children }: { children: ReactNode }) {
+  return (
+    <div
+      className="site-rail overflow-x-auto"
+      style={{
+        marginInline: "calc(var(--site-gutter) * -1)",
+        paddingInline: "var(--site-gutter)",
+      }}
+    >
+      <div className="min-w-[800px]">{children}</div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   The same device, off its pin.
+   --------------------------------------------------------------------------- */
+
+/**
+ * Where in the well's own travel the score runs.
+ *
+ * The pin gets to hold the panels still for three screens and spend that whole
+ * budget on the sequence. Off the pin there is no holding still, so the sequence
+ * has to fit inside the stretch of scrolling where the well is actually in front
+ * of the reader — which is a fraction of the well's travel by definition, and is
+ * the one place on this page where a fraction is the right unit rather than the
+ * wrong one.
+ *
+ * `useSectionProgress` on the well: 0 is its top edge at the fold, 1 is its
+ * bottom leaving the top. At 390 x 844 the well is about 430px, so travel is
+ * 1274 and the window below is 764px of scrolling for the whole score — the read
+ * marks, the cover, forty-five verdict marks and the tally. About one screen of
+ * thumb travel, run at the reader's pace and reversible, which is the property
+ * the pin was there to buy and the only one of its properties that survives.
+ *
+ * The ends are where they are so nothing resolves off screen. At 0.16 the well's
+ * top is 640px down, so the first read mark lands with the head of the table
+ * showing; at 0.76 its top is at -124 and the tally below it is at about 460,
+ * which is the middle of the screen.
+ */
+const MOBILE_SCORE_FROM = 0.16;
+const MOBILE_SCORE_TO = 0.76;
+
+/**
+ * The well, off the pin: Panel A at rest, Panel B rising over it.
+ *
+ * Two differences from `Well`, and both are consequences of the panels no longer
+ * having a height a constant can state.
+ *
+ * The panels are a **grid stack** — same column, same row, so the row is as tall
+ * as the taller of them and both stretch to it. That is what `PANEL_H` does
+ * inside the pin, done by layout instead of by a number. It matters more here
+ * than it looks: the foot lines wrap differently at 800px than at 904, so
+ * whichever panel is taller is not something this file can know, and a fixed
+ * height picked for one of them would clip the other. `MultiValueNote` is on
+ * Panel B and is the most important sentence on the panel; clipping it to make a
+ * constant fit would be the section contradicting itself.
+ *
+ * And the travel is **measured**, because the distance Panel B has to clear is
+ * the well including its 26px of shadow margin, which is only knowable once the
+ * panels have laid out. See `CoverUp`.
+ */
+function MobileWell({ data, progress }: { data: ApparatusData; progress: MotionValue<number> }) {
+  const well = useRef<HTMLDivElement>(null);
+  const clearance = useBoxHeight(well);
+
+  return (
+    <div
+      ref={well}
+      className="relative overflow-clip"
+      style={{ padding: WELL_PAD }}
+    >
+      <div className="grid">
+        <div className="col-start-1 row-start-1">
+          <PaperPanel data={data} height="100%" progress={progress} />
+        </div>
+        <CoverUp
+          progress={progress}
+          from={SLIDE_FROM}
+          to={SLIDE_TO}
+          clearance={clearance}
+          className="col-start-1 row-start-1"
+        >
+          <InstrumentPanel data={data} height="100%" progress={progress} />
+        </CoverUp>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The apparatus on a phone, and the answer to "what does a pinned section do
+ * when it cannot pin".
+ *
+ * Not the pinned composition with the pin taken off. A pinned frame is one
+ * viewport tall and its contents are budgeted against that; this well is 800px
+ * wide and as tall as its own table, read through a horizontal scroller. What
+ * carries across is the *score* — the same `READ_*`, `SLIDE_*`, `MATCH_*`,
+ * `PENDING_*` and `TALLY_*` constants the pin uses, in the same order, because
+ * the order is the argument and it does not change with the viewport. Only the
+ * thing driving it changes: `useScoreTrack` stretches the well's own travel over
+ * the score's 0..1 instead of a sticky track's.
+ *
+ * That is the whole of why this is worth having rather than dropping to the
+ * static branch. The reader still watches the paper's own table get read: the
+ * hairline accrues down the column the average check reads, the instrument
+ * closes over the page, the one finding resolves in the margin with its siglum,
+ * then eight `matches`, then thirty-six `not checked`, then the tally. On a
+ * phone, at the reader's pace, backwards if they scroll back.
+ */
+function MobileApparatus({ data }: { data: ApparatusData }) {
+  const track = useRef<HTMLDivElement>(null);
+  const score = useScoreTrack(track, MOBILE_SCORE_FROM, MOBILE_SCORE_TO);
+
+  return (
+    <section id="apparatus" className="site-section scroll-mt-20">
+      <Container className="mx-auto max-w-[1200px]">
+        <Heading data={data} />
+
+        <div ref={track} className="site-stack">
+          <SideScroller>
+            <MobileWell data={data} progress={score} />
+          </SideScroller>
+        </div>
+
+        {/* The tally is the one thing here that does *not* take the score, and
+            the reason is that it is the one thing that is not inside the well.
+            Borrowed from the score it opened at 0.86 — which inside the pin is a
+            point on a frame that is holding still, and out here is a point at
+            which the tally has already travelled past the middle of the screen.
+            Measured at 834 x 1112 it was at opacity 0 with its own centre
+            dead centre. It sits below the panels, so geometry already sequences
+            it after them; its own travel is all it needs. */}
+        <Rise kind="row" y={12} boxClassName="mt-6">
+          <Tally data={data} />
+        </Rise>
       </Container>
     </section>
   );
@@ -1244,6 +1403,7 @@ export function ApparatusPanels({ data }: { data: ApparatusData }) {
   const reduced = useReducedMotionGate();
   const pinnable = usePinnable(!reduced);
 
-  if (reduced || !pinnable) return <StaticApparatus data={data} />;
-  return <PinnedApparatus data={data} />;
+  if (reduced) return <StaticApparatus data={data} />;
+  if (pinnable) return <PinnedApparatus data={data} />;
+  return <MobileApparatus data={data} />;
 }

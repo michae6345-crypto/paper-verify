@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useTransform, type MotionValue } from "motion/react";
-import { useRef } from "react";
+import { useRef, type ReactNode } from "react";
 
 import {
   CELLS,
@@ -12,6 +12,7 @@ import {
   TABLES,
 } from "@/components/site/corpus";
 import { Scrub, useReducedMotionGate, useSectionProgress } from "@/components/site/motion/scrub";
+import { WIDE, useOwnTrack, useWideLayout } from "@/components/site/motion/mobile";
 import { Card, Container, Mono } from "@/components/site/ui";
 
 /**
@@ -169,10 +170,13 @@ function Rolling({
   value,
   progress,
   start,
+  span = ROLL_SPAN,
 }: {
   value: string;
   progress: MotionValue<number>;
   start: number;
+  /** How much travel one wheel gets. The narrow branch measures its own. */
+  span?: number;
 }) {
   // `useReducedMotionGate`, not `useReducedMotion`. This branch returns two
   // structurally different trees — a bare text node against an `sr-only` span
@@ -196,62 +200,157 @@ function Rolling({
             return <span key={i}>{char === " " ? "\u00a0" : char}</span>;
           }
           const from = start + digit++ * ROLL_STEP;
-          return (
-            <Digit key={i} char={char} progress={progress} from={from} to={from + ROLL_SPAN} />
-          );
+          return <Digit key={i} char={char} progress={progress} from={from} to={from + span} />;
         })}
       </span>
     </>
   );
 }
 
+/**
+ * One row's contents, in whichever of the two arrangements the width calls for.
+ *
+ * Three equal columns above `two:`, which is what a band of provenance wants
+ * when there is room for it. Below, the figure moves up beside the label and the
+ * path goes underneath: three stacked lines per row was 15 lines of left-aligned
+ * text down a phone, with the figure — the only thing in the row a reader is
+ * looking for — third in every one of them. Two lines, and the figure sits on the
+ * right where the eye already goes for a number.
+ *
+ * A grid rather than nested flex boxes because `dl` is strict about what may sit
+ * between it and its `dt`: `dl > div > (dt, dd)` is the grouping HTML allows, and
+ * another wrapper inside that div to make a row of two of them is not.
+ */
+function RowBody({
+  row,
+  first,
+  figure,
+}: {
+  row: (typeof ROWS)[number];
+  first: boolean;
+  figure: ReactNode;
+}) {
+  return (
+    <div
+      className={`grid grid-cols-[1fr_auto] items-baseline gap-x-4 gap-y-1 py-4 two:flex two:items-start two:gap-12 ${
+        first ? "" : "border-t"
+      }`}
+      style={{ borderColor: "var(--site-line)" }}
+    >
+      <dt
+        className="col-start-1 row-start-1 two:flex-1"
+        style={{ fontSize: "14px", lineHeight: 1.5, color: "var(--site-ink)" }}
+      >
+        {row.label}
+      </dt>
+      <dd
+        className="col-span-2 col-start-1 row-start-2 two:order-1 two:row-start-1 two:flex-1"
+        style={{ fontSize: "13px", lineHeight: 1.5, color: "var(--site-muted)" }}
+      >
+        <Mono>{row.source}</Mono>
+      </dd>
+      <dd
+        className="col-start-2 row-start-1 justify-self-end text-right two:order-2 two:flex-1 two:text-left"
+        style={{ fontSize: "14px", lineHeight: 1.5, color: "var(--site-ink)" }}
+      >
+        <Mono>{figure}</Mono>
+      </dd>
+    </div>
+  );
+}
+
+/** Above the breakpoint: the section's travel, and the constants measured against it. */
+function SectionRows({ progress }: { progress: MotionValue<number> }) {
+  return (
+    <>
+      {ROWS.map((row, i) => {
+        const from = ROW_START + i * ROW_STEP;
+        return (
+          <Scrub key={row.label} progress={progress} from={from} to={from + ROW_SPAN} y={14}>
+            <RowBody
+              row={row}
+              first={i === 0}
+              figure={
+                <Rolling value={row.value} progress={progress} start={from + ROLL_OFFSET} />
+              }
+            />
+          </Scrub>
+        );
+      })}
+    </>
+  );
+}
+
+/**
+ * Below it: each row against its own travel, and the roll placed inside that.
+ *
+ * This is the section that made the case for the whole of `motion/mobile.tsx`,
+ * because here the failure was not a fade landing in the wrong place — it was a
+ * **wrong number on screen at rest**. Screenshotted at 390 x 844 the band read
+ * `7,0₁3 cells`, `⁵₃₀ entries` and `₀ of ²`: wheels stopped between two digits,
+ * holding still, because their windows were a fraction of a section three times
+ * taller than the one the fraction was measured against, so the roll had used a
+ * third of its travel by the time the row was on screen and never finished.
+ *
+ * A figure this page never produced, sitting legibly in a band whose whole
+ * argument is provenance, is a worse outcome than any amount of missing
+ * animation. The doc comment above already states the principle — a counter
+ * tweening to 7,014 displays 3,182 on the way and 3,182 is a number this corpus
+ * never produced — and the digit roll was built to avoid exactly that. It then
+ * did it anyway, on the viewport nobody measured.
+ *
+ * Measured against the row itself it cannot: progress 0 is the row's own top
+ * edge at the fold at every viewport, so the wheels start when the row arrives
+ * and finish, by the numbers below, with the row about two thirds of the way up
+ * the screen.
+ */
+function SelfRow({ row, first }: { row: (typeof ROWS)[number]; first: boolean }) {
+  const box = useRef<HTMLDivElement>(null);
+  const { progress, from, to } = useOwnTrack(box, "row");
+  const span = to - from;
+
+  return (
+    <div ref={box}>
+      <Scrub progress={progress} from={from} to={to} y={14}>
+        <RowBody
+          row={row}
+          first={first}
+          figure={
+            // The wheels start a third of the way into the row's own arrival and
+            // run for a fifth longer than it, so the figure settles against a row
+            // that is already established rather than against one still coming in.
+            <Rolling
+              value={row.value}
+              progress={progress}
+              start={from + span * 0.35}
+              span={span * 0.85}
+            />
+          }
+        />
+      </Scrub>
+    </div>
+  );
+}
+
 export function Measured() {
   const section = useRef<HTMLElement>(null);
   const progress = useSectionProgress(section);
+  const wide = useWideLayout(WIDE);
 
   return (
-    <section ref={section} id="measured" className="scroll-mt-20 py-14 three:py-[120px]">
+    <section ref={section} id="measured" className="site-section scroll-mt-20">
       <Container>
         <h2 className="sr-only">Measured</h2>
         <Card
           elevation="resting"
-          className="mx-auto w-full max-w-[1200px] px-6 py-4 three:px-12 three:py-6"
+          className="mx-auto w-full max-w-[1200px] px-5 py-2 two:px-6 two:py-4 three:px-12 three:py-6"
         >
           <dl className="flex w-full flex-col">
-            {ROWS.map((row, i) => {
-              const from = ROW_START + i * ROW_STEP;
-              return (
-                <Scrub key={row.label} progress={progress} from={from} to={from + ROW_SPAN} y={14}>
-                  <div
-                    className={`flex flex-col gap-2 py-4 two:flex-row two:items-start two:gap-12 ${
-                      i === 0 ? "" : "border-t"
-                    }`}
-                    style={{ borderColor: "var(--site-line)" }}
-                  >
-                    <dt
-                      className="two:flex-1"
-                      style={{ fontSize: "13px", lineHeight: 1.5, color: "var(--site-ink)" }}
-                    >
-                      {row.label}
-                    </dt>
-                    <dd
-                      className="two:flex-1"
-                      style={{ fontSize: "13px", lineHeight: 1.5, color: "var(--site-muted)" }}
-                    >
-                      <Mono>{row.source}</Mono>
-                    </dd>
-                    <dd
-                      className="two:flex-1"
-                      style={{ fontSize: "13px", lineHeight: 1.5, color: "var(--site-ink)" }}
-                    >
-                      <Mono>
-                        <Rolling value={row.value} progress={progress} start={from + ROLL_OFFSET} />
-                      </Mono>
-                    </dd>
-                  </div>
-                </Scrub>
-              );
-            })}
+            {wide ? (
+              <SectionRows progress={progress} />
+            ) : (
+              ROWS.map((row, i) => <SelfRow key={row.label} row={row} first={i === 0} />)
+            )}
           </dl>
         </Card>
       </Container>

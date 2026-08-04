@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MotionValue, motion, useReducedMotion, useTransform } from "motion/react";
+import { MotionValue, motion, useTransform } from "motion/react";
 import type { ReactNode } from "react";
 
 import { Container, PrimaryLink, Tag } from "@/components/site/ui";
 import { Reveal } from "@/components/site/reveal";
-import { DrawLine, Pin, Scrub } from "@/components/site/motion/scrub";
+import { DrawLine, Pin, Scrub, useReducedMotionGate } from "@/components/site/motion/scrub";
+import { Rise, SpineList, type SpineWindow } from "@/components/site/motion/mobile";
 import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
 
 /**
@@ -85,13 +86,17 @@ import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
  * which is one of the most common screens there is, so the page's signature
  * scroll moment simply never ran for most people who visited it.
  *
- * Below the gate we do not pin at all. The static hero underneath is the markup
- * this file has always rendered, so 390 × 700 gets a page that works rather than
- * a pin that eats half of itself. The static branch keeps the full 108px
- * headline, because nothing is competing with it there.
+ * Below the gate we do not pin at all, and what is underneath is no longer a
+ * still page. `FlowHero` runs the same sequence down the screen instead of
+ * across it: the claim first, then the pipeline drawn vertically as the reader
+ * scrolls through it, ending on the verdict. See its own comment for why the
+ * order is inverted rather than transposed.
  *
- * `prefers-reduced-motion` takes that same static branch: final state on the
- * first paint, no scroll subscription, and no media query listener either.
+ * `prefers-reduced-motion` takes that same branch, resolved: `Rise`, `SpineList`
+ * and `DrawLine` all paint their final state on the first frame, so a reader who
+ * asked for less motion gets the whole demonstration as a static diagram rather
+ * than losing it. That is a change from the version of this file that sent them
+ * to a hero with no pipeline in it at all.
  */
 
 /**
@@ -340,22 +345,29 @@ function Spine({ progress }: { progress: MotionValue<number> }) {
  * The scale is 0.96 -> 1, which is §4's figure. It does not slide in from off
  * screen, which §4 rules out in the same sentence.
  */
-function Prompt({ progress }: { progress: MotionValue<number> }) {
+function Prompt() {
+  return (
+    <span
+      className="inline-flex items-center gap-3 px-5 py-2.5"
+      style={{
+        background: "var(--site-card)",
+        borderRadius: "var(--site-radius-pill)",
+        boxShadow: "var(--site-shadow-halo)",
+      }}
+    >
+      <span style={{ fontSize: "13px", color: "var(--site-muted)" }}>submitted</span>
+      <span className="site-mono" style={{ fontSize: "15px", color: "var(--site-ink)" }}>
+        arXiv:1810.04805
+      </span>
+    </span>
+  );
+}
+
+/** The pinned branch's arrival for it. The flow branch uses `Rise` instead. */
+function ScrubbedPrompt({ progress }: { progress: MotionValue<number> }) {
   return (
     <Scrub progress={progress} from={0.12} to={0.26} y={10} scale={[0.96, 1]}>
-      <span
-        className="inline-flex items-center gap-3 px-5 py-2.5"
-        style={{
-          background: "var(--site-card)",
-          borderRadius: "var(--site-radius-pill)",
-          boxShadow: "var(--site-shadow-halo)",
-        }}
-      >
-        <span style={{ fontSize: "13px", color: "var(--site-muted)" }}>submitted</span>
-        <span className="site-mono" style={{ fontSize: "15px", color: "var(--site-ink)" }}>
-          arXiv:1810.04805
-        </span>
-      </span>
+      <Prompt />
     </Scrub>
   );
 }
@@ -370,32 +382,82 @@ function Prompt({ progress }: { progress: MotionValue<number> }) {
  * and this is the one element in the hero that has to read as the thing produced
  * rather than as part of the diagram producing it.
  */
-function Result({ progress }: { progress: MotionValue<number> }) {
+function Result() {
+  return (
+    <span
+      className="inline-flex items-center gap-2.5 px-5 py-2.5"
+      style={{
+        background: "var(--site-card)",
+        borderRadius: "var(--site-radius-pill)",
+        boxShadow: "var(--site-shadow-halo)",
+      }}
+    >
+      <VerdictGlyph verdict="diverges" size={14} />
+      <span className="site-mono" style={{ fontSize: "15px", color: "var(--site-ink)" }}>
+        diverges
+      </span>
+    </span>
+  );
+}
+
+/**
+ * The pinned branch's arrival for it, carrying the blur.
+ *
+ * §4 of the teardown spends blur exactly once, on the one element that matters,
+ * and this is that element in both branches — the flow hero passes `blur` to its
+ * `Rise` for the same reason, and nothing else on the page has it.
+ */
+function ScrubbedResult({ progress }: { progress: MotionValue<number> }) {
   return (
     <Scrub progress={progress} from={0.5} to={0.68} y={12} scale={[0.96, 1]} blur={12}>
-      <span
-        className="inline-flex items-center gap-2.5 px-5 py-2.5"
-        style={{
-          background: "var(--site-card)",
-          borderRadius: "var(--site-radius-pill)",
-          boxShadow: "var(--site-shadow-halo)",
-        }}
-      >
-        <VerdictGlyph verdict="diverges" size={14} />
-        <span className="site-mono" style={{ fontSize: "15px", color: "var(--site-ink)" }}>
-          diverges
-        </span>
-      </span>
+      <Result />
     </Scrub>
   );
 }
 
-/** The hero at rest: everything resolved, nothing waiting on a scroll position. */
-function StaticHero() {
+/**
+ * The hero where it cannot pin: the same sequence, run down the screen.
+ *
+ * **Why this is not the pinned hero with the pin removed.** A pinned frame is
+ * one viewport tall and holds still while its contents advance, which is what
+ * buys the pinned branch the right to open on a diagram and arrive at the copy
+ * 80% of the way through — the reader cannot leave until it has finished. Take
+ * the pin away and that ordering becomes a landing page whose first screen is an
+ * unexplained line with five words on it, and whose claim is three hundred
+ * pixels below the fold. So the order inverts: **the claim is still, and the
+ * demonstration is what scrolls.**
+ *
+ * That is the same trade the pinned branch's own comment already makes about the
+ * headline — "a landing page whose first claim is only legible after you scroll
+ * is a worse page than a still one" — applied to the whole sequence rather than
+ * to one element.
+ *
+ * **Why the spine is vertical.** The width term in `usePinnable` is not about
+ * height at all: it is that five stage labels laid across the frame need the
+ * room to sit side by side. At 390px they do not have it, and no type size
+ * rescues five words across 342 pixels. Turned through ninety degrees the spine
+ * stops competing for width and starts running the same way the reader's thumb
+ * already is, which is the one arrangement a horizontal spine on a phone can
+ * never manage. `SpineList` in `motion/mobile.tsx` owns the mechanic.
+ *
+ * The three elements the pin shares between one 150px band — the submitted
+ * identifier, the verdict, the copy — are not sharing anything here. There is no
+ * height budget to meet, so the identifier sits at the head of the pipeline
+ * where it is the input, and the verdict sits at the foot where it is the
+ * output, and both are on screen at once by the end. The pin could not afford
+ * that and it is the better arrangement.
+ *
+ * Everything below the fold is scrubbed against its own travel rather than
+ * tweened on arrival, so it runs backwards, stalls when the reader stalls, and
+ * compresses under a flick. The four elements above the fold are `Reveal`,
+ * because an element that is already on screen when the page loads has no scroll
+ * position to be driven by.
+ */
+function FlowHero() {
   return (
-    <section id="hero" className="pt-[180px] pb-[118px] three:pb-[118px]">
+    <section id="hero" className="pt-[104px] pb-16 two:pt-[150px] two:pb-24">
       <Container>
-        <div className="flex flex-col items-center gap-9 text-center">
+        <div className="mx-auto flex max-w-[720px] flex-col items-center gap-5 text-center two:gap-7">
           <Reveal>
             <Tag dot>Built for conference and workshop submissions</Tag>
           </Reveal>
@@ -407,7 +469,7 @@ function StaticHero() {
           </Reveal>
 
           <Reveal delay={0.12}>
-            <p className="site-body mx-auto max-w-[520px] text-balance">
+            <p className="site-body mx-auto max-w-[46ch] text-balance">
               It checks the numbers a paper states, the links it prints and the work it cites.
               Run it before you submit and attach the report.
             </p>
@@ -428,10 +490,69 @@ function StaticHero() {
             </div>
           </Reveal>
         </div>
+
+        {/* The demonstration. Capped at a column rather than run to the measure:
+            this branch also serves a 1024 x 640 window and a tablet held
+            upright, and a spine stretched across 900px with 40px of text beside
+            it is a diagram of nothing. */}
+        <div className="mx-auto mt-14 flex max-w-[420px] flex-col gap-5 two:mt-20">
+          <Rise kind="surface" y={10} scale={[0.96, 1]} className="flex justify-center">
+            <Prompt />
+          </Rise>
+
+          <SpineList
+            count={STAGES.length}
+            rowClassName="pb-1"
+            renderRow={(i, window) => <StageRow index={i} window={window} />}
+          />
+
+          <Rise kind="surface" y={12} scale={[0.96, 1]} blur={10} className="flex justify-center">
+            <Result />
+          </Rise>
+        </div>
       </Container>
     </section>
   );
 }
+
+/**
+ * One stage of the vertical pipeline: what is happening, and what it leaves
+ * behind, on one line.
+ *
+ * Set as a ledger rather than as a centred pair, because that is what the two
+ * strings are — a stage and its artifact — and a phone has exactly enough width
+ * for the relationship to be legible if it is stated as one. The artifact still
+ * trails its stage, on the same offset every stage uses, so the five pairs read
+ * as one gesture repeated.
+ */
+function StageRow({ index, window }: { index: number; window: SpineWindow }) {
+  const stage = STAGES[index];
+  const trail = (window.to - window.from) * 0.14;
+
+  return (
+    <div className="flex items-baseline justify-between gap-4 border-b py-3" style={ROW_RULE}>
+      <Scrub progress={window.progress} from={window.from} to={window.to} y={8}>
+        <span className="site-mono" style={{ fontSize: "14px", color: "var(--site-ink)" }}>
+          {stage.name}
+        </span>
+      </Scrub>
+      <Scrub
+        progress={window.progress}
+        from={window.from + trail}
+        to={window.to + trail}
+        y={6}
+        className="text-right"
+      >
+        <span className="site-mono" style={{ fontSize: "12px", color: "var(--site-muted)" }}>
+          {stage.artifact}
+        </span>
+      </Scrub>
+    </div>
+  );
+}
+
+/** The hairline under a stage row. The last one keeps it: the list ends on a rule. */
+const ROW_RULE = { borderColor: "var(--site-line)" } as const;
 
 /** The same hero, pinned, with the pipeline running once through it. */
 function PinnedHero() {
@@ -474,13 +595,13 @@ function PinnedHero() {
             <div className="relative h-[150px] w-full">
               <div className="absolute inset-0 flex items-start justify-center pt-4">
                 <Exit progress={progress} from={0.44} to={0.54}>
-                  <Prompt progress={progress} />
+                  <ScrubbedPrompt progress={progress} />
                 </Exit>
               </div>
 
               <div className="absolute inset-0 flex items-start justify-center pt-4">
                 <Exit progress={progress} from={0.7} to={0.82}>
-                  <Result progress={progress} />
+                  <ScrubbedResult progress={progress} />
                 </Exit>
               </div>
 
@@ -517,9 +638,15 @@ function PinnedHero() {
 }
 
 export function Hero() {
-  const reduced = useReducedMotion();
+  // The gate, not `motion`'s `useReducedMotion`. This picks between two
+  // structurally different trees, and `motion`'s hook reads `false` on the
+  // server and the truth on a reduced-motion reader's first client render —
+  // the hazard `motion/scrub.tsx` documents at length. It was survivable here
+  // only because `usePinnable` also starts `false`, which is a coincidence of
+  // initial state rather than a reason.
+  const reduced = useReducedMotionGate();
   const pinnable = usePinnable(!reduced);
 
-  if (reduced || !pinnable) return <StaticHero />;
-  return <PinnedHero />;
+  if (pinnable) return <PinnedHero />;
+  return <FlowHero />;
 }

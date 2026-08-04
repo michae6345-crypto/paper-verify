@@ -52,7 +52,16 @@ const VIEWPORTS = [
   { name: "1366x768 laptop", width: 1366, height: 648 },
   { name: "1440x900 laptop", width: 1440, height: 760 },
   { name: "1920x1080 @100%", width: 1920, height: 940 },
-  { name: "phone", width: 390, height: 664 },
+  { name: "phone, browser chrome showing", width: 390, height: 664 },
+  // The three the mobile pass is aimed at. 390x844 is an iPhone 14/15 with the
+  // toolbars retracted, which is the state a page is read in rather than the one
+  // it is opened in; 360x740 is the small-Android floor; 834x1112 is an iPad
+  // held upright, which is the width that falls between every branch on this
+  // page — too narrow for either pin, too wide for a phone's spine to look like
+  // anything but a phone's spine.
+  { name: "iPhone 14/15, toolbars retracted", width: 390, height: 844 },
+  { name: "small Android", width: 360, height: 740 },
+  { name: "tablet portrait", width: 834, height: 1112 },
 ];
 
 /**
@@ -122,6 +131,81 @@ async function measure(page) {
   });
 }
 
+/**
+ * The check that would have caught the mobile pass before it was written twice.
+ *
+ * For every scrubbed element, scroll until its own centre is at the middle of
+ * the screen — the position it is being read at — and read its opacity there.
+ * Anything still faint is an element the reader never sees arrive, which is the
+ * one failure direction that costs content rather than movement.
+ * `motion/scrub.tsx` states the asymmetry and every constant in this directory
+ * is placed against it.
+ *
+ * **The reading position, not the fold.** An element whose window opens as its
+ * top edge appears is *supposed* to be at zero when its centre reaches the
+ * bottom edge — it has barely started. Asserting there fails correct code. The
+ * middle of the screen is where the claim actually is.
+ *
+ * At 390 x 844 the first run of this found **thirty of seventy-nine elements
+ * misplaced and twenty-three of them still at opacity 0**: every reason code in
+ * `decides`, every roadmap item, every row of the report card, three of five
+ * process cards, three of four verdict pills. All of them were fine at
+ * 1536 x 720, because every window in those files was a fraction of a section
+ * that is two to three times taller on a phone. None of it was visible from the
+ * source, and no static check could see it.
+ *
+ * Three exemptions, each of which is a case where the question is unfair rather
+ * than a case where the answer is inconvenient:
+ *
+ *   inside a pin      a pinned frame holds still while its contents advance, so
+ *                     "where this element is on screen" is not a quantity its
+ *                     animation has any relationship to. A sticky ancestor is
+ *                     the discriminator, as it is in `measure` above.
+ *   `data-reveal`     a `Reveal` is a 700ms tween triggered by an observer, not
+ *                     a scroll position. Reading its opacity one frame after
+ *                     scrolling to it measures the tween's start, always.
+ *   under 20 chars    a node on a spine is a 6px dot whose window is set by the
+ *                     draw that reaches it, not by where the dot is. It is
+ *                     supposed to be dark until the line arrives.
+ */
+async function probeArrival(page) {
+  return page.evaluate(async () => {
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    const pinned = (el) => {
+      for (let n = el; n; n = n.parentElement) {
+        if (getComputedStyle(n).position === "sticky") return true;
+      }
+      return false;
+    };
+    const sectionOf = (el) => {
+      for (let n = el; n; n = n.parentElement) if (n.id) return n.id;
+      return "?";
+    };
+
+    window.scrollTo(0, 0);
+    await sleep(500);
+
+    const items = [...document.querySelectorAll("[data-scrub]:not([data-reveal])")]
+      .filter((el) => !pinned(el) && (el.textContent ?? "").trim().length >= 20)
+      .map((el) => {
+        const r = el.getBoundingClientRect();
+        return { el, centre: r.top + window.scrollY + r.height / 2 };
+      });
+
+    const dark = [];
+    for (const it of items) {
+      window.scrollTo(0, Math.max(0, it.centre - window.innerHeight / 2));
+      await sleep(70);
+      const opacity = parseFloat(getComputedStyle(it.el).opacity);
+      if (opacity < 0.5) {
+        const text = (it.el.textContent ?? "").trim().replace(/\s+/g, " ").slice(0, 40);
+        dark.push(`${sectionOf(it.el)} @${opacity.toFixed(2)}: ${text}`);
+      }
+    }
+    return { checked: items.length, dark };
+  });
+}
+
 const browser = await chromium.launch();
 let failures = 0;
 
@@ -150,6 +234,15 @@ for (const vp of VIEWPORTS) {
       console.log(`  FAIL #${section.id} pinned below its own floor, so its lower half is unreachable`);
       failures += 1;
     }
+  }
+
+  const arrival = await probeArrival(page);
+  console.log(
+    `  scroll-driven text blocks: ${arrival.checked}, faint at reading position: ${arrival.dark.length}`,
+  );
+  for (const item of arrival.dark) {
+    console.log(`  FAIL still arriving once it is in the middle of the screen — ${item}`);
+    failures += 1;
   }
 
   await page.close();

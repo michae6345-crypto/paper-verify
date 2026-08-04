@@ -75,6 +75,15 @@ export function Reveal({
   return (
     <motion.div
       data-scrub=""
+      // Both attributes, and they say different things. `data-scrub` is what the
+      // reduced-motion block in `globals.css` resolves, and this element needs
+      // resolving for exactly the same reason a scrubbed one does. `data-reveal`
+      // says it is a *timeline* rather than a scroll position, which is what
+      // `scripts/check-viewports.mjs` has to know: that check scrolls an element
+      // into place and reads its opacity on the next frame, which is a fair
+      // question to ask of something driven by scroll and an unfair one to ask of
+      // something part-way through a 700ms tween.
+      data-reveal=""
       className={className}
       initial={{ opacity: 0, y, scale }}
       whileInView={{ opacity: 1, y: 0, scale: scale === undefined ? undefined : 1 }}

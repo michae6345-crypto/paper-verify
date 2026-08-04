@@ -6,12 +6,8 @@ import { motion, useTransform, type MotionValue } from "motion/react";
 import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
 import { Container, Card } from "@/components/site/ui";
 import { Reveal } from "@/components/site/reveal";
-import {
-  Pin,
-  Scrub,
-  useReducedMotionGate,
-  useSectionProgress,
-} from "@/components/site/motion/scrub";
+import { Pin, useReducedMotionGate, useSectionProgress } from "@/components/site/motion/scrub";
+import { Arrive } from "@/components/site/motion/mobile";
 
 /**
  * The intro: what this refuses to do, and then what it does.
@@ -201,15 +197,16 @@ function ScrubbedVerdicts() {
     <ul ref={row} className="mt-4 flex flex-wrap items-center justify-center gap-3">
       {VERDICTS.map((verdict, i) => (
         <li key={verdict}>
-          <Scrub
+          <Arrive
             progress={progress}
             from={i * PILL_STEP}
             to={PILL_SPAN + i * PILL_STEP}
+            lead={i * PILL_STEP}
             y={12}
             scale={[0.96, 1]}
           >
             <VerdictPill verdict={verdict} />
-          </Scrub>
+          </Arrive>
         </li>
       ))}
     </ul>
@@ -253,10 +250,15 @@ export function Intro() {
   return (
     <>
       <section id="about" style={{ paddingInline: "var(--site-gutter)" }}>
+        {/* `min-h-[280px]` below the breakpoint. The floor is what sets this
+            card's height, and 360 of black for two lines of copy is a full phone
+            screen spent on a rhythm break — which stops being a break and starts
+            being a section the reader has to get past, which is the exact failure
+            the 560 it replaced was already guilty of. */}
         <Card
           tone="dark"
           elevation="card"
-          className="mx-auto flex w-full max-w-[1440px] min-h-[360px] flex-col items-center justify-center gap-6 px-6 py-16 text-center two:px-[120px] two:py-24"
+          className="mx-auto flex w-full max-w-[1440px] min-h-[280px] flex-col items-center justify-center gap-5 px-6 py-12 text-center two:min-h-[360px] two:gap-6 two:px-[120px] two:py-24"
         >
           <Reveal>
             <h2 className="site-h2 mx-auto max-w-[900px]" style={{ color: "#ffffff" }}>
@@ -279,7 +281,7 @@ export function Intro() {
           ancestor with a clipped overflow is a scroll container, which is what a
           `position: sticky` descendant sticks to. The track below would pin to a
           box that never scrolls, which is to say it would not pin at all. */}
-      <section id="intro" className="scroll-mt-20 py-20">
+      <section id="intro" className="site-section scroll-mt-20">
         <Container>
           <div className="flex items-center justify-center gap-6">
             <TagRule side="left" />

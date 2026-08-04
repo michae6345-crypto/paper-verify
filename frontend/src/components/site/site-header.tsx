@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useScroll, useTransform, type MotionValue } from "motion/react";
+import { AnimatePresence, motion, useScroll, useTransform, type MotionValue } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
 
 import { useReducedMotionGate } from "@/components/site/motion/scrub";
@@ -234,50 +234,157 @@ export function SiteHeader() {
         <ScrubbedBar open={open}>{contents}</ScrubbedBar>
       )}
 
-      {open && (
-        <div
-          id="site-menu"
-          className="pointer-events-auto fixed inset-0 top-20 z-40 overflow-y-auto"
-          style={{ background: "var(--site-base)" }}
-        >
-          <Container>
-            <nav aria-label="Sections" className="flex flex-col py-6">
-              {SECTIONS.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className="border-t py-5"
-                  style={{
-                    borderColor: "var(--site-line)",
-                    color: "var(--site-ink)",
-                    fontSize: "clamp(28px, 6vw, 44px)",
-                    fontWeight: 400,
-                    letterSpacing: "-0.04em",
-                    lineHeight: 1.2,
-                  }}
-                >
-                  {item.label}
-                </a>
-              ))}
-              <Link
-                href="/check"
-                onClick={() => setOpen(false)}
-                className="mt-8 inline-flex h-14 items-center justify-center two:hidden"
-                style={{
-                  background: "var(--site-ink)",
-                  borderRadius: "var(--site-radius-pill)",
-                  color: "#ffffff",
-                  fontSize: "16px",
-                  fontWeight: 600,
-                }}
-              >
-                Check a paper
-              </Link>
-            </nav>
-          </Container>
-        </div>
+      {reduced ? (
+        open && <Menu onNavigate={() => setOpen(false)} />
+      ) : (
+        <AnimatePresence>{open && <AnimatedMenu onNavigate={() => setOpen(false)} />}</AnimatePresence>
       )}
     </header>
+  );
+}
+
+/**
+ * The menu panel.
+ *
+ * `clamp(22px, 5.4vw, 44px)` rather than `clamp(28px, 6vw, 44px)`, and `py-4`
+ * rather than `py-5`. That is not a shrink for its own sake: at the old sizes
+ * nine section links plus the control came to 798px against the 764 a 390 x 844
+ * phone has under an 80px bar, so the menu scrolled — and a navigation menu that
+ * scrolls hides the two entries most likely to be wanted, which on this page are
+ * "Questions" and "What's next". At 22px the whole page fits on one screen with
+ * 100px to spare, and each row is 58px, comfortably past the 44 a touch target
+ * needs.
+ */
+function Menu({ onNavigate }: { onNavigate: () => void }) {
+  return (
+    <div
+      id="site-menu"
+      className="pointer-events-auto fixed inset-0 top-20 z-40 overflow-y-auto"
+      style={{ background: "var(--site-base)" }}
+    >
+      <Container>
+        <nav aria-label="Sections" className="flex flex-col py-3">
+          {SECTIONS.map((item) => (
+            <a key={item.href} href={item.href} onClick={onNavigate} className="border-t py-4" style={MENU_LINK}>
+              {item.label}
+            </a>
+          ))}
+          <Link
+            href="/check"
+            onClick={onNavigate}
+            className="mt-6 inline-flex h-14 items-center justify-center two:hidden"
+            style={{
+              background: "var(--site-ink)",
+              borderRadius: "var(--site-radius-pill)",
+              color: "#ffffff",
+              fontSize: "16px",
+              fontWeight: 600,
+            }}
+          >
+            Check a paper
+          </Link>
+        </nav>
+      </Container>
+    </div>
+  );
+}
+
+const MENU_LINK = {
+  borderColor: "var(--site-line)",
+  color: "var(--site-ink)",
+  fontSize: "clamp(22px, 5.4vw, 44px)",
+  fontWeight: 400,
+  letterSpacing: "-0.04em",
+  lineHeight: 1.3,
+} as const;
+
+/**
+ * The same menu, arriving.
+ *
+ * The one piece of motion on this page that is a timeline rather than a scroll
+ * position, and deliberately so: a menu opens because somebody tapped a button,
+ * and driving that from scroll would be a lie about what caused it. `faq.tsx`
+ * draws the same line for the same reason — the arrival of a question is
+ * scrubbed, the opening of one is not.
+ *
+ * The field comes up first and the nine links follow it on a scroll-distance-free
+ * stagger, because there is no scroll distance here to measure one in. 24ms
+ * between links, which over nine of them is 216ms — inside the 300ms §6 caps
+ * everything at, and short enough that it reads as one sheet arriving with a
+ * grain to it rather than as nine items being dealt out.
+ *
+ * `y: 8` and nothing else. §4 rules out sliding from far off screen, and a
+ * navigation panel is the last place to make an exception: the reader has asked
+ * for a list and wants to read it, not watch it.
+ */
+const MENU_FIELD = {
+  hidden: { opacity: 0 },
+  shown: { opacity: 1, transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] as const } },
+  gone: { opacity: 0, transition: { duration: 0.12 } },
+} as const;
+
+const MENU_LIST = {
+  hidden: {},
+  shown: { transition: { delayChildren: 0.06, staggerChildren: 0.024 } },
+  gone: {},
+} as const;
+
+const MENU_ITEM = {
+  hidden: { opacity: 0, y: 8 },
+  shown: { opacity: 1, y: 0, transition: { duration: 0.24, ease: [0.16, 1, 0.3, 1] as const } },
+  gone: { opacity: 0, transition: { duration: 0.1 } },
+} as const;
+
+function AnimatedMenu({ onNavigate }: { onNavigate: () => void }) {
+  return (
+    <motion.div
+      id="site-menu"
+      className="pointer-events-auto fixed inset-0 top-20 z-40 overflow-y-auto"
+      style={{ background: "var(--site-base)", willChange: "opacity" }}
+      variants={MENU_FIELD}
+      initial="hidden"
+      animate="shown"
+      exit="gone"
+    >
+      <Container>
+        <motion.nav
+          aria-label="Sections"
+          className="flex flex-col py-3"
+          variants={MENU_LIST}
+          initial="hidden"
+          animate="shown"
+          exit="gone"
+        >
+          {SECTIONS.map((item) => (
+            <motion.a
+              key={item.href}
+              href={item.href}
+              onClick={onNavigate}
+              className="border-t py-4"
+              style={MENU_LINK}
+              variants={MENU_ITEM}
+            >
+              {item.label}
+            </motion.a>
+          ))}
+          <motion.div variants={MENU_ITEM} className="two:hidden">
+            <Link
+              href="/check"
+              onClick={onNavigate}
+              className="mt-6 inline-flex h-14 w-full items-center justify-center"
+              style={{
+                background: "var(--site-ink)",
+                borderRadius: "var(--site-radius-pill)",
+                color: "#ffffff",
+                fontSize: "16px",
+                fontWeight: 600,
+              }}
+            >
+              Check a paper
+            </Link>
+          </motion.div>
+        </motion.nav>
+      </Container>
+    </motion.div>
   );
 }

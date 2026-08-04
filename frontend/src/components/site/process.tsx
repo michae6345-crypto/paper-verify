@@ -12,6 +12,7 @@ import {
   useReducedMotionGate,
   useSectionProgress,
 } from "@/components/site/motion/scrub";
+import { SpineList } from "@/components/site/motion/mobile";
 import { cn } from "@/lib/utils";
 
 /**
@@ -53,12 +54,17 @@ import { cn } from "@/lib/utils";
  * scroll progress rather than as five delays in milliseconds. A reader who flicks
  * past gets the whole row; one who scrolls slowly gets five stages in order.
  *
- * Below `three:` the cards are already stacked, so the page's own scroll delivers
- * them one at a time and `Reveal` is the whole of it. That branch is a different
- * component rather than a `hidden` class, so nothing subscribes to scroll on a
- * phone — and it is also the `prefers-reduced-motion` branch, where `Reveal`
- * paints resolved and attaches no observer. The `ol` and its classes are the same
- * in both, so reduced motion changes what moves and never where anything sits.
+ * Below `three:` the same rule runs the other way. It used to be five stacked
+ * cards fading in on a timeline, which is the arrangement in which the sequence
+ * is carried by nothing at all — the scatter and the elevation that make the row
+ * read as an order are both off at that width by design, and a fade tells the
+ * reader nothing about what follows what. `SpineStages` turns the rule through
+ * ninety degrees instead, so it draws downward past a node on each card, which is
+ * the direction a phone is already moving in.
+ *
+ * Three branches, then, and the two questions are asked separately: width picks
+ * the layout, and the motion preference picks whether it arrives. A wide viewport
+ * with `prefers-reduced-motion` gets `StackedList`, which is the row resolved.
  */
 
 /**
@@ -297,7 +303,7 @@ function ScrubbedRow() {
   const progress = useSectionProgress(row);
 
   return (
-    <div ref={row} className="relative mt-10 three:mt-[60px]">
+    <div ref={row} className="site-stack relative">
       <Connector progress={progress} />
       <ol className={OL_CLASS}>
         {STAGES.map((stage, i) => {
@@ -326,17 +332,13 @@ function ScrubbedRow() {
   );
 }
 
-/** Stacked, where the page's own scroll already delivers them one at a time. */
+/** The row layout with nothing moving. What a wide viewport gets under reduced motion. */
 function StackedList() {
   return (
-    <div className="relative mt-10 three:mt-[60px]">
+    <div className="site-stack relative">
       <ol className={OL_CLASS}>
         {STAGES.map((stage, i) => (
           <li key={stage.name} className={`${stage.stagger} ${LI_CLASS}`}>
-            {/* The same gesture the scrubbed branch uses, on a timeline instead
-                of a scroll position. This is the whole of the motion on a phone,
-                where the page's own scroll is already delivering the cards one
-                at a time and there is nothing to scrub against. */}
             <Reveal delay={i * 0.05} y={16} scale={0.96}>
               <StageCard stage={stage} index={i} />
             </Reveal>
@@ -347,24 +349,92 @@ function StackedList() {
   );
 }
 
+/**
+ * The narrow branch: the same five stages on a spine that draws downward.
+ *
+ * What this replaces is five cards the height of the desktop's, stacked, each
+ * one fading in on a timeline as it arrived — 2,400px of scrolling through a
+ * sequence whose whole content is that it is a sequence, with nothing on screen
+ * connecting one card to the next. The scatter and the elevation that make the
+ * desktop row read as an order are both off at this width by design, so the
+ * order was carried by nothing at all.
+ *
+ * The spine carries it instead, and it is the section's own idea rather than a
+ * mobile pattern borrowed from somewhere: `ScrubbedRow` above already draws a
+ * rule left to right and lights a node over each card as it reaches it. This is
+ * that, rotated, which is the arrangement that fits the direction a phone
+ * scrolls. `SpineList` in `motion/mobile.tsx` owns the mechanic; what is here is
+ * the card.
+ *
+ * The card is also much shorter. `three:min-h-[454px]` and `justify-between`
+ * exist to make five cards of unequal copy agree on a height in a row; stacked,
+ * they produced a floating numeral, four hundred pixels of nothing, and a
+ * centred caption at the bottom — a desktop card's internal layout applied to a
+ * shape it was not for. Here the number, the stage and the description are one
+ * block, read top to bottom.
+ */
+function SpineStages() {
+  return (
+    <div className="site-stack">
+      <SpineList
+        count={STAGES.length}
+        rowClassName="pb-4"
+        renderRow={(i, window) => (
+          <Scrub
+            progress={window.progress}
+            from={window.from}
+            to={window.to}
+            y={12}
+            scale={[0.96, 1]}
+            lift="raised"
+            liftRadius="card"
+          >
+            <Card elevation="none" className="flex flex-col gap-1.5 p-5">
+              <div className="flex items-baseline gap-3">
+                <span
+                  className="site-mono"
+                  style={{ fontSize: "13px", color: "var(--site-muted)" }}
+                >
+                  {i + 1}
+                </span>
+                <h3
+                  className="site-mono"
+                  style={{ fontSize: "16px", lineHeight: 1.4, color: "var(--site-ink)" }}
+                >
+                  {STAGES[i].name}
+                </h3>
+              </div>
+              <p className="site-body" style={{ fontSize: "15px", lineHeight: 1.6 }}>
+                {STAGES[i].description}
+              </p>
+            </Card>
+          </Scrub>
+        )}
+      />
+    </div>
+  );
+}
+
 export function Process() {
-  // The gate, not `motion`'s `useReducedMotion`. This picks between two
-  // structurally different trees, which is the case the module comment in
-  // `motion/scrub.tsx` describes at length: `useReducedMotion` reads null on the
-  // server and the truth on the client's first render, so the two disagree and
-  // React keeps the server's attributes on a node the client thinks it owns.
-  // It happened to be survivable here only because `useRowLayout` also starts
-  // false, so both branches picked `StackedList` on the first pass. That is a
-  // coincidence of initial state rather than a reason, and the file it borrows
-  // the pattern from already names this file as one that uses the gate.
+  // The gate, not `motion`'s `useReducedMotion`. This picks between structurally
+  // different trees, which is the case the module comment in `motion/scrub.tsx`
+  // describes at length: `useReducedMotion` reads null on the server and the
+  // truth on the client's first render, so the two disagree and React keeps the
+  // server's attributes on a node the client thinks it owns.
+  //
+  // The two questions are now asked separately, because they are separate. Width
+  // decides the *layout* — a row of five or a spine — and it is asked whatever
+  // the motion preference is, so a reduced-motion reader on a wide screen still
+  // gets the row rather than a phone's spine at 1440px. The preference then
+  // decides only whether that row arrives or is simply there.
   const reduced = useReducedMotionGate();
-  const row = useRowLayout(!reduced);
+  const row = useRowLayout(true);
 
   return (
-    <section id="process" className="scroll-mt-20 py-14 three:py-[120px]">
+    <section id="process" className="site-section scroll-mt-20">
       <Container>
         <SectionTag tag="How a run proceeds" heading="The stages a run moves through" />
-        {reduced || !row ? <StackedList /> : <ScrubbedRow />}
+        {row ? reduced ? <StackedList /> : <ScrubbedRow /> : <SpineStages />}
       </Container>
     </section>
   );

@@ -3,7 +3,8 @@
 import { useRef } from "react";
 
 import { Card, Container } from "@/components/site/ui";
-import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
+import { useSectionProgress } from "@/components/site/motion/scrub";
+import { Arrive } from "@/components/site/motion/mobile";
 import { SectionTag } from "@/components/site/section-tag";
 
 /**
@@ -94,18 +95,19 @@ export function Report() {
   const progress = useSectionProgress(section);
 
   return (
-    <section id="report" ref={section} className="scroll-mt-20 py-14 three:py-[120px]">
+    <section id="report" ref={section} className="site-section scroll-mt-20">
       <Container>
         <SectionTag tag="The report" heading="What a reviewer opens" />
 
-        <Scrub
+        <Arrive
           progress={progress}
           from={CARD_FROM}
           to={CARD_TO}
+          kind="surface"
           y={12}
           scale={[0.96, 1]}
           lift="card"
-          className="mt-10 three:mt-[60px]"
+          boxClassName="site-stack"
         >
           {/* One wide card carrying the whole section, so it stands off the page.
               The four rows inside it are separated by hairlines and take no
@@ -115,18 +117,19 @@ export function Report() {
               `elevation="none"` because the shadow is scrubbed on the layer
               above, so the card gains its depth as it lands rather than carrying
               it from the first frame. */}
-          <Card tone="dark" elevation="none" className="p-8 three:p-12">
+          <Card tone="dark" elevation="none" className="p-6 two:p-8 three:p-12">
             <dl className="flex flex-col">
               {PROPERTIES.map((property, i) => {
                 const from = ROW_START + i * ROW_STEP;
                 return (
                   // `dl > div > dt + dd` is the grouping HTML allows, which is
                   // what lets the scrub wrap a pair without breaking the list.
-                  <Scrub
+                  <Arrive
                     key={property.term}
                     progress={progress}
                     from={from}
                     to={from + ROW_SPAN}
+                    lead={i * 0.02}
                     y={14}
                     className={
                       i === 0
@@ -155,14 +158,14 @@ export function Report() {
                     >
                       {property.detail}
                     </dd>
-                  </Scrub>
+                  </Arrive>
                 );
               })}
             </dl>
           </Card>
-        </Scrub>
+        </Arrive>
 
-        <Scrub progress={progress} from={NOTE_FROM} to={NOTE_TO} y={20}>
+        <Arrive progress={progress} from={NOTE_FROM} to={NOTE_TO} y={20}>
           <p
             className="mt-10 max-w-[68ch]"
             style={{
@@ -177,7 +180,7 @@ export function Report() {
             The other half is missing: there is no signed identifier and no endpoint a venue can
             call, so a report is something an author attaches, not something a venue confirms.
           </p>
-        </Scrub>
+        </Arrive>
       </Container>
     </section>
   );

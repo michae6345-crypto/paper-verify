@@ -3,7 +3,8 @@
 import { useRef, type ReactNode } from "react";
 
 import { Card, Container } from "@/components/site/ui";
-import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
+import { useSectionProgress } from "@/components/site/motion/scrub";
+import { Arrive } from "@/components/site/motion/mobile";
 import { SectionTag } from "@/components/site/section-tag";
 
 /**
@@ -109,9 +110,9 @@ function ClosingNote({ children }: { children: ReactNode }) {
 
   return (
     <div ref={note} className="three:flex-[2]">
-      <Scrub progress={progress} from={NOTE_FROM} to={NOTE_TO} y={20}>
+      <Arrive progress={progress} from={NOTE_FROM} to={NOTE_TO} y={20}>
         {children}
-      </Scrub>
+      </Arrive>
     </div>
   );
 }
@@ -121,19 +122,20 @@ export function Roadmap() {
   const progress = useSectionProgress(section);
 
   return (
-    <section id="roadmap" ref={section} className="scroll-mt-20 py-14 three:py-[120px]">
+    <section id="roadmap" ref={section} className="site-section scroll-mt-20">
       <Container>
         <SectionTag tag="What's next" heading="On the roadmap, and not built yet" />
 
-        <div className="mt-10 flex flex-col gap-12 three:mt-[60px] three:flex-row three:items-start three:gap-[60px]">
-          <Scrub
+        <div className="site-stack flex flex-col gap-10 three:flex-row three:items-start three:gap-[60px]">
+          <Arrive
             progress={progress}
             from={CARD_FROM}
             to={CARD_TO}
+            kind="surface"
             y={12}
             scale={[0.96, 1]}
             lift="card"
-            className="three:flex-1"
+            boxClassName="three:flex-1"
           >
             {/* The same elevation as the card in `decides`, because it is the same
                 shape of section: one object and the paragraph that argues with it.
@@ -144,7 +146,7 @@ export function Roadmap() {
             <Card
               tone="dark"
               elevation="none"
-              className="flex h-full flex-col items-start gap-7 p-10"
+              className="flex h-full flex-col items-start gap-6 p-6 two:gap-7 two:p-8 three:p-10"
             >
               <h3
                 style={{
@@ -163,10 +165,11 @@ export function Roadmap() {
               <ul className="flex w-full flex-col gap-6">
                 {ITEMS.map((item, i) => (
                   <li key={item.title}>
-                    <Scrub
+                    <Arrive
                       progress={progress}
                       from={FIRST + i * SPACING}
                       to={FIRST + i * SPACING + WINDOW}
+                      lead={i * 0.02}
                       y={14}
                       className="flex flex-col gap-1"
                     >
@@ -182,12 +185,12 @@ export function Roadmap() {
                       >
                         {item.description}
                       </p>
-                    </Scrub>
+                    </Arrive>
                   </li>
                 ))}
               </ul>
             </Card>
-          </Scrub>
+          </Arrive>
 
           <ClosingNote>
             <p

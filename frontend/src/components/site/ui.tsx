@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -64,8 +64,12 @@ export function Tag({
 }) {
   const dark = tone === "dark";
   return (
+    // `px-3.5 py-1.5` below the breakpoint. The pill is a label, and on a 390px
+    // screen the reference's 16px of horizontal padding was buying nothing and
+    // spending 32px of a 342px measure — enough to push a five-word tag onto a
+    // second line and turn a pill into a rounded rectangle with a halo around it.
     <span
-      className="inline-flex items-center gap-2.5 px-4 py-2"
+      className="inline-flex items-center gap-2 px-3.5 py-1.5 two:gap-2.5 two:px-4 two:py-2"
       style={{
         background: dark ? "rgba(255,255,255,0.06)" : "var(--site-card)",
         border: `1px solid ${dark ? "var(--site-line-invert)" : "var(--site-card)"}`,
@@ -82,7 +86,7 @@ export function Tag({
       )}
       <span
         className="site-display"
-        style={{ fontSize: "18px", color: dark ? "#ffffff" : "var(--site-ink)" }}
+        style={{ fontSize: "clamp(15px, 3.6vw, 18px)", color: dark ? "#ffffff" : "var(--site-ink)" }}
       >
         {children}
       </span>
@@ -215,7 +219,27 @@ export function Card({
   );
 }
 
-/** Real output, quoted. Fragment Mono, tabular figures, never an illustration. */
-export function Mono({ children, className }: { children: ReactNode; className?: string }) {
-  return <span className={cn("site-mono", className)}>{children}</span>;
+/**
+ * Real output, quoted. Fragment Mono, tabular figures, never an illustration.
+ *
+ * `style` is passed through because the face and the tabular figures are the
+ * whole of what this component asserts — a caller setting a size or a colour on
+ * a quoted value is not fighting it. Refusing the prop only meant callers reached
+ * for a bare `span` with `site-mono` on it, which is the same thing with the
+ * guarantee dropped.
+ */
+export function Mono({
+  children,
+  className,
+  style,
+}: {
+  children: ReactNode;
+  className?: string;
+  style?: CSSProperties;
+}) {
+  return (
+    <span className={cn("site-mono", className)} style={style}>
+      {children}
+    </span>
+  );
 }

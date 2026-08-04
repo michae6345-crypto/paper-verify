@@ -2,7 +2,8 @@
 
 import { useRef, type ReactNode } from "react";
 
-import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
+import { useSectionProgress } from "@/components/site/motion/scrub";
+import { Arrive } from "@/components/site/motion/mobile";
 import { Card, Container } from "@/components/site/ui";
 import { SectionTag } from "@/components/site/section-tag";
 
@@ -108,9 +109,9 @@ function ClosingNote({ children }: { children: ReactNode }) {
 
   return (
     <div ref={note} className="three:flex-[2]">
-      <Scrub progress={progress} from={NOTE_FROM} to={NOTE_TO} y={20}>
+      <Arrive progress={progress} from={NOTE_FROM} to={NOTE_TO} y={20}>
         {children}
-      </Scrub>
+      </Arrive>
     </div>
   );
 }
@@ -120,23 +121,20 @@ export function Decides() {
   const progress = useSectionProgress(section);
 
   return (
-    <section
-      ref={section}
-      id="decides"
-      className="scroll-mt-20 py-14 three:pt-[120px] three:pb-[160px]"
-    >
+    <section ref={section} id="decides" className="site-section scroll-mt-20 three:pb-[160px]">
       <Container>
         <SectionTag tag="How it decides" heading="A verdict is a pure function of its inputs" />
 
-        <div className="mt-10 flex flex-col gap-12 three:mt-[60px] three:flex-row three:items-start three:gap-[60px]">
-          <Scrub
+        <div className="site-stack flex flex-col gap-10 three:flex-row three:items-start three:gap-[60px]">
+          <Arrive
             progress={progress}
             from={CARD_FROM}
             to={CARD_TO}
+            kind="surface"
             y={12}
             scale={[0.96, 1]}
             lift="card"
-            className="three:flex-1"
+            boxClassName="three:flex-1"
           >
             {/* Standing off the page rather than resting on it. This section is a
                 card and a paragraph, not a field of cards, so there is nothing for
@@ -147,10 +145,14 @@ export function Decides() {
                 above and it arrives with the card instead of being there from the
                 first frame. The prop writes an inline `box-shadow`, so leaving it
                 set would put two of them on one surface. */}
+            {/* `p-6` below the breakpoint. The reference's 40px of card padding
+                on a 342px column leaves a 262px measure, which is about 30
+                characters of a 13px description — narrow enough that every one of
+                the four descriptions ran to four lines. */}
             <Card
               tone="dark"
               elevation="none"
-              className="flex h-full flex-col items-start gap-7 p-10 three:min-h-[428px]"
+              className="flex h-full flex-col items-start gap-6 p-6 two:gap-7 two:p-8 three:min-h-[428px] three:p-10"
             >
               <h3
                 style={{
@@ -172,10 +174,11 @@ export function Decides() {
                         failing to load, and §4 of the teardown spends that effect
                         once, on the one element that matters — which on this page
                         is the hero's verdict, not four lines of small print. */}
-                    <Scrub
+                    <Arrive
                       progress={progress}
                       from={REASON_START + i * REASON_STEP}
                       to={REASON_START + i * REASON_STEP + REASON_SPAN}
+                      lead={i * 0.02}
                       y={14}
                       className="flex flex-col gap-1"
                     >
@@ -194,12 +197,12 @@ export function Decides() {
                       >
                         {reason.description}
                       </p>
-                    </Scrub>
+                    </Arrive>
                   </li>
                 ))}
               </ul>
             </Card>
-          </Scrub>
+          </Arrive>
 
           <ClosingNote>
             <p

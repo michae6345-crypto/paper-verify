@@ -630,6 +630,19 @@
   /* The rhythm every section is built on. */
   --site-gutter: 24px;
   --site-max: 1200px;
+
+  /* The vertical rhythm, which used to be two Tailwind classes on every section
+     (`py-14 three:py-[120px]`) and so could not be reasoned about in one place.
+
+     The phone step is the one that changed. 56px between sections on a 390px
+     screen is not generous, it is undifferentiated: the gap between two sections
+     was the same as the gap between a heading and the cards under it, so the
+     page read as one continuous column of things rather than as nine arguments.
+     72 separates them, and the sections themselves are shorter now, so the page
+     is still 3,000px down on where it was. */
+  --site-section-y: 72px;
+  /* The gap between a section's heading and its contents. */
+  --site-stack: 32px;
 }
 
 /* The page itself. `body` is still --chrome-base for the app; the site paints
@@ -645,6 +658,15 @@
 @media (min-width: 810px) {
   [data-site] {
     --site-gutter: 48px;
+    --site-section-y: 96px;
+    --site-stack: 40px;
+  }
+}
+
+@media (min-width: 1100px) {
+  [data-site] {
+    --site-section-y: 120px;
+    --site-stack: 60px;
   }
 }
 
@@ -652,6 +674,63 @@
   [data-site] {
     --site-gutter: 120px;
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Touch.
+
+   Three rules, none of them cosmetic, all of them scoped to the marketing
+   surface because the app chrome is a pointer surface and has its own answers.
+
+   `touch-action: manipulation` removes the 300ms wait a mobile browser spends
+   deciding whether a tap was the first half of a double-tap-to-zoom. It is
+   declared on the controls rather than on the root so that pinch-zoom still
+   works everywhere — disabling zoom on a page of body copy is an accessibility
+   failure, and `touch-action: none` on a container is how that happens by
+   accident.
+
+   The tap highlight goes because the default is a translucent blue-black block
+   the shape of the element's border box, which on a fully rounded pill is a
+   rectangle with the pill inside it. `:active` gives the feedback back in the
+   page's own terms, and it has to be there — a control that acknowledges a
+   touch only when the navigation completes reads as a control that missed it.
+   --------------------------------------------------------------------------- */
+
+[data-site] a,
+[data-site] button,
+[data-site] summary,
+[data-site] [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: none) {
+  [data-site] a:active,
+  [data-site] button:active,
+  [data-site] summary:active {
+    opacity: 0.72;
+  }
+}
+
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+  [data-site] a:active,
+  [data-site] button:active {
+    transform: scale(0.985);
+  }
+}
+
+/* A horizontal rail keeps its scrollbar off the page. The bar underneath it is
+   the position indicator, and two of them is one too many — on Android the
+   native one also sits over the foot of the cards it is describing. The rail is
+   still a scroll container, so the keyboard and assistive technology reach it
+   exactly as before. */
+.site-rail {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.site-rail::-webkit-scrollbar {
+  display: none;
 }
 
 /* ---------------------------------------------------------------------------
@@ -819,4 +898,17 @@
   line-height: 1.5;
   letter-spacing: -0.02em;
   color: var(--site-muted);
+}
+
+/* The section rhythm, as one declaration rather than as `py-14 three:py-[120px]`
+   repeated in nine files. The two steps in between are what a tablet was
+   missing: at 834px it was taking the phone's 56px of separation under a layout
+   that had already widened into two columns. */
+@utility site-section {
+  padding-block: var(--site-section-y);
+}
+
+/* The gap under a section's heading. Same argument, same token. */
+@utility site-stack {
+  margin-top: var(--site-stack);
 }

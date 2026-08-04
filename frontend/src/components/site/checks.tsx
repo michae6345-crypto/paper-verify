@@ -92,11 +92,11 @@ export function Checks() {
   cards.push(...NETWORK_CHECKS);
 
   return (
-    <section id="checks" className="scroll-mt-20 py-14 three:py-[120px]">
+    <section id="checks" className="site-section scroll-mt-20">
       <Container>
         <SectionTag tag="The checks" heading="What it checks today" />
 
-        <p className="site-body mx-auto mt-6 max-w-[58ch] text-center">
+        <p className="site-body mx-auto mt-5 max-w-[58ch] text-center">
           Four checks, in two families. Two read the paper against itself. Two read it against the
           world outside it.
         </p>
