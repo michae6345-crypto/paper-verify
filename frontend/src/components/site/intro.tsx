@@ -4,18 +4,20 @@ import { useRef } from "react";
 import { motion, useTransform, type MotionValue } from "motion/react";
 
 import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
-import { Container, Card } from "@/components/site/ui";
-import { Reveal } from "@/components/site/reveal";
-import { Pin, useReducedMotionGate, useSectionProgress } from "@/components/site/motion/scrub";
-import { Arrive } from "@/components/site/motion/mobile";
+import { Container } from "@/components/site/ui";
+import {
+  DrawLine,
+  Pin,
+  useReducedMotionGate,
+  useSectionProgress,
+} from "@/components/site/motion/scrub";
+import { Arrive, Rise, useOwnTrack } from "@/components/site/motion/mobile";
 
 /**
- * The intro: what this refuses to do, and then what it does.
+ * The intro: what a run produces, and why a venue wants it.
  *
- * Two sections in the capture and two here. The first is a flat statement on an
- * inverted card and needs no motion at all. The second is the page's signature
- * scroll moment — a paragraph set at 44px whose words come up from 20% to full
- * ink one at a time as you scroll through it.
+ * The page's signature scroll moment opens it — a paragraph set at 44px whose
+ * words come up from 20% to full ink one at a time as you scroll through it.
  *
  * That reveal is scrubbed, not tweened (`docs/MOTION_TEARDOWN.md` §1): the
  * section is a tall track with a sticky panel in it, and each word maps a slice
@@ -37,19 +39,18 @@ import { Arrive } from "@/components/site/motion/mobile";
  * land over the foot of a paragraph set at 44px, and the ring alone was letting
  * them sit in that text rather than over it.
  *
- * The inverted card at the top is the page's one rhythm break, and it is sized as
- * a break rather than as a screen. It held `min-h-[560px]` for two lines of copy,
- * which is a full viewport of black for eight words and reads as a section the
- * reader has to get past. It is 360 now, with the padding brought down to match,
- * so the floor is what sets the height at every width rather than the text
- * floating in the middle of an arbitrary box. It stands off the page rather than
- * resting on it, because a break in the rhythm that sits at the same depth as
- * everything else is not a break.
+ * **What used to be at the top of this file.** An inverted full-bleed card
+ * carrying "It verifies numbers, not content." It was the page's one rhythm break
+ * and it spent a section of black on a disclaimer, which put the thing the
+ * product refuses to do ahead of the thing it does. The refusal still holds and
+ * the FAQ still states it; it no longer opens the argument. `IntakeNote` closes
+ * the section instead, and the rhythm break it provides is a change of alignment
+ * rather than a change of colour.
  */
 
 const SENTENCE =
   "residual reads a paper's LaTeX source and reports where its own numbers, links and " +
-  "citations disagree. The result is a permalink you attach to a submission.";
+  "citations disagree. The result is a permalink that travels with the submission.";
 
 const VERDICTS = ["matches", "within_tolerance", "diverges", "unverifiable"] as const;
 
@@ -245,56 +246,124 @@ function TagRule({ side }: { side: "left" | "right" }) {
   );
 }
 
+/**
+ * The intake argument, and the section's change of rhythm.
+ *
+ * Everything above it on this page is centred: the hero, the tag, the paragraph,
+ * the four verdicts. This is set against the left edge with the note dropped to
+ * the opposite corner, which is `MOTION_TEARDOWN.md` §5's arrangement — body copy
+ * held in a narrow column while the other side stays open — and it is the first
+ * time the reader's eye has had to move since the top of the page.
+ *
+ * **Why three lines and no animation on them.** §2 of the same document records a
+ * static two-tone headline: setup in mid-grey, punchline at full ink, same size
+ * and weight throughout, nothing moving. Colour does the work, and it survives a
+ * screenshot. The block still arrives as one object, because everything on this
+ * page arrives, but the contrast between the setup and the punchline is not
+ * animated and must not be — a per-line reveal would turn a sentence into a
+ * countdown.
+ *
+ * **No figure, and none is coming.** "Submissions keep growing, reviewer hours do
+ * not" is the claim, and it is stated qualitatively on purpose. This page holds
+ * every number on it to something in the repository, and a growth rate for
+ * conference submissions is not in the repository. A statistic here would be the
+ * exact failure the product exists to catch, printed on the product's own page.
+ *
+ * The rule above it draws as the block arrives. It is `DrawLine`, which is the
+ * page's existing stroke vocabulary rather than a second way of drawing a line,
+ * and it collapses to a plain painted `path` under reduced motion with no spring
+ * and no frame loop.
+ *
+ * **Both windows are measured, never fractions of the section.** `#intro`
+ * contains a 260vh pin, so a window expressed as a slice of this section's travel
+ * would be a wildly different number of pixels here than the pin's own numbers
+ * assume, and on a phone different again. `useOwnTrack` and `Rise` each measure
+ * `H + S` for their own box, so progress 0 is the frame the box's top edge
+ * reaches the fold and 0.5 is its centre at the centre of the screen, at every
+ * viewport and with no constant to go stale.
+ */
+function IntakeNote() {
+  const box = useRef<HTMLDivElement>(null);
+  const { progress, from, to } = useOwnTrack(box, "surface");
+
+  return (
+    <div ref={box} className="mt-20 two:mt-28">
+      {/* Two units tall in the viewBox and 2px on the page with
+          `preserveAspectRatio="none"`, so the rule stretches across the measure
+          and the stroke is not stretched with it. The spine in `hero.tsx` is the
+          same construction. */}
+      <svg
+        aria-hidden="true"
+        className="h-0.5 w-full"
+        viewBox="0 0 1000 2"
+        preserveAspectRatio="none"
+      >
+        <g stroke="var(--site-line-strong)">
+          <DrawLine
+            progress={progress}
+            from={from}
+            to={from + (to - from) * 0.6}
+            d="M0 1 H1000"
+            strokeWidth={1}
+          />
+        </g>
+      </svg>
+
+      <div className="mt-10 flex flex-col gap-8 two:mt-14 two:flex-row two:items-end two:justify-between two:gap-16">
+        {/* Each line is its own block rather than a `<br>`, so the colour can
+            only ever change at a line boundary. On a phone a sentence wraps and
+            a two-tone break landing mid-line would read as a mistake rather than
+            as a device. */}
+        <Rise kind="surface" y={16} boxClassName="two:max-w-[62%]" className="site-h2">
+          <span className="block" style={SETUP}>
+            Submissions keep growing.
+          </span>
+          <span className="block" style={SETUP}>
+            Reviewer hours do not.
+          </span>
+          <span className="block">residual takes the first pass.</span>
+        </Rise>
+
+        <Rise
+          kind="row"
+          lead={0.08}
+          y={12}
+          boxClassName="two:max-w-[34ch]"
+          className="site-body two:text-right"
+        >
+          It reports what diverges and names every check it declined to make.
+        </Rise>
+      </div>
+    </div>
+  );
+}
+
+/** The two setup lines of the two-tone statement. §2: mid-grey, then full ink. */
+const SETUP = { color: "var(--site-muted)" } as const;
+
 export function Intro() {
   return (
-    <>
-      <section id="about" style={{ paddingInline: "var(--site-gutter)" }}>
-        {/* `min-h-[280px]` below the breakpoint. The floor is what sets this
-            card's height, and 360 of black for two lines of copy is a full phone
-            screen spent on a rhythm break — which stops being a break and starts
-            being a section the reader has to get past, which is the exact failure
-            the 560 it replaced was already guilty of. */}
-        <Card
-          tone="dark"
-          elevation="card"
-          className="mx-auto flex w-full max-w-[1440px] min-h-[280px] flex-col items-center justify-center gap-5 px-6 py-12 text-center two:min-h-[360px] two:gap-6 two:px-[120px] two:py-24"
-        >
-          <Reveal>
-            <h2 className="site-h2 mx-auto max-w-[900px]" style={{ color: "#ffffff" }}>
-              It verifies numbers, not content.
-            </h2>
-          </Reveal>
-          <Reveal delay={0.08}>
-            <p
-              className="site-lede mx-auto max-w-[700px]"
-              style={{ color: "var(--site-muted-invert)" }}
-            >
-              It has no opinion on whether the ideas are new or correct.
-            </p>
-          </Reveal>
-        </Card>
-      </section>
+    // No `overflow-hidden` on this section, deliberately. It clips nothing — the
+    // tag rules, the paragraph and the note are all inside the measure — and an
+    // ancestor with a clipped overflow is a scroll container, which is what a
+    // `position: sticky` descendant sticks to. The track below would pin to a box
+    // that never scrolls, which is to say it would not pin at all.
+    <section id="intro" className="site-section scroll-mt-20">
+      <Container>
+        <div className="flex items-center justify-center gap-6">
+          <TagRule side="left" />
+          <span className="site-display" style={{ fontSize: "24px", color: "var(--site-muted)" }}>
+            What it does
+          </span>
+          <TagRule side="right" />
+        </div>
 
-      {/* No `overflow-hidden` on this section, deliberately. It clips nothing —
-          the tag rules and the paragraph are both inside the measure — and an
-          ancestor with a clipped overflow is a scroll container, which is what a
-          `position: sticky` descendant sticks to. The track below would pin to a
-          box that never scrolls, which is to say it would not pin at all. */}
-      <section id="intro" className="site-section scroll-mt-20">
-        <Container>
-          <div className="flex items-center justify-center gap-6">
-            <TagRule side="left" />
-            <span className="site-display" style={{ fontSize: "24px", color: "var(--site-muted)" }}>
-              What it does
-            </span>
-            <TagRule side="right" />
-          </div>
+        <ScrubbedParagraph />
 
-          <ScrubbedParagraph />
+        <VerdictRow />
 
-          <VerdictRow />
-        </Container>
-      </section>
-    </>
+        <IntakeNote />
+      </Container>
+    </section>
   );
 }

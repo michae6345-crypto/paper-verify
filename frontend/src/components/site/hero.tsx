@@ -57,7 +57,7 @@ import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
  * The headline is two lines everywhere this pins, and that is arithmetic rather
  * than luck: the measure is `min(1000px, container)` and the size is
  * `min(72px, 5vw)`, so the characters per line only ever move between about 27
- * at 1440 and 36 at 1024, and a 46-character headline does not reach three at
+ * at 1440 and 36 at 1024, and a 45-character headline does not reach three at
  * either end. Three lines would cost 82 more and land at 690, which still fits,
  * so the frame survives a longer headline — but only just, and
  * `scripts/check-viewports.mjs` is what would say so.
@@ -122,6 +122,42 @@ const STAGES = [
   { name: "adjudicating", artifact: "verdicts" },
 ] as const;
 
+/**
+ * The claim, the sentence under it, and the one control.
+ *
+ * Stated once because the hero renders twice — pinned above 1024 x 700, in flow
+ * below it — and copy that disagreed with itself across a breakpoint is the same
+ * shape of failure as the two `latexutil.py` modules `CLAUDE.md` records: nothing
+ * reads both, so no file read reveals the drift.
+ *
+ * **What the headline argues.** A venue's problem is not that it lacks judgement,
+ * it is that submissions arrive faster than there are hours to read them. So the
+ * claim is about order rather than about intelligence: the mechanical pass runs
+ * before a reviewer spends attention, and what a reviewer then opens is a paper
+ * whose arithmetic has already been checked. `residual` does not rank the work,
+ * and the sentence under the headline says in its second clause what the run
+ * declined to settle, because that is the half a chair has to be able to see.
+ *
+ * No figure appears here, and none is coming. The honest version of "submissions
+ * grow faster than reviewer hours" needs no number, and this page has a rule that
+ * every number on it traces to something in the repository.
+ *
+ * 45 characters, which is what `PINNED_HEADLINE`'s two-line budget affords. The
+ * arithmetic is in the block comment at the top of this file and
+ * `scripts/check-viewports.mjs` is what enforces it.
+ */
+const TAG = "Built for conference and workshop intake";
+const HEADLINE = "Check every submission before a reviewer does";
+const SUBHEAD =
+  "Submissions grow faster than reviewer hours. residual runs the mechanical checks " +
+  "and reports what it could not verify.";
+
+/**
+ * The public way in. The checker itself now sits behind a gate, so the control a
+ * visitor meets books a conversation rather than starting a run.
+ */
+const CTA = { href: "/demo", label: "Book a demo" } as const;
+
 /** The spine draws across this slice. Every stage window is derived from it. */
 const DRAW_FROM = 0.08;
 const DRAW_TO = 0.44;
@@ -159,7 +195,7 @@ function artifactWindow(i: number): [number, number] {
  * 248.4px; the block comment budgets 248.
  *
  * The width still has to hold the line. At 72px in a 1000px measure a line takes
- * roughly 28 characters, so the current 46-character headline sets in two on a
+ * roughly 28 characters, so the current 45-character headline sets in two on a
  * wide screen and three on a narrow one, and three is what is budgeted.
  *
  * This is the size the pinned hero can afford, not the size it would like. The
@@ -460,24 +496,19 @@ function FlowHero() {
       <Container>
         <div className="mx-auto flex max-w-[720px] flex-col items-center gap-5 text-center two:gap-7">
           <Reveal>
-            <Tag dot>Built for conference and workshop submissions</Tag>
+            <Tag dot>{TAG}</Tag>
           </Reveal>
 
           <Reveal delay={0.06}>
             {/* No `progress`, so nothing here opens a scroll subscription. The
                 static hero is also the reduced-motion branch. */}
             <HeroBubbles>
-              <h1 className="site-h1 mx-auto max-w-[1000px] text-balance">
-                AI-native verification for academic conferences
-              </h1>
+              <h1 className="site-h1 mx-auto max-w-[1000px] text-balance">{HEADLINE}</h1>
             </HeroBubbles>
           </Reveal>
 
           <Reveal delay={0.12}>
-            <p className="site-body mx-auto max-w-[46ch] text-balance">
-              It checks a paper&rsquo;s numbers, links and citations. Run it before you submit and
-              attach the report.
-            </p>
+            <p className="site-body mx-auto max-w-[52ch] text-balance">{SUBHEAD}</p>
           </Reveal>
 
           {/* The tray stays flat, and that is not an oversight. It is 8px of white
@@ -491,7 +522,9 @@ function FlowHero() {
               className="flex flex-wrap items-center justify-center gap-3 p-2"
               style={{ background: "var(--site-card)", borderRadius: "var(--site-radius-pill)" }}
             >
-              <PrimaryLink href="/check">Check a paper</PrimaryLink>
+              <PrimaryLink href={CTA.href} prefetch={false}>
+                {CTA.label}
+              </PrimaryLink>
             </div>
           </Reveal>
         </div>
@@ -570,7 +603,7 @@ function PinnedHero() {
             bar only has at scroll 0. */}
         {(progress) => (
           <Container className="flex h-full flex-col items-center justify-center gap-5 pt-16 text-center">
-            <Tag dot>Built for conference and workshop submissions</Tag>
+            <Tag dot>{TAG}</Tag>
 
             <Exit progress={progress} from={0.7} to={0.82} className="w-full">
               <Spine progress={progress} />
@@ -591,7 +624,7 @@ function PinnedHero() {
                 className="site-h1 mx-auto max-w-[1000px] text-balance"
                 style={{ fontSize: PINNED_HEADLINE }}
               >
-                AI-native verification for academic conferences
+                {HEADLINE}
               </h1>
             </HeroBubbles>
 
@@ -624,10 +657,7 @@ function PinnedHero() {
                 className="absolute inset-0 flex flex-col items-center justify-start gap-3"
               >
                 <Scrub progress={progress} from={0.82} to={0.93} y={20}>
-                  <p className="site-body mx-auto max-w-[520px] text-balance">
-                    It checks a paper&rsquo;s numbers, links and citations. Run it before you
-                    submit and attach the report.
-                  </p>
+                  <p className="site-body mx-auto max-w-[520px] text-balance">{SUBHEAD}</p>
                 </Scrub>
 
                 <Scrub progress={progress} from={0.88} to={1} y={16}>
@@ -638,7 +668,9 @@ function PinnedHero() {
                       borderRadius: "var(--site-radius-pill)",
                     }}
                   >
-                    <PrimaryLink href="/check">Check a paper</PrimaryLink>
+                    <PrimaryLink href={CTA.href} prefetch={false}>
+                      {CTA.label}
+                    </PrimaryLink>
                   </div>
                 </Scrub>
               </Live>

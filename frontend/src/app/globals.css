@@ -813,6 +813,32 @@
     inset 0 -16px 48px 0 rgb(0 0 0);
 }
 
+/* The primary control acknowledging a pointer.
+
+   `PrimaryLink` already carries `transition-transform` and the panel duration,
+   and it already answers a touch — `[data-site] a:active` above scales it under
+   `(hover: none)`. A mouse got nothing at all, which on the one control the page
+   is built around is the "instant state change" the UX rules list as an
+   anti-pattern.
+
+   1px, and only 1px. The control wears the six-stop `.site-lift` stack, so it is
+   already the most raised thing on the page; a larger travel would read as the
+   button jumping rather than as it responding. `:active` puts it back down, so a
+   press is a real press.
+
+   Gated on `(hover: hover)` so a touch device never resolves the hover state and
+   sticks there after a tap, and on `no-preference` because a transform is motion
+   and this page does not move for a reader who asked it not to. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  [data-site] .site-lift:hover {
+    transform: translateY(-1px);
+  }
+
+  [data-site] .site-lift:active {
+    transform: translateY(0);
+  }
+}
+
 @utility site-halo {
   box-shadow: var(--site-shadow-halo);
 }

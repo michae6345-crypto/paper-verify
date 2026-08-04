@@ -12,7 +12,13 @@ import { Scrub, useSectionProgress } from "@/components/site/motion/scrub";
  * It arrives the same way: one object. The tag, the heading, the sentence and
  * the control were four staggered reveals, which read as a card assembling
  * itself out of parts. They now share one window, so the whole CTA comes up as
- * the thing it is, and only the status note and the foot of the card follow it.
+ * the thing it is, and only the foot of the card follows it.
+ *
+ * The card used to carry a line under the control reading "In development. Runs
+ * live in memory, so they do not survive a restart and permalinks are not durable
+ * yet." It is gone at the owner's request. Nothing on the page now claims the
+ * permalink is durable either, so the deletion removes a caveat rather than
+ * contradicting one.
  *
  * The windows all close by 0.34 of the section's travel, which looks early and
  * is not. This is the last element in the document: its bottom edge can never
@@ -120,32 +126,24 @@ export function SiteFooter() {
             scale={[0.97, 1]}
             className="relative flex flex-col items-center gap-8 text-center"
           >
-            <Tag dot>Open to papers</Tag>
+            <Tag dot>Open to venues</Tag>
             <h2 className="site-h1">
               <span style={{ color: "var(--site-muted)" }}>Let&rsquo;s </span>
-              check a paper
+              check your intake
             </h2>
             <p className="site-body mx-auto max-w-[52ch]">
-              residual checks a paper&rsquo;s numbers, links and citations against its own source.
+              residual checks a submission&rsquo;s numbers, links and citations against its own
+              source.
             </p>
-            <PrimaryLink href="/check">Check a paper</PrimaryLink>
+            {/* Not prefetched. See `PrimaryLink`: Next fetches an App Router
+                link's route as it enters the viewport, and until `/demo` exists
+                that request never settles. */}
+            <PrimaryLink href="/demo" prefetch={false}>
+              Book a demo
+            </PrimaryLink>
           </Scrub>
 
-          {/* Not in the capture, and kept anyway. This product's whole argument
-              is that it says what it cannot do; a landing page that closes on
-              "check a paper" without mentioning that runs do not survive a
-              restart would be the one place it stopped doing that. */}
-          <Scrub progress={progress} from={0.18} to={0.32} y={24} className="relative mt-14">
-            <p
-              className="mx-auto max-w-[68ch] text-center"
-              style={{ fontSize: "13px", lineHeight: 1.6, color: "var(--site-muted)" }}
-            >
-              In development. Runs live in memory, so they do not survive a restart and permalinks
-              are not durable yet.
-            </p>
-          </Scrub>
-
-          <Scrub progress={progress} from={0.22} to={0.34} y={20} className="relative mt-10">
+          <Scrub progress={progress} from={0.22} to={0.34} y={20} className="relative mt-14">
             <div className="flex flex-col items-center justify-between gap-6 two:flex-row">
               {/* The one element in the footer that needed a shadow. It is a
                   filled pill with no border, sitting on the white end of the

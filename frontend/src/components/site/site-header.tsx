@@ -51,17 +51,40 @@ import { Container } from "@/components/site/ui";
  * underneath rather than onto a page that is holding still.
  */
 
+/**
+ * The menu, cut from nine entries to four.
+ *
+ * Nine was the whole page transcribed into a list, which is a table of contents
+ * rather than a menu: every section on the page had a line whether or not anyone
+ * would ever choose it, and the two entries most likely to be wanted sat at the
+ * bottom. A menu earns its length by what a reader would actually go looking for,
+ * and on this page that is four questions — what is it, what does it check, what
+ * do I end up holding, and does a model decide any of this.
+ *
+ * The four that went for cause: `#roadmap` because the section is gone, and
+ * `#decides`, `#apparatus` and `#measured` because they are being condensed and
+ * an anchor is dead the moment its id moves. `#process` is the one judgement
+ * call — it survives on the page and it is a good section, but the hero already
+ * runs the five stages across the spine before a reader reaches any menu.
+ *
+ * **These ids are checked against the rendered page, not against this file.**
+ * `app/(site)/page.tsx` composes the sections and several of them are owned by
+ * other people; an id listed here that no longer exists is a link that silently
+ * does nothing. Four of four resolve at the time of writing.
+ */
 const SECTIONS = [
   { href: "#intro", label: "What it does" },
-  { href: "#process", label: "How a run proceeds" },
   { href: "#checks", label: "The checks" },
-  { href: "#decides", label: "How it decides" },
-  { href: "#apparatus", label: "The apparatus" },
-  { href: "#measured", label: "Measured" },
   { href: "#report", label: "The report" },
   { href: "#faq", label: "Questions" },
-  { href: "#roadmap", label: "What's next" },
 ];
+
+/**
+ * The public control, matching `hero.tsx` and the closing card. The checker
+ * moved behind a gate, so the way in books a conversation rather than starting
+ * a run.
+ */
+const CTA = { href: "/demo", label: "Book a demo" } as const;
 
 /** Bar heights, and the scroll distance the change is spread over. */
 const TALL = 80;
@@ -170,8 +193,13 @@ export function SiteHeader() {
       </Link>
 
       <div className="flex items-center gap-2">
+        {/* `prefetch={false}` for the reason `ui.tsx` sets out at length: Next
+            fetches a link's route as it enters the viewport, this bar is in the
+            viewport on every page of the site at all times, and a request for a
+            route that does not exist yet never settles. */}
         <Link
-          href="/check"
+          href={CTA.href}
+          prefetch={false}
           className="site-elevated hidden h-11 items-center px-6 transition-colors two:flex"
           style={{
             background: "var(--site-ink)",
@@ -182,7 +210,7 @@ export function SiteHeader() {
             transitionDuration: "var(--dur-fast)",
           }}
         >
-          Check a paper
+          {CTA.label}
         </Link>
 
         <button
@@ -246,14 +274,13 @@ export function SiteHeader() {
 /**
  * The menu panel.
  *
- * `clamp(22px, 5.4vw, 44px)` rather than `clamp(28px, 6vw, 44px)`, and `py-4`
- * rather than `py-5`. That is not a shrink for its own sake: at the old sizes
- * nine section links plus the control came to 798px against the 764 a 390 x 844
- * phone has under an 80px bar, so the menu scrolled — and a navigation menu that
- * scrolls hides the two entries most likely to be wanted, which on this page are
- * "Questions" and "What's next". At 22px the whole page fits on one screen with
- * 100px to spare, and each row is 58px, comfortably past the 44 a touch target
- * needs.
+ * The type went to `clamp(22px, 5.4vw, 44px)` when this held nine links, because
+ * nine rows plus the control came to 798px against the 764 a 390 x 844 phone has
+ * under an 80px bar, and a navigation menu that scrolls hides the entries most
+ * likely to be wanted. Four rows do not have that problem: at
+ * `clamp(28px, 6vw, 44px)` they come to roughly 380px, which leaves half the
+ * screen empty. So the size goes back up, and each row is 68px against the 44 a
+ * touch target needs.
  */
 function Menu({ onNavigate }: { onNavigate: () => void }) {
   return (
@@ -270,7 +297,8 @@ function Menu({ onNavigate }: { onNavigate: () => void }) {
             </a>
           ))}
           <Link
-            href="/check"
+            href={CTA.href}
+            prefetch={false}
             onClick={onNavigate}
             className="mt-6 inline-flex h-14 items-center justify-center two:hidden"
             style={{
@@ -281,7 +309,7 @@ function Menu({ onNavigate }: { onNavigate: () => void }) {
               fontWeight: 600,
             }}
           >
-            Check a paper
+            {CTA.label}
           </Link>
         </nav>
       </Container>
@@ -292,7 +320,7 @@ function Menu({ onNavigate }: { onNavigate: () => void }) {
 const MENU_LINK = {
   borderColor: "var(--site-line)",
   color: "var(--site-ink)",
-  fontSize: "clamp(22px, 5.4vw, 44px)",
+  fontSize: "clamp(28px, 6vw, 44px)",
   fontWeight: 400,
   letterSpacing: "-0.04em",
   lineHeight: 1.3,
@@ -307,11 +335,11 @@ const MENU_LINK = {
  * draws the same line for the same reason — the arrival of a question is
  * scrubbed, the opening of one is not.
  *
- * The field comes up first and the nine links follow it on a scroll-distance-free
+ * The field comes up first and the links follow it on a scroll-distance-free
  * stagger, because there is no scroll distance here to measure one in. 24ms
- * between links, which over nine of them is 216ms — inside the 300ms §6 caps
+ * between links, which over four of them is 72ms — inside the 300ms §6 caps
  * everything at, and short enough that it reads as one sheet arriving with a
- * grain to it rather than as nine items being dealt out.
+ * grain to it rather than as items being dealt out.
  *
  * `y: 8` and nothing else. §4 rules out sliding from far off screen, and a
  * navigation panel is the last place to make an exception: the reader has asked
@@ -369,7 +397,8 @@ function AnimatedMenu({ onNavigate }: { onNavigate: () => void }) {
           ))}
           <motion.div variants={MENU_ITEM} className="two:hidden">
             <Link
-              href="/check"
+              href={CTA.href}
+              prefetch={false}
               onClick={onNavigate}
               className="mt-6 inline-flex h-14 w-full items-center justify-center"
               style={{
@@ -380,7 +409,7 @@ function AnimatedMenu({ onNavigate }: { onNavigate: () => void }) {
                 fontWeight: 600,
               }}
             >
-              Check a paper
+              {CTA.label}
             </Link>
           </motion.div>
         </motion.nav>

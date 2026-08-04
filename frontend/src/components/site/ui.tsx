@@ -32,9 +32,10 @@ export function Container({ children, className }: { children: ReactNode; classN
  * Instrument Serif italic. It names the section and says nothing else.
  *
  * The dot is the reference's, and it is decoration rather than status — it sits
- * beside copy that makes no claim about whether anything is running. The one
- * place this repository refuses a green dot is the footer's status line, which
- * does make such a claim; that line is still plain text.
+ * beside copy that makes no claim about whether anything is running. Nowhere on
+ * this page does a dot stand next to a statement about whether the service is up,
+ * and it must not start: a green dot beside a claim about running state is read
+ * as a status light, and this product has no endpoint behind one.
  */
 /**
  * Elevation, and the border that looks like a mistake.
@@ -98,19 +99,35 @@ export function Tag({
  * The primary control. Black pill, white label, and the reference's six-stop
  * shadow with an inset at the foot of it — the one shadow the whole product
  * allows itself, and the reason `.site-lift` exists in `globals.css`.
+ *
+ * **`prefetch` is a prop because a route that does not exist yet cannot be
+ * prefetched.** Next prefetches an App Router `Link` the moment it enters the
+ * viewport, and the request for a missing route never settles: measured here as a
+ * permanently pending `GET /demo?_rsc=…`, which is a hanging request on every
+ * page load and which stops `networkidle` from ever firing, so
+ * `scripts/check-viewports.mjs` cannot load the page at all.
+ *
+ * It stays off for that control after the route lands, too. Prefetch spends a
+ * document and its data on every visitor who scrolls past a button; that is worth
+ * it for a route most readers will open and not for the one most of them will not.
+ * Left `undefined` by default, so every existing call site keeps Next's own
+ * behaviour.
  */
 export function PrimaryLink({
   href,
   children,
   className,
+  prefetch,
 }: {
   href: string;
   children: ReactNode;
   className?: string;
+  prefetch?: boolean;
 }) {
   return (
     <Link
       href={href}
+      prefetch={prefetch}
       className={cn(
         "site-lift inline-flex items-center justify-center gap-2 px-7 py-3.5 transition-transform",
         className,

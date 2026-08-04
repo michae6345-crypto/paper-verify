@@ -54,11 +54,14 @@ export const metadata: Metadata = {
   // observed value and a predicted one, which is what this computes.
   // No em dash. `CLAUDE.md` rules them out in product copy and the title bar is
   // product copy; a colon does the same work.
-  title: "residual: check whether a paper's own numbers agree",
+  title: "residual: mechanical checks for conference intake",
   // Four checks, not one. The description used to name only the recomputation,
   // which is half of what runs and the half a reader was already assuming.
+  // It now says who the checks run for as well as what they read: the page's
+  // argument is that a venue's intake should be checked before a reviewer spends
+  // attention on it, and a description that omitted the reader omitted the point.
   description:
-    "residual reads an arXiv paper's LaTeX source and checks the numbers it states, the links it prints and the work it cites.",
+    "residual reads an arXiv paper's LaTeX source and checks the numbers it states, the links it prints and the work it cites, before a reviewer opens it.",
 };
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
