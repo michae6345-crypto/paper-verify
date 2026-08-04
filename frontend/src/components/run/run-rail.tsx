@@ -13,7 +13,6 @@ import { CheckRow } from "./check-row";
 export function RunRail({
   report,
   rows,
-  elapsedSeconds,
   complete,
   selectedChecker,
   onSelect,
@@ -22,7 +21,7 @@ export function RunRail({
 }: {
   report: RunReport;
   rows: StreamRow[];
-  elapsedSeconds: number;
+  /** The elapsed readout moved to the masthead; the rail no longer prints it. */
   complete: boolean;
   selectedChecker: string | null;
   onSelect: (checker: string) => void;
@@ -38,23 +37,19 @@ export function RunRail({
       // `--chrome-line`: they divide a list, not the page.
       style={{ borderColor: "var(--rule-grid-deep)", background: "var(--chrome-panel)" }}
     >
-      {/* Paper header — title, arXiv ID in mono, elapsed time (§5.3) */}
-      <header className="border-b px-4 py-3" style={{ borderColor: "var(--chrome-line)" }}>
-        {/* The landing's card-title step, at the landing's tracking. The rail is
-            280px and this is the one heading in it. */}
-        <h1 className="t-h3" style={{ color: "var(--chrome-text)" }}>
-          {report.title || "Untitled paper"}
-        </h1>
-        <div className="mt-2 flex items-baseline justify-between gap-3">
-          <span className="t-num" style={{ color: "var(--chrome-dim)", fontSize: "12px" }}>
-            {report.arxiv_id}
-          </span>
-          <span className="t-num" style={{ color: "var(--chrome-dim)", fontSize: "12px" }}>
-            {elapsedSeconds.toFixed(1)}s
-          </span>
-        </div>
-        <p className="mt-1.5 t-body" style={{ color: "var(--chrome-faint)", fontSize: "12px" }}>
-          {complete ? "Checks complete" : "Checks running"}
+      {/* §5.3 asks for the paper title, the arXiv id in mono and the elapsed
+          time at the top of the rail. All three are still at the top of this
+          view: they moved about 60px up into the masthead, which sits directly
+          over this rail and names the document for every pane at once. Setting
+          the title again here would put it twice on one screen, 60px apart, and
+          the rail is 280px wide — it was the worst of the places to set it.
+
+          What stays is what belongs to this rail and to nothing else: what the
+          list under it is, and how much of the source it was built from. */}
+      <header className="border-b px-4 py-2.5" style={{ borderColor: "var(--chrome-line)" }}>
+        <p className="t-label">Checks</p>
+        <p className="mt-1 t-body" style={{ color: "var(--chrome-dim)", fontSize: "12px" }}>
+          {complete ? "Complete" : "Running"}
           {" · "}
           <span className="t-num" style={{ fontSize: "12px" }}>
             {report.tables_parsed ?? 0}

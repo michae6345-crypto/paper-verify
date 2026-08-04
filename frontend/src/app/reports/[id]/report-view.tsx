@@ -13,8 +13,9 @@ import { DocumentView } from "@/components/document/document-view";
 import { scrollToAnchor } from "@/components/document/scroll";
 import { Ledger } from "@/components/ledger/ledger";
 import { countClaims } from "@/components/ledger/groups";
-import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
-import { VERDICT_LABEL } from "@/lib/verdict";
+import { Masthead, MastheadLink } from "@/components/run/masthead";
+import { GlyphStrip, VerdictGlyph } from "@/components/verdict/verdict-glyph";
+import { VERDICT_LABEL, VERDICT_RANK } from "@/lib/verdict";
 
 /**
  * §5.5's permalink, as the anchored two-pane report.
@@ -47,6 +48,18 @@ export function ReportView({ report }: { report: RunReport }) {
   const selected = useMemo(
     () => marks.find((m) => m.key === selectedKey) ?? null,
     [marks, selectedKey],
+  );
+
+  // §5.5's fingerprint: one glyph per check, in a fixed order, so two runs of
+  // the same shape always look the same. It used to sit inside the ledger's own
+  // header; it names the whole report rather than the claims list, so it now
+  // sits in the masthead with the title.
+  const strip = useMemo(
+    () =>
+      (report.checks ?? [])
+        .map((c) => c.verdict)
+        .sort((a, b) => VERDICT_RANK[a] - VERDICT_RANK[b]),
+    [report.checks],
   );
 
   /** Select a claim, from whichever pane asked. */
@@ -118,41 +131,78 @@ export function ReportView({ report }: { report: RunReport }) {
     >
       <NavRail />
 
-      <div className="flex min-h-0 min-w-0 flex-1 three:grid three:grid-cols-[var(--split-doc)_var(--gutter-w)_var(--split-verdict)]">
-        {/* The paper. Its own scroll box at every width, so the mark layer always
-            has one element to measure and listen to. */}
-        <div className="min-h-0 min-w-0 flex-1 three:flex-none">
-          <DocumentView
-            ref={paneRef}
-            report={report}
-            marks={marks}
-            selectedDomId={selected?.domId ?? null}
-            selectedVerdict={selected?.verdict ?? null}
-            reduced={reduced}
-            onSelect={select}
-          />
-        </div>
-
-        <Gutter>
-          <GutterMarks
-            marks={marks}
-            selectedKey={selectedKey}
-            scrollRef={paneRef}
-            onSelect={select}
-          />
-        </Gutter>
-
-        {/* Keyed on the paper: a different report is a different ledger, and the
-            virtualiser's measured row heights must not survive the swap. */}
-        <Ledger
-          key={report.arxiv_id}
-          {...ledgerProps}
-          instance="pane"
-          // The seam between the two panes is construction, so it is drawn in
-          // the grid ink rather than in the ink that separates rows.
-          style={{ borderColor: "var(--rule-grid-deep)" }}
-          className="hidden min-h-0 min-w-0 border-l three:flex"
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <Masthead
+          report={report}
+          trail={<MastheadLink href={`/runs/${report.arxiv_id}`}>the run</MastheadLink>}
+          status={
+            <span className="flex items-center gap-2.5">
+              <GlyphStrip verdicts={strip} size={13} />
+              <span className="t-num" style={{ fontSize: "12px", color: "var(--chrome-dim)" }}>
+                {claims} {claims === 1 ? "claim" : "claims"}
+              </span>
+            </span>
+          }
         />
+
+        {/* THE REPORT AS ONE CARD.
+
+            The landing is a field with cards standing on it, and the report was
+            two panes running edge to edge into the window with square corners —
+            the same content, in the surface language of the thing that came
+            before the redesign. This is the reconciliation, and it is one card
+            rather than two: the paper, the gutter and the ledger sit inside a
+            single rounded surface, so the gutter stays the *seam between two
+            materials* (§2) instead of becoming a channel of background between
+            two floating objects. Rounding the panes separately would have put
+            four more corners either side of the signature element.
+
+            No shadow. §3 strips elevation from the app chrome and that rule is
+            intact: the card is read from its radius, its 1px construction rule,
+            and the field showing around it. The landing's elevation tokens are
+            scoped to `[data-site]` and stay there. */}
+        <div className="min-h-0 min-w-0 flex-1 p-2.5 pt-0 three:p-3.5 three:pt-0">
+          <div
+            className="flex h-full min-h-0 overflow-hidden border three:grid three:grid-cols-[var(--split-doc)_var(--gutter-w)_var(--split-verdict)]"
+            style={{
+              borderRadius: "var(--radius-surface)",
+              borderColor: "var(--rule-grid-deep)",
+            }}
+          >
+            {/* The paper. Its own scroll box at every width, so the mark layer
+                always has one element to measure and listen to. */}
+            <div className="min-h-0 min-w-0 flex-1 three:flex-none">
+              <DocumentView
+                ref={paneRef}
+                report={report}
+                marks={marks}
+                selectedDomId={selected?.domId ?? null}
+                selectedVerdict={selected?.verdict ?? null}
+                reduced={reduced}
+                onSelect={select}
+              />
+            </div>
+
+            <Gutter>
+              <GutterMarks
+                marks={marks}
+                selectedKey={selectedKey}
+                scrollRef={paneRef}
+                onSelect={select}
+              />
+            </Gutter>
+
+            {/* Keyed on the paper: a different report is a different ledger, and
+                the virtualiser's measured row heights must not survive the
+                swap. */}
+            <Ledger
+              key={report.arxiv_id}
+              {...ledgerProps}
+              instance="pane"
+              className="hidden min-h-0 min-w-0 three:flex"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Below 1100px the ledger is a sheet over the paper, dragged up from the
@@ -160,7 +210,10 @@ export function ReportView({ report }: { report: RunReport }) {
           claim count and the selected claim visible, so the link between the two
           panes is legible even while the paper has the screen. */}
       <div
-        className="fixed inset-x-0 bottom-0 z-20 flex h-[72dvh] flex-col border-t three:hidden"
+        // Inset to the card's own left edge rather than to the window's: the
+        // sheet used to slide under the 56px nav rail, which put a pane on top
+        // of the product's own navigation.
+        className="fixed right-2.5 bottom-0 left-[calc(var(--nav-rail-w)+0.625rem)] z-20 flex h-[72dvh] flex-col overflow-hidden border three:hidden"
         style={{
           // An outer surface, so it rounds at the landing's rate rather than
           // §3's 6px. The ledger rows inside it do not.

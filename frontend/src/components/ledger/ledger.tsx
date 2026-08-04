@@ -6,8 +6,6 @@ import { motion } from "motion/react";
 import type { RunReport } from "@/types/run-report";
 import type { Mark } from "@/components/gutter/marks";
 import { cn } from "@/lib/utils";
-import { GlyphStrip } from "@/components/verdict/verdict-glyph";
-import { VERDICT_RANK } from "@/lib/verdict";
 import {
   buildLedger,
   GROUP_BLURB,
@@ -107,16 +105,6 @@ export function Ledger({
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
 
   const items = useMemo(() => buildLedger(report, marks), [report, marks]);
-  // Fixed order, so two runs of the same shape always produce the same
-  // fingerprint (§5.5). Computed here rather than imported from lib/reports,
-  // which reads the filesystem and is server-only.
-  const strip = useMemo(
-    () =>
-      (report.checks ?? [])
-        .map((c) => c.verdict)
-        .sort((a, b) => VERDICT_RANK[a] - VERDICT_RANK[b]),
-    [report.checks],
-  );
 
   const rowIndices = useMemo(
     () => items.map((it, i) => (it.kind === "row" ? i : -1)).filter((i) => i !== -1),
@@ -232,27 +220,15 @@ export function Ledger({
     >
       {headerSlot}
 
-      {/* The sheet is opened from a handle that already names the paper's claim
-          count, and the paper's own title is on the page behind it. Repeating
-          the title block there would spend a third of a phone screen saying what
-          the reader can already see. */}
-      <header className={cn("shrink-0 px-4 pt-4 pb-3", instance === "sheet" && "hidden")}>
-        {/* The same step the run rail sets its paper title at, so the two dark
-            panes name the document the same way. */}
-        <h1 className="t-h3" style={{ color: "var(--chrome-text)" }}>
-          {report.title || "Untitled paper"}
-        </h1>
-        <p className="mt-1 t-num" style={{ fontSize: "12px", color: "var(--chrome-faint)" }}>
-          arXiv:{report.arxiv_id}
-        </p>
-        <div className="mt-2.5 flex items-center gap-2">
-          {/* §5.5's fingerprint: one glyph per check, in a fixed order. */}
-          <GlyphStrip verdicts={strip} size={13} />
-          <span className="t-num" style={{ fontSize: "11px", color: "var(--chrome-faint)" }}>
-            {claimCount} {claimCount === 1 ? "claim" : "claims"}
-          </span>
-        </div>
-      </header>
+      {/* NO HEADER. This pane used to open with the paper's title, its arXiv id
+          and the verdict fingerprint, which is about 110px of a 720px viewport
+          spent naming a document that is also named in the masthead directly
+          above it and set in 33pt serif in the pane to the left. §3's density
+          target is a run with twelve checks on a 900px viewport; three titles on
+          one screen is how that target gets missed.
+
+          The first group band is the pane's top edge now, and it is a better
+          one: it names something a reader can act on. */}
 
       <div
         ref={scrollRef}

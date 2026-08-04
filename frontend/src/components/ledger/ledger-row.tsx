@@ -4,7 +4,6 @@ import { motion } from "motion/react";
 
 import { VERDICT_LABEL } from "@/lib/verdict";
 import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
-import { cn } from "@/lib/utils";
 import { SiglumSlot } from "@/components/gutter/siglum-mark";
 import { Derivation } from "./derivation";
 import { reasonSentence } from "./reasons";
@@ -25,6 +24,38 @@ import type { LedgerRowData } from "./groups";
  * shape, no apology. Roughly half of all real rows land here and they are an
  * honest result, not a defect in the run (§5.5).
  */
+
+/**
+ * The disclosure mark, drawn rather than typed.
+ *
+ * It was the character `▸`, which renders in whatever fallback face the machine
+ * happens to have for that block: it arrived at a different weight and a
+ * different optical size from every other mark in the product. Every other mark
+ * here — the five verdicts, the nav rail's icons — is a path drawn at the
+ * instrument's own 1.5px stroke, and this is now one of them.
+ */
+function Chevron({ open, reduced }: { open: boolean; reduced: boolean }) {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 10 10"
+      width="9"
+      height="9"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="shrink-0"
+      style={{
+        transform: open ? "rotate(90deg)" : "none",
+        transition: reduced ? "none" : "transform var(--dur-fast) var(--ease-out)",
+      }}
+    >
+      <path d="M3.5 1.5 L7 5 L3.5 8.5" />
+    </svg>
+  );
+}
 
 function ValuePair({ value, label }: { value: string; label: string }) {
   return (
@@ -190,21 +221,16 @@ export function LedgerRow({
           onClick={() => onToggle(row.key)}
           aria-expanded={expanded}
           aria-controls={expanded ? derivationId : undefined}
-          className="inline-flex items-center gap-1 t-body"
-          style={{ borderRadius: "var(--radius-control)", color: "var(--chrome-dim)" }}
+          className="inline-flex items-center gap-1.5 border px-2.5 py-1 t-body transition-colors"
+          style={{
+            borderRadius: "var(--radius-control)",
+            borderColor: "var(--chrome-line)",
+            color: "var(--chrome-dim)",
+            transitionDuration: "var(--dur-fast)",
+          }}
         >
           Explain
-          <span
-            aria-hidden
-            className={cn("inline-block")}
-            style={{
-              transform: expanded ? "rotate(90deg)" : "none",
-              transition: reduced ? "none" : "transform var(--dur-fast) var(--ease-out)",
-              fontSize: "11px",
-            }}
-          >
-            ▸
-          </span>
+          <Chevron open={expanded} reduced={reduced} />
           <span className="sr-only"> how this verdict was derived</span>
         </button>
 

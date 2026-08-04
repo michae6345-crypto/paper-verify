@@ -28,7 +28,33 @@ import { HIGHLIGHT_MS, SCROLL_MS } from "./scroll";
  *     false divergences on this table once already.
  */
 
-const HEADER_RULE = "2px";
+/**
+ * Booktabs, reproduced.
+ *
+ * `booktabs` is what essentially every ML paper sets its tables with, and its
+ * whole argument is three rule weights and no vertical rules at all: `\toprule`
+ * and `\bottomrule` at 0.08em, `\midrule` at 0.05em, and `\addlinespace` opening
+ * a little air on either side of a rule so the rows do not sit on it.
+ *
+ * The rules are drawn in `--paper-ink`. They were `--paper-rule`, which is
+ * #e0e0e0 — a UI divider, and at that value the tables read as a web table with
+ * faint separators rather than as anything a typesetter produced. A LaTeX rule is
+ * the same ink as the type it separates. `--paper-rule` keeps its job on the
+ * lighter dividers this pane draws around the table, not on the table's own
+ * rules.
+ */
+const RULE_OUTER = "1.5px";
+const RULE_INNER = "1px";
+/** `\addlinespace`: the air a rule gets on the side the rows are on. */
+const RULE_SPACE = "6px";
+
+/** The float's number, run into the head of its caption. */
+const LABEL_STYLE = {
+  font: "inherit",
+  fontVariantCaps: "small-caps",
+  letterSpacing: "0.06em",
+  fontWeight: 600,
+} as const;
 
 type Row = { row: number; cells: Cell[]; block: number; isHeader: boolean };
 
@@ -161,7 +187,17 @@ export function PaperTable({
   const tableMark = markByDomId.get(tableId) ?? null;
   const tableSelected = selectedDomId === tableId;
 
-  function renderCell(cell: Cell, isHead: boolean) {
+  /**
+   * `spaceAbove` / `spaceBelow` are `\addlinespace`: the air a row gets on the
+   * side a rule is on. A single-row head takes both, since it has the toprule
+   * over it and the midrule under it.
+   */
+  function renderCell(
+    cell: Cell,
+    isHead: boolean,
+    spaceAbove = false,
+    spaceBelow = false,
+  ) {
     if (spacers.has(cell.col)) {
       // Spacing, not a column: no id, no rule, no header, nothing to read.
       return <td key={cell.col} role="presentation" className="w-4 border-0 p-0" />;
@@ -170,7 +206,8 @@ export function PaperTable({
     const id = cellDomId(tableId, cell.row, cell.col);
     const mark = markByDomId.get(id);
     const selected = selectedDomId === id;
-    const isNum = numeric.has(cell.col) && !isHead && !cell.is_header;
+    const numericColumn = numeric.has(cell.col);
+    const isNum = numericColumn && !isHead && !cell.is_header;
 
     const props = {
       id,
@@ -178,13 +215,25 @@ export function PaperTable({
       rowSpan: cell.rowspan && cell.rowspan > 1 ? cell.rowspan : undefined,
       "data-pv-anchor": id,
       className: cn(
-        "px-2.5 py-1.5 align-baseline",
-        isNum ? "t-num text-right whitespace-nowrap" : "text-left",
+        // `\tabcolsep` is 6pt a side by default, which is the 8px here. The
+        // rows are tighter than a web table's on purpose: a LaTeX table is set
+        // denser than the prose around it, and that density is most of why one
+        // reads as typeset and the other as a layout.
+        "px-2 py-[5px]",
+        // A column of figures is right-aligned and so is the head that names it.
+        // Aligning the header left over an `r` column is the tell that a table
+        // was built out of divs, and it is exactly what this one was doing.
+        numericColumn ? "text-right" : "text-left",
+        isNum ? "t-num align-baseline whitespace-nowrap" : "align-bottom",
         cell.is_bold && "font-semibold",
       ),
       style: {
-        fontSize: isNum ? "14px" : "15px",
+        fontSize: isNum ? "13.5px" : "14.5px",
+        lineHeight: 1.4,
         color: "var(--paper-ink)",
+        // `\addlinespace`, on whichever side of the row the rule is.
+        paddingTop: spaceAbove ? RULE_SPACE : undefined,
+        paddingBottom: spaceBelow ? RULE_SPACE : undefined,
         boxShadow: anchorRule(mark != null, selected),
         ...highlightStyle(selected, selected ? selectedVerdict : null, reduced),
       },
@@ -249,60 +298,102 @@ export function PaperTable({
     );
   }
 
+  const captionText = table.caption || table.label || "No caption";
+
   return (
-    <figure className="my-10" id={tableId} data-pv-anchor={tableId}>
+    <figure className="my-12" id={tableId} data-pv-anchor={tableId}>
+      {/* A LaTeX table caption sits ABOVE the float, runs the measure, is set a
+          step below the body, and opens with a numbered run-in label. The old
+          caption was a flex row — a mark, a "Table 1" chip and a left-ruled block
+          of text sitting in three columns — which is a UI list item, not a
+          caption, and it was the loudest thing on this pane saying "web page".
+          It is one justified paragraph now.
+
+          Justified, because these are the paper's words. residual's own note at
+          the head of the pane is ranged left in the sans face for exactly the
+          same reason, in the other direction. */}
+      {/* Justified from 760px up and ragged right below it. Justification needs
+          a column wide enough to absorb the slack: a 390px phone gives a caption
+          about 45 characters, and at that measure one long token forces a line
+          holding two words and a gap most of its width. LaTeX's own two-column
+          measure is around 240pt for the same reason — the narrow setting is
+          where justification stops paying for itself. */}
       <figcaption
-        className="mb-2.5 flex items-baseline gap-2"
-        style={{ color: "var(--paper-ink)" }}
+        className="mb-3 text-left two:text-justify"
+        style={{
+          fontSize: "14px",
+          lineHeight: 1.55,
+          color: "var(--paper-ink)",
+          hyphens: "auto",
+          // BERT's Table 1 caption carries a bare
+          // `(https://gluebenchmark.com/leaderboard)`, which is 38 unbreakable
+          // characters — wider than a 390px line can hold. Justification then
+          // opened a gap most of a line wide on the row above it while it waited
+          // for somewhere to put the URL. `break-word` only breaks a token that
+          // could not fit on a line of its own, so nothing else in a caption is
+          // touched.
+          overflowWrap: "break-word",
+          // The anchor rule belongs to the caption BLOCK, not to the button
+          // inside it. On the button it forced `display: inline-block`, which
+          // cannot break across lines: the caption took a line of its own, and
+          // justification then threw "Table" and "1." to opposite margins with
+          // the whole caption stranded underneath. Hung 8px into the margin, so
+          // the caption text still ranges with the table's first column.
+          boxShadow:
+            tableMark && !tableSelected ? "inset 2px 0 0 0 var(--anchor-rest)" : undefined,
+          paddingInlineStart: tableMark && !tableSelected ? "8px" : undefined,
+          marginInlineStart: tableMark && !tableSelected ? "-8px" : undefined,
+        }}
       >
-        {/* The caption's leading slot is the margin on this pane. A hanging
-            column outside the measure was the plan's sketch and does not survive
-            the two-pane report: at 1100px the document column is 55% of the
-            window and the 68ch measure already fills it, so there is nothing to
-            hang into. Leading the caption line puts the same mark in the same
-            reading position at every width, which is what it is for. */}
-        <SiglumMark
-          siglum={tableMark?.siglum ?? ""}
-          size={12}
-          surface="paper"
-          className="shrink-0"
-        />
-        <span
-          className="t-num shrink-0"
-          style={{ fontSize: "12px", opacity: 0.55, letterSpacing: "0.02em" }}
-        >
-          Table {index + 1}
-        </span>
-        {/* Same link, at table scale: a claim anchored to the whole table is
-            selected by its caption, since the inline mark is hidden above
-            760px. */}
+        {/* The margin mark leads the line. A hanging column outside the measure
+            was the plan's sketch and does not survive the two-pane report: at
+            1100px the document column is 55% of the window and the 68ch measure
+            already fills it, so there is nothing to hang into. Leading the line
+            puts the same mark in the same reading position at every width. */}
+        {tableMark?.siglum && (
+          <SiglumMark
+            siglum={tableMark.siglum}
+            size={12}
+            surface="paper"
+            className="me-2"
+          />
+        )}
+        {/* The run-in label, in the small-caps register a float number is set
+            in. Not mono: this is the paper numbering its own float, not a value.
+
+            THE LABEL IS THE CONTROL and the caption beside it is plain prose.
+            A `<button>` is an atomic inline-level box in every engine —
+            `display: inline` does not make one break across lines — so wrapping
+            the caption text in it took a whole line for itself, and justifying
+            that line threw "Table" and "1." to opposite margins with the caption
+            stranded underneath. The float's number is three characters and sits
+            in a line without disturbing it, which is what makes it the one place
+            on this block a control can go. It is also the right name for the
+            target: a claim anchored to the whole table is selected by the
+            table's number, not by a sentence describing it. */}
         {tableMark ? (
           <button
             type="button"
             onClick={() => onSelect(tableMark.key)}
             aria-pressed={tableSelected}
-            className="min-w-0 flex-1 rounded-[2px] text-start"
-            style={{
-              fontSize: "14px",
-              lineHeight: 1.5,
-              opacity: 0.72,
-              boxShadow: tableSelected ? undefined : "inset 2px 0 0 0 var(--anchor-rest)",
-              paddingInlineStart: tableSelected ? undefined : "8px",
-            }}
+            className="rounded-[2px]"
+            style={{ ...LABEL_STYLE, color: "inherit" }}
           >
-            {table.caption || table.label || "No caption"}
+            Table {index + 1}
             <span className="sr-only"> — {tableMark.locator}. Select this claim.</span>
           </button>
         ) : (
-          <span
-            className="min-w-0 flex-1"
-            style={{ fontSize: "14px", lineHeight: 1.5, opacity: 0.72 }}
-          >
-            {table.caption || table.label || "No caption"}
-          </span>
+          <span style={LABEL_STYLE}>Table {index + 1}</span>
         )}
+        <span aria-hidden>{". "}</span>
+        {captionText}
         {tableMark && (
-          <InlineMark mark={tableMark} active={tableSelected} onSelect={onSelect} />
+          <InlineMark
+            mark={tableMark}
+            active={tableSelected}
+            onSelect={onSelect}
+            className="ms-1.5 align-middle"
+          />
         )}
       </figcaption>
 
@@ -310,13 +401,15 @@ export function PaperTable({
           sideways rather than being reflowed, wrapped, or dropped — the columns
           are the paper's own and none of them may go missing. */}
       <div data-pv-hscroll className="-mx-1 overflow-x-auto px-1">
+        {/* Centred at its natural width, which is what a `table` float does. It
+            used to be stretched to `min-width: 100%`, so a three-column table
+            spread its columns across the whole measure and stopped looking like
+            a table at all. */}
         <table
-          className="border-collapse"
+          className="mx-auto border-collapse"
           style={{
-            minWidth: "100%",
-            // Both rules are the paper's, not the chrome's.
-            borderTop: `${HEADER_RULE} solid var(--paper-rule)`,
-            borderBottom: `${HEADER_RULE} solid var(--paper-rule)`,
+            borderTop: `${RULE_OUTER} solid var(--paper-ink)`,
+            borderBottom: `${RULE_OUTER} solid var(--paper-ink)`,
             background: tableSelected ? "var(--anchor-live)" : "transparent",
             transition: reduced
               ? "none"
@@ -325,32 +418,46 @@ export function PaperTable({
         >
           {head.length > 0 && (
             <thead>
-              {head.map((row, i) => (
-                <tr
-                  key={row.row}
-                  style={
-                    i === head.length - 1
-                      ? { borderBottom: "1px solid var(--paper-rule)" }
-                      : undefined
-                  }
-                >
-                  {row.cells.map((c) => renderCell(c, true))}
-                </tr>
-              ))}
+              {head.map((row, i) => {
+                const last = i === head.length - 1;
+                return (
+                  <tr
+                    key={row.row}
+                    style={
+                      last
+                        ? { borderBottom: `${RULE_INNER} solid var(--paper-ink)` }
+                        : undefined
+                    }
+                  >
+                    {/* Air under the toprule for the first head row, and above
+                        the midrule for the last one. */}
+                    {row.cells.map((c) => renderCell(c, true, i === 0, last))}
+                  </tr>
+                );
+              })}
             </thead>
           )}
           <tbody>
             {body.map((row, i) => {
-              // The paper's own \midrule / \specialrule boundaries.
+              // The paper's own \midrule / \specialrule boundaries. Same weight
+              // as the head rule, because in the source they are the same
+              // command.
               const newBlock = i > 0 && row.block !== body[i - 1].block;
               return (
                 <tr
                   key={row.row}
                   style={
-                    newBlock ? { borderTop: "1px solid var(--paper-rule)" } : undefined
+                    newBlock
+                      ? { borderTop: `${RULE_INNER} solid var(--paper-ink)` }
+                      : undefined
                   }
                 >
-                  {row.cells.map((c) => renderCell(c, false))}
+                  {/* Air under every rule the rows sit below: the head rule for
+                      the first body row, a block rule for the rest. The last
+                      row takes it above the bottomrule too. */}
+                  {row.cells.map((c) =>
+                    renderCell(c, false, i === 0 || newBlock, i === body.length - 1),
+                  )}
                 </tr>
               );
             })}
@@ -358,10 +465,17 @@ export function PaperTable({
         </table>
       </div>
 
+      {/* A note about the float, so it is set as one: smaller than the caption,
+          in residual's own secondary ink. */}
       {(table.parse_warnings ?? []).length > 0 && (
         <p
-          className="mt-2 t-num"
-          style={{ fontSize: "12px", color: "var(--paper-ink)", opacity: 0.55 }}
+          className="mt-3 text-center"
+          style={{
+            fontFamily: "var(--font-ui), ui-sans-serif, sans-serif",
+            fontSize: "12px",
+            lineHeight: 1.5,
+            color: "var(--paper-dim)",
+          }}
         >
           The parser could not fully resolve this table:{" "}
           {(table.parse_warnings ?? []).join("; ")}
