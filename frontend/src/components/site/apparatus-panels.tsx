@@ -1089,8 +1089,8 @@ function MultiValueNote({ data }: { data: ApparatusData }) {
   return (
     <FootLine tone="instrument">
       <span>
-        <Mono>{data.multiValueCells}</Mono> cells in this table hold more than one value. No check
-        reads one of them as a single number.
+        <Mono>{data.multiValueCells}</Mono> cells here hold more than one value. No check reads one
+        as a single number.
       </span>
     </FootLine>
   );

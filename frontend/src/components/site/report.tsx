@@ -43,11 +43,11 @@ import { SectionTag } from "@/components/site/section-tag";
 const PROPERTIES: { term: string; detail: string }[] = [
   {
     term: "A permalink, not a score",
-    detail: "No pass mark and no aggregate. Each check, its verdict, and what that verdict rests on.",
+    detail: "Each check, its verdict, and what that verdict rests on.",
   },
   {
     term: "Every finding carries its comparison",
-    detail: "Where in the source it sits, what the paper printed, what was computed, and the delta.",
+    detail: "Where it sits, what the paper printed, what was computed, and the delta.",
   },
   {
     term: "High-severity divergences are held",
@@ -55,7 +55,7 @@ const PROPERTIES: { term: string; detail: string }[] = [
   },
   {
     term: "An author answers without deleting",
-    detail: "A contest is recorded beside the finding, not in place of it. The recheck is deterministic.",
+    detail: "A contest sits beside the finding, not in place of it.",
   },
 ];
 
@@ -175,10 +175,8 @@ export function Report() {
               color: "var(--site-ink)",
             }}
           >
-            A venue does not have to trust the run. Every verdict states what it compared and which
-            rule it applied, so a chair who disagrees can check the comparison rather than the tool.
-            The other half is missing: there is no signed identifier and no endpoint a venue can
-            call, so a report is something an author attaches, not something a venue confirms.
+            There is no signed identifier and no endpoint a venue can call, so a report is
+            something an author attaches, not something a venue confirms.
           </p>
         </Arrive>
       </Container>

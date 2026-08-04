@@ -48,9 +48,8 @@ import { Arrive } from "@/components/site/motion/mobile";
  */
 
 const SENTENCE =
-  "A paper states numbers, prints links, and cites prior work. residual reads the LaTeX " +
-  "source, checks all three, and reports where they disagree. The result is a permalink " +
-  "you attach to a submission and a reviewer opens.";
+  "residual reads a paper's LaTeX source and reports where its own numbers, links and " +
+  "citations disagree. The result is a permalink you attach to a submission.";
 
 const VERDICTS = ["matches", "within_tolerance", "diverges", "unverifiable"] as const;
 
@@ -270,7 +269,7 @@ export function Intro() {
               className="site-lede mx-auto max-w-[700px]"
               style={{ color: "var(--site-muted-invert)" }}
             >
-              It has no opinion on whether a paper is novel, interesting, or correct in its ideas.
+              It has no opinion on whether the ideas are new or correct.
             </p>
           </Reveal>
         </Card>

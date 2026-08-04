@@ -126,7 +126,7 @@ export function SiteFooter() {
               check a paper
             </h2>
             <p className="site-body mx-auto max-w-[52ch]">
-              residual verifies the numbers in a paper against the numbers its own tables state.
+              residual checks a paper&rsquo;s numbers, links and citations against its own source.
             </p>
             <PrimaryLink href="/check">Check a paper</PrimaryLink>
           </Scrub>
@@ -140,8 +140,7 @@ export function SiteFooter() {
               className="mx-auto max-w-[68ch] text-center"
               style={{ fontSize: "13px", lineHeight: 1.6, color: "var(--site-muted)" }}
             >
-              In development. Four checks are implemented and validated against the corpus in this
-              repository. Runs are held in memory, so they do not survive a restart and permalinks
+              In development. Runs live in memory, so they do not survive a restart and permalinks
               are not durable yet.
             </p>
           </Scrub>

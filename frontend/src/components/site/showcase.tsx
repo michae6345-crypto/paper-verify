@@ -117,25 +117,25 @@ const CHOSEN = [
     arxivId: "1512.03385",
     label: "tab:arch",
     plate: "/assets/plate-resnet-arch.svg",
-    note: "Eight blocks, and two rows that cover fewer columns than the spec declares.",
+    note: "Eight blocks, and two rows narrower than the spec declares.",
   },
   {
     arxivId: "1706.03762",
     label: "tab:wmt-results",
     plate: "/assets/plate-transformer-wmt.svg",
-    note: "Bold in two different blocks, and an empty spacer column that shifts every index after it.",
+    note: "Bold in two blocks, and a spacer column that shifts every index after it.",
   },
   {
     arxivId: "1810.04805",
     label: "tab:squad_results",
     plate: "/assets/plate-bert-squad.svg",
-    note: "Four blocks, with every bolded value in the last of them.",
+    note: "Four blocks, with every bold value in the last one.",
   },
   {
     arxivId: "2103.00020",
     label: "table:retrieval",
     plate: "/assets/plate-clip-retrieval.svg",
-    note: "Fourteen columns, and thirteen bolded values spread across two of its three blocks.",
+    note: "Fourteen columns, and thirteen bold values across two of its three blocks.",
   },
 ] as const;
 
@@ -202,10 +202,9 @@ export function Showcase() {
               that spans lines has the leading whitespace of each line trimmed,
               so ` cells.` written across the line break renders as `7,014cells`.
               Keeping the unit on one line between two expressions preserves it. */}
-          Every mark below is one real cell out of {PAPERS} papers, {TABLES} tables and{" "}
+          Every mark is one real cell, out of {PAPERS} papers, {TABLES} tables and{" "}
           {CELLS.toLocaleString("en-GB")} cells.{" "}
-          The rules are the paper&rsquo;s own block boundaries, the filled marks are the values it
-          set in bold, and a gap is a cell it left empty. Nothing here is an illustration.
+          A gap is a cell the paper left empty.
         </p>
 
         <ShowcaseCards items={items} />

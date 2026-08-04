@@ -35,10 +35,8 @@ const FAQS: { q: string; a: ReactNode }[] = [
     q: "Who is this for?",
     a: (
       <p>
-        Authors, before submitting, who want a report to attach. Reviewers and area chairs, who
-        would otherwise work through a table, a set of URLs and a bibliography by hand, or skip
-        them. It verifies numbers, not content, so it does not replace review. It takes one
-        mechanical part off it.
+        Authors before they submit, and reviewers who would otherwise check a table, a set of URLs
+        and a bibliography by hand.
       </p>
     ),
   },
@@ -46,9 +44,8 @@ const FAQS: { q: string; a: ReactNode }[] = [
     q: "Does a language model decide any of this?",
     a: (
       <p>
-        No. Models extract structure only, such as which cells are in a table. Every verdict is
-        computed by deterministic Python from that structure, and the four checks running today
-        call no model at all.
+        No. Models extract structure; deterministic Python computes every verdict. No check running
+        today calls a model.
       </p>
     ),
   },
@@ -56,10 +53,8 @@ const FAQS: { q: string; a: ReactNode }[] = [
     q: "What if you are wrong?",
     a: (
       <p>
-        Every finding has a contest action one click away, and the recheck is deterministic, so a
-        corrected input produces a corrected verdict. Contesting does not suppress a finding: if it
-        did, contesting would become the way to bury a true one. High-severity divergences are held
-        for human review before they appear publicly.
+        Contest it. A contest never suppresses a finding, and high-severity divergences are held
+        for review before they appear publicly.
       </p>
     ),
   },
@@ -67,19 +62,15 @@ const FAQS: { q: string; a: ReactNode }[] = [
     q: "Why does so much come back unverifiable?",
     a: (
       <p>
-        Because saying nothing beats saying something wrong about a named researcher&rsquo;s work.
         When a table cannot be read without discarding something a verdict might rest on, the check
-        declines, states why, and attaches the comparison anyway, so you still see the numbers.
+        declines and says why.
       </p>
     ),
   },
   {
     q: "Is this AI detection?",
     a: (
-      <p>
-        No. It says nothing about how a paper was written. It reads what the paper states and
-        checks it.
-      </p>
+      <p>No. It says nothing about how a paper was written.</p>
     ),
   },
   {
@@ -87,8 +78,7 @@ const FAQS: { q: string; a: ReactNode }[] = [
     a: (
       <p>
         The LaTeX source, not the PDF. A paper is often many files joined by <Mono>input</Mono> and{" "}
-        <Mono>include</Mono>, with macros defined in one file and used in another, so the source is
-        resolved and the macro table built before anything is parsed.
+        <Mono>include</Mono>, so residual builds the macro table before parsing.
       </p>
     ),
   },
@@ -131,7 +121,7 @@ export function Faq() {
   return (
     <section id="faq" ref={section} className="site-section scroll-mt-20">
       <Container>
-        <SectionTag tag="FAQ" heading="Questions worth asking" />
+        <SectionTag tag="FAQ" heading="Common questions" />
 
         <div className="site-stack flex flex-col gap-6 three:flex-row three:items-start three:gap-10">
           <Arrive
@@ -168,8 +158,8 @@ export function Faq() {
                 Check a paper
               </PrimaryLink>
               <p className="site-body" style={{ fontSize: "14px" }}>
-                Contested findings are recorded and rechecked. The recheck is deterministic, so a
-                corrected input produces a corrected verdict. See{" "}
+                Contested findings are recorded and rechecked, and the recheck is deterministic.
+                See{" "}
                 <Link href="/reports/1810.04805" style={{ color: "var(--site-ink)" }}>
                   a finished report
                 </Link>

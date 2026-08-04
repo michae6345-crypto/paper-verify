@@ -46,22 +46,21 @@ const ITEMS: { title: string; description: string }[] = [
   {
     title: "Rerun the experiments",
     description:
-      "The paper's code runs on hosted GPUs and what it produces is compared against what the paper prints. Recomputing a table says the paper agrees with itself. Running the code says whether it agrees with its own experiments.",
+      "Run the paper's code on hosted GPUs and compare what it produces against what the paper prints.",
   },
   {
     title: "Reports a venue can verify",
-    description:
-      "A signed identifier and an endpoint a chair can call, so a venue can confirm a report belongs to the paper in front of it.",
+    description: "A signed identifier and an endpoint a chair can call.",
   },
   {
     title: "Claims against tables",
     description:
-      "Matching a number stated in the abstract to the cell it refers to, and checking that reported variance is consistent.",
+      "Matching a number in the abstract to the cell it refers to, and checking reported variance.",
   },
   {
     title: "Baselines and submission safety",
     description:
-      "Checking a baseline against the paper it came from, and scanning a submission for text written to steer a model that reads it.",
+      "Checking a baseline against the paper it came from, and scanning a submission for text aimed at a model.",
   },
 ];
 
@@ -124,7 +123,7 @@ export function Roadmap() {
   return (
     <section id="roadmap" ref={section} className="site-section scroll-mt-20">
       <Container>
-        <SectionTag tag="What's next" heading="On the roadmap, and not built yet" />
+        <SectionTag tag="What's next" heading="Not built yet" />
 
         <div className="site-stack flex flex-col gap-10 three:flex-row three:items-start three:gap-[60px]">
           <Arrive
@@ -157,7 +156,7 @@ export function Roadmap() {
                   color: "#ffffff",
                 }}
               >
-                Where this is going
+                Planned work
               </h3>
               {/* The scrub goes inside the item rather than around it: a div
                   between a ul and its li is not a list any more, and the
@@ -203,10 +202,9 @@ export function Roadmap() {
               }}
             >
               None of this runs yet, and none of it is counted in the numbers above. The rerun is
-              the least settled: a training run is not deterministic, and a layer whose rule is
-              that a verdict is a pure function of its inputs cannot report a seed&rsquo;s worth of
-              variance as a divergence. That question is open, which is why this is a direction and
-              not a date.
+              the least settled: a training run is not deterministic, and a verdict that is a pure
+              function of its inputs cannot report a seed&rsquo;s worth of variance as a
+              divergence.
             </p>
           </ClosingNote>
         </div>

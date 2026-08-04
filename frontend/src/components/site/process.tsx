@@ -90,21 +90,21 @@ const STAGES: {
 }[] = [
   {
     name: "resolving",
-    description: "Find the paper and fetch its source.",
+    description: "Fetch the source from arXiv.",
     stagger: "three:mt-[62px]",
     elevation: "three:site-elevated",
     lift: "card",
   },
   {
     name: "extracting",
-    description: "Resolve the multi-file LaTeX and build the macro table.",
+    description: "Build the macro table across every file.",
     stagger: "three:mt-0",
     elevation: "",
     lift: "raised",
   },
   {
     name: "mining",
-    description: "Turn every table cell, link and citation into a checkable claim.",
+    description: "Turn each cell, link and citation into a claim.",
     stagger: "three:mt-[64px]",
     elevation: "three:site-elevated",
     lift: "card",
@@ -433,7 +433,7 @@ export function Process() {
   return (
     <section id="process" className="site-section scroll-mt-20">
       <Container>
-        <SectionTag tag="How a run proceeds" heading="The stages a run moves through" />
+        <SectionTag tag="How a run proceeds" heading="Five stages" />
         {row ? reduced ? <StackedList /> : <ScrubbedRow /> : <SpineStages />}
       </Container>
     </section>

@@ -47,19 +47,19 @@ import { SectionTag } from "@/components/site/section-tag";
 const REASONS: { code: string; description: string }[] = [
   {
     code: "multiple_bold_in_column",
-    description: "More than one bolded value in a block, so there is no single best.",
+    description: "Two or more bold values in one block, so no single best.",
   },
   {
     code: "metric_direction_unknown",
-    description: "No arrow in the header and no entry in the direction table.",
+    description: "No arrow in the header, and none in the direction table.",
   },
   {
     code: "cell_spans_columns",
-    description: "The value sits in a multicolumn and belongs to no single column.",
+    description: "The value spans columns, so it belongs to none of them.",
   },
   {
     code: "average_denominator_ambiguous",
-    description: "More than one plausible reading of the row reproduces the stated value.",
+    description: "More than one reading of the row reproduces the stated value.",
   },
 ];
 
@@ -163,7 +163,7 @@ export function Decides() {
                   color: "#ffffff",
                 }}
               >
-                Reasons a check declines to answer
+                Why a check declines
               </h3>
               <ul className="flex w-full flex-col gap-6">
                 {REASONS.map((reason, i) => (
@@ -215,9 +215,8 @@ export function Decides() {
               }}
             >
               A language model never produces a verdict. Models extract structure; deterministic
-              Python computes every verdict from it. So the same paper checked twice gives the same
-              answer, and a check that cannot be made deterministic returns unverifiable with a
-              stated reason rather than a guess.
+              Python computes the verdict from it. A check that cannot be made deterministic
+              returns unverifiable with a stated reason.
             </p>
           </ClosingNote>
         </div>

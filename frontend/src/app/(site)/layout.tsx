@@ -52,11 +52,13 @@ const fragmentMono = Fragment_Mono({
 export const metadata: Metadata = {
   // Lowercase in the title bar too. A residual is the difference between an
   // observed value and a predicted one, which is what this computes.
-  title: "residual — check whether a paper's own numbers agree",
+  // No em dash. `CLAUDE.md` rules them out in product copy and the title bar is
+  // product copy; a colon does the same work.
+  title: "residual: check whether a paper's own numbers agree",
   // Four checks, not one. The description used to name only the recomputation,
   // which is half of what runs and the half a reader was already assuming.
   description:
-    "residual reads an arXiv paper's LaTeX source and checks the numbers it states, the links it prints and the work it cites, reporting where they match, where they diverge, and where it cannot tell.",
+    "residual reads an arXiv paper's LaTeX source and checks the numbers it states, the links it prints and the work it cites.",
 };
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {

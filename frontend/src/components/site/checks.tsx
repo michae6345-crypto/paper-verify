@@ -6,12 +6,12 @@ import { SectionTag } from "@/components/site/section-tag";
 /**
  * What it checks today. Four, and the count is the count.
  *
- * The four are two families, and the section says so before the grid rather than
- * leaving a reader to infer it from four cards in a 2x2. Two of them read the
- * paper against itself and two read it against the world outside it, and the
- * lede exists because the page used to present the arithmetic as the product.
- * It is one family of two, and the closing note says which part of it is
- * actually hard.
+ * The four are two families, and the heading says so rather than leaving a
+ * reader to infer it from four cards in a 2x2. Two of them read the paper
+ * against itself and two read it against the world outside it, which the card
+ * titles then make plain. The lede that used to spell this out under the heading
+ * is gone: it restated the heading in three short sentences, and the grid
+ * underneath is the demonstration.
  *
  * The first two carry their own title and description out of
  * `src/fixtures/reports/1810.04805.json` rather than out of this file, because
@@ -94,20 +94,13 @@ export function Checks() {
   return (
     <section id="checks" className="site-section scroll-mt-20">
       <Container>
-        <SectionTag tag="The checks" heading="What it checks today" />
-
-        <p className="site-body mx-auto mt-5 max-w-[58ch] text-center">
-          Four checks, in two families. Two read the paper against itself. Two read it against the
-          world outside it.
-        </p>
+        <SectionTag tag="The checks" heading="Four checks, in two families" />
 
         <ChecksGrid cards={cards}>
           <p className="site-body mt-8 max-w-[68ch]">
-            The arithmetic is the smallest part of this. A false finding comes from misreading the
-            source, not from a wrong sum: reading <Mono>86.7/85.9</Mono> as one number produced five
-            of them on a single table. The work is deciding what a cell says, and declining when
-            that cannot be decided. The corpus figures below come from the two checks that need no
-            network, not from all four.
+            A false finding comes from misreading the source, not from a wrong sum: reading{" "}
+            <Mono>86.7/85.9</Mono> as one number produced five of them on one table. The corpus
+            figures below come only from the two checks that need no network.
           </p>
         </ChecksGrid>
       </Container>

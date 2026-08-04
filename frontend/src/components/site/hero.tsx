@@ -475,8 +475,8 @@ function FlowHero() {
 
           <Reveal delay={0.12}>
             <p className="site-body mx-auto max-w-[46ch] text-balance">
-              It checks the numbers a paper states, the links it prints and the work it cites.
-              Run it before you submit and attach the report.
+              It checks a paper&rsquo;s numbers, links and citations. Run it before you submit and
+              attach the report.
             </p>
           </Reveal>
 
@@ -625,8 +625,8 @@ function PinnedHero() {
               >
                 <Scrub progress={progress} from={0.82} to={0.93} y={20}>
                   <p className="site-body mx-auto max-w-[520px] text-balance">
-                    It checks the numbers a paper states, the links it prints and the work it
-                    cites. Run it before you submit and attach the report.
+                    It checks a paper&rsquo;s numbers, links and citations. Run it before you
+                    submit and attach the report.
                   </p>
                 </Scrub>
 
