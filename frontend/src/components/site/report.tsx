@@ -1,10 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-
 import { Card, Container } from "@/components/site/ui";
-import { useSectionProgress } from "@/components/site/motion/scrub";
-import { Arrive } from "@/components/site/motion/mobile";
+import { Rise } from "@/components/site/motion/mobile";
 import { SectionTag } from "@/components/site/section-tag";
 
 /**
@@ -32,9 +29,35 @@ import { SectionTag } from "@/components/site/section-tag";
  * Saying so here rather than only in the roadmap matters, because this section
  * is where a chair would form the wrong expectation.
  *
- * Form: one wide card, not the card-left/paragraph-right pair that `decides` and
- * `roadmap` use. Those two argue; this one enumerates, and a spec sheet should
- * not look like an argument.
+ * ---
+ *
+ * **Form: a 2×2, not a list of four.** One wide card carries the section, so it
+ * stands off the page, and above `two:` the four properties sit in quadrants
+ * divided by two hairlines rather than stacked in four rows. Four rows is the
+ * same shape as the reason codes in `decides`, the ledger in `measured` and the
+ * items in `roadmap`, and by the fourth section built out of it a reader has
+ * stopped seeing the section boundary. A spec sheet is also the one thing on
+ * this page that genuinely reads better in a grid: the four are unordered, and
+ * a column of rows claims a sequence they do not have.
+ *
+ * Below `two:` they stack, separated by the same hairlines, because two columns
+ * of forty characters is not a grid.
+ *
+ * The rows take no elevation of their own. They are rows, not cards, and a
+ * shadow under each would be four objects where the section has one.
+ *
+ * ---
+ *
+ * **Every window here is measured from the element that carries it.** The card
+ * and its rows used to map slices of the section's own travel: 0.19 → 0.442 for
+ * the card, 0.227 stepping by 0.046 for the rows, all of it derived from a
+ * section measured at 993px tall. Those constants were right for that layout and
+ * would have been quietly wrong for this one, because a 2×2 is half the height
+ * of a stack of four and every element in it sits somewhere else. That is the
+ * failure `motion/mobile.tsx` documents at length, and the fix is the one it
+ * arrived at: `Rise` gives each element its own track, so progress 0 is its own
+ * top edge at the fold and the window is a distance in pixels of the viewport
+ * it is actually being read on. No constant in this file can now be stale.
  *
  * Not pinned. Four rows plus a section tag and a paragraph exceed a short
  * viewport, and a pinned section taller than the screen hides its own lower half.
@@ -42,132 +65,107 @@ import { SectionTag } from "@/components/site/section-tag";
 
 const PROPERTIES: { term: string; detail: string }[] = [
   {
-    term: "A permalink, not a score",
-    detail: "Each check, its verdict, and what that verdict rests on.",
+    term: "A permalink",
+    detail: "Every check, its verdict, and the evidence under it.",
   },
   {
     term: "Every finding carries its comparison",
-    detail: "Where it sits, what the paper printed, what was computed, and the delta.",
+    detail: "Anchor, claimed value, computed value, delta.",
   },
   {
-    term: "High-severity divergences are held",
-    detail: "They stay off the permalink until a person reads them. No setting turns that off.",
+    term: "High-severity divergences wait for a person",
+    detail: "They stay off the permalink until someone releases them. Holding is the default.",
   },
   {
-    term: "An author answers without deleting",
-    detail: "A contest sits beside the finding, not in place of it.",
+    term: "An author can answer",
+    detail: "An amendment sits under the finding, which stays as written.",
   },
 ];
 
 /**
- * The card, then the rows inside it, then the paragraph that qualifies it.
+ * The quadrants, and the rules between them.
  *
- * The section is 993px tall, so travel at a 720px viewport is 1713px. Each
- * window opens on the frame its own top edge reaches the fold — the card's top
- * sits 326px down the section, the first row's 390px — and runs for a fixed
- * distance in pixels rather than a fixed share of the section.
- *
- * The card's old window, 0.08 → 0.28, was measured putting it at **opacity 1.00
- * on the frame its centre first came over the fold**. The rows inside it were
- * fine; the surface holding them did all of its arriving off screen, which is
- * the same defect this page had in four other places and the reason the
- * arithmetic for it now lives in `motion/scrub.tsx` rather than in each file's
- * head.
- *
- * The rows are 82 to 84px apart, hence the 0.046 step. Their span is 0.24, which
- * is 411px, and it overlaps its neighbour by 81% — heavily enough that a flick
- * delivers the four as one gesture, far enough apart to be counted at reading
- * speed.
+ * Written out per item rather than generated, because the four differ in which
+ * two of their edges carry a rule and there is no expression for that which is
+ * shorter than saying it. Below `two:` every item but the first takes a rule
+ * above it and the grid collapses to the stack it was.
  */
-const CARD_FROM = 0.19;
-const CARD_TO = 0.442;
+const RULE = "border-[var(--site-line-invert)]";
+const QUADRANT = [
+  `${RULE} pb-6 two:border-r two:border-b two:pr-10 two:pb-8`,
+  `${RULE} border-t pt-6 two:border-t-0 two:border-b two:pt-0 two:pb-8 two:pl-10`,
+  `${RULE} border-t pt-6 two:border-t-0 two:border-r two:pr-10 two:pt-8`,
+  `${RULE} border-t pt-6 two:border-t-0 two:pt-8 two:pl-10`,
+];
 
-const ROW_START = 0.227;
-const ROW_SPAN = 0.24;
-const ROW_STEP = 0.046;
-
-/** The paragraph below the card, and the last thing in the section to arrive. */
-const NOTE_FROM = 0.458;
-const NOTE_TO = 0.712;
+/**
+ * How far along its own travel each quadrant follows the one before it.
+ *
+ * The two in a row sit at the same height, so geometry alone would deliver them
+ * together; the pair below arrives later without help. 0.03 is enough to read
+ * the four in order and short enough that the last one still resolves before its
+ * centre reaches the middle of the screen.
+ */
+const ROW_LEAD = 0.03;
 
 export function Report() {
-  const section = useRef<HTMLElement>(null);
-  const progress = useSectionProgress(section);
-
   return (
-    <section id="report" ref={section} className="site-section scroll-mt-20">
+    <section id="report" className="site-section scroll-mt-20">
       <Container>
         <SectionTag tag="The report" heading="What a reviewer opens" />
 
-        <Arrive
-          progress={progress}
-          from={CARD_FROM}
-          to={CARD_TO}
+        <Rise
           kind="surface"
           y={12}
           scale={[0.96, 1]}
           lift="card"
           boxClassName="site-stack"
         >
-          {/* One wide card carrying the whole section, so it stands off the page.
-              The four rows inside it are separated by hairlines and take no
-              elevation of their own: they are rows, not cards, and a shadow under
-              each one would be four objects where the section has one.
-
-              `elevation="none"` because the shadow is scrubbed on the layer
-              above, so the card gains its depth as it lands rather than carrying
-              it from the first frame. */}
-          <Card tone="dark" elevation="none" className="p-6 two:p-8 three:p-12">
-            <dl className="flex flex-col">
-              {PROPERTIES.map((property, i) => {
-                const from = ROW_START + i * ROW_STEP;
-                return (
-                  // `dl > div > dt + dd` is the grouping HTML allows, which is
-                  // what lets the scrub wrap a pair without breaking the list.
-                  <Arrive
-                    key={property.term}
-                    progress={progress}
-                    from={from}
-                    to={from + ROW_SPAN}
-                    lead={i * 0.02}
-                    y={14}
-                    className={
-                      i === 0
-                        ? "flex flex-col gap-1 pb-6 two:flex-row two:gap-12"
-                        : "flex flex-col gap-1 border-t border-t-[var(--site-line-invert)] pt-6 pb-6 two:flex-row two:gap-12"
-                    }
+          {/* `elevation="none"` because the shadow is scrubbed on the layer
+              above, so the card gains its depth as it lands rather than
+              carrying it from the first frame. */}
+          <Card tone="dark" elevation="none" className="p-6 two:p-8 three:p-10">
+            <dl className="grid two:grid-cols-2">
+              {PROPERTIES.map((property, i) => (
+                // `dl > div > dt + dd` is the grouping HTML allows, which is
+                // what lets the arrival wrap a pair without breaking the list.
+                <Rise
+                  key={property.term}
+                  kind="row"
+                  lead={i * ROW_LEAD}
+                  y={14}
+                  boxClassName={QUADRANT[i]}
+                  className="flex flex-col gap-2"
+                >
+                  <dt
+                    style={{
+                      fontSize: "16px",
+                      lineHeight: 1.6,
+                      letterSpacing: "-0.01em",
+                      color: "#ffffff",
+                    }}
                   >
-                    <dt
-                      className="two:w-[300px] two:shrink-0"
-                      style={{
-                        fontSize: "16px",
-                        lineHeight: 1.6,
-                        letterSpacing: "-0.01em",
-                        color: "#ffffff",
-                      }}
-                    >
-                      {property.term}
-                    </dt>
-                    <dd
-                      className="max-w-[60ch]"
-                      style={{
-                        fontSize: "14px",
-                        lineHeight: 1.6,
-                        color: "var(--site-muted-invert)",
-                      }}
-                    >
-                      {property.detail}
-                    </dd>
-                  </Arrive>
-                );
-              })}
+                    {property.term}
+                  </dt>
+                  <dd
+                    className="max-w-[46ch]"
+                    style={{
+                      fontSize: "14px",
+                      lineHeight: 1.6,
+                      color: "var(--site-muted-invert)",
+                    }}
+                  >
+                    {property.detail}
+                  </dd>
+                </Rise>
+              ))}
             </dl>
           </Card>
-        </Arrive>
+        </Rise>
 
-        <Arrive progress={progress} from={NOTE_FROM} to={NOTE_TO} y={20}>
+        <Rise kind="row" y={20} boxClassName="mt-10">
           <p
-            className="mt-10 max-w-[68ch]"
+            className="max-w-[60ch]"
             style={{
               fontSize: "clamp(18px, 1.5vw, 20px)",
               letterSpacing: "-0.02em",
@@ -175,10 +173,10 @@ export function Report() {
               color: "var(--site-ink)",
             }}
           >
-            There is no signed identifier and no endpoint a venue can call, so a report is
-            something an author attaches, not something a venue confirms.
+            There is no signed identifier and no endpoint anyone can call, so a venue still
+            takes the author&rsquo;s word for it.
           </p>
-        </Arrive>
+        </Rise>
       </Container>
     </section>
   );

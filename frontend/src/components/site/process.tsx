@@ -104,7 +104,7 @@ const STAGES: {
   },
   {
     name: "mining",
-    description: "Turn each cell, link and citation into a claim.",
+    description: "Turn cells, links and citations into claims.",
     stagger: "three:mt-[64px]",
     elevation: "three:site-elevated",
     lift: "card",
@@ -157,6 +157,20 @@ const CARD_SPAN = 0.32;
 const NODE_SPAN = 0.05;
 
 /**
+ * How far behind its own card the stage's name and description arrive.
+ *
+ * The card is a surface and the words on it are content, and until now they were
+ * one object: a numeral, a name and a sentence all reaching full opacity on the
+ * same frame as the panel under them. Splitting them by 0.03 of the row's travel
+ * — about 37px of scrolling — is the difference between a picture of a card that
+ * has writing on it and a card that arrives and is then written on.
+ *
+ * Small on purpose. §4 of the teardown puts items within a group close enough to
+ * read as one gesture, and this is a group of two.
+ */
+const TEXT_LEAD = 0.03;
+
+/**
  * Where the rule reaches stage `i`. Every other window here is derived from it.
  *
  * This is the one section whose stagger is *not* geometric. Everywhere else on
@@ -202,12 +216,31 @@ function StageCard({
   stage,
   index,
   lifted,
+  text,
 }: {
   stage: (typeof STAGES)[number];
   index: number;
   /** The scrubbed branch carries the shadow on a layer outside this card. */
   lifted?: boolean;
+  /** Where in the row's travel the writing on the card follows the card. */
+  text?: { progress: MotionValue<number>; from: number; to: number };
 }) {
+  const label = (
+    <div className="flex flex-col items-center gap-1 text-center">
+      <h3
+        className="site-mono"
+        style={{
+          fontSize: "clamp(18px, 1.6vw, 24px)",
+          lineHeight: 1.6,
+          color: "var(--site-ink)",
+        }}
+      >
+        {stage.name}
+      </h3>
+      <p className="site-body">{stage.description}</p>
+    </div>
+  );
+
   return (
     <Card
       elevation="none"
@@ -228,19 +261,16 @@ function StageCard({
       >
         {index + 1}
       </p>
-      <div className="flex flex-col items-center gap-1 text-center">
-        <h3
-          className="site-mono"
-          style={{
-            fontSize: "clamp(18px, 1.6vw, 24px)",
-            lineHeight: 1.6,
-            color: "var(--site-ink)",
-          }}
-        >
-          {stage.name}
-        </h3>
-        <p className="site-body">{stage.description}</p>
-      </div>
+      {text ? (
+        // 10px against the card's 12, so the two travel together and the words
+        // settle last. A second, longer slide here would read as the label
+        // catching up rather than as one object arriving.
+        <Scrub progress={text.progress} from={text.from} to={text.to} y={10}>
+          {label}
+        </Scrub>
+      ) : (
+        label
+      )}
     </Card>
   );
 }
@@ -322,7 +352,12 @@ function ScrubbedRow() {
                 scale={[0.96, 1]}
                 lift={stage.lift}
               >
-                <StageCard stage={stage} index={i} lifted />
+                <StageCard
+                  stage={stage}
+                  index={i}
+                  lifted
+                  text={{ progress, from: from + TEXT_LEAD, to }}
+                />
               </Scrub>
             </li>
           );

@@ -82,8 +82,22 @@ export function FieldError({ id, children }: { id: string; children: ReactNode }
   );
 }
 
+/**
+ * No `outline-none`, and that is the whole point of this comment.
+ *
+ * It was here, and it beat the `:focus-visible` rule in `globals.css`, which is
+ * the one place the focus ring is defined. Measured in a browser rather than
+ * inferred: the input reported `outline: 2px none` while the button beside it
+ * reported `2px solid`, so every text field on `/login`, `/submit` and
+ * `/account` had **no visible focus ring at all**. A keyboard reader could not
+ * see where they were.
+ *
+ * `outline-none` is almost always written to hide a default ring that looked
+ * wrong, and the fix is to style the ring rather than remove it. `globals.css`
+ * already does, on `:focus-visible` only, so pointer users never see it.
+ */
 const inputClass =
-  "w-full min-w-0 px-4 py-3 outline-none transition-colors placeholder:text-[var(--site-muted)]";
+  "w-full min-w-0 px-4 py-3 transition-colors placeholder:text-[var(--site-muted)]";
 
 function inputStyle(invalid?: boolean): React.CSSProperties {
   return {

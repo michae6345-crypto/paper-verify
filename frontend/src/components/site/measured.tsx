@@ -11,12 +11,12 @@ import {
   PAPERS,
   TABLES,
 } from "@/components/site/corpus";
-import { Scrub, useReducedMotionGate, useSectionProgress } from "@/components/site/motion/scrub";
+import { DrawLine, Scrub } from "@/components/site/motion/scrub";
 import { WIDE, useOwnTrack, useWideLayout } from "@/components/site/motion/mobile";
 import { Card, Container, Mono } from "@/components/site/ui";
 
 /**
- * The measured band: five rows, each a figure and the file it came from.
+ * The measured band: five figures, each with the file it came from.
  *
  * Four of them count work done and one counts work refused, and the refused one
  * is there on purpose. A band that reports only volume argues that the tool got
@@ -29,38 +29,64 @@ import { Card, Container, Mono } from "@/components/site/ui";
  * figures move, the CI corpus gate catches it and this page moves with them. A
  * `7,014` written into JSX would not.
  *
- * The reference gives this band no heading at all, and that is kept: rows of
- * figure and provenance say what they are. It does get a heading for anything
- * that cannot see the layout, since the section is a nav target and a run of
- * unlabelled rows is not one to arrive at.
+ * The reference gives this band no heading at all, and that is kept: a figure
+ * over its provenance says what it is. It does get a heading for anything that
+ * cannot see the layout, since the section is a nav target and a run of
+ * unlabelled figures is not one to arrive at.
  *
- * Motion: the rows arrive in sequence, and each figure's digits roll into place
- * rather than the figure counting up to itself. The distinction is the one this
- * product is built on. A counter tweening 0 → 7,014 displays 3,182 on the way,
- * and 3,182 is a number this corpus never produced; a reader who stops scrolling
- * mid-tween is looking at a figure we invented. A digit roll shows no total at
- * all until it settles — each slot starts blank and travels to the digit it
- * actually holds, and the slot is a fixed `1ch` in a monospaced tabular face, so
- * nothing reflows while it moves.
- *
- * The rows are on a surface now, and it is the quietest one on the page. They sat
+ * The rows are on a surface, and it is the quietest one on the page. They sat
  * directly on the field, which made this the one section with no plane of its own
  * at all — five hairlines on grey, between two sections that each carry a card.
- * It rests rather than standing off, deliberately: `decides` and `report` either
- * side of it are arguments and they lift, and this is the provenance underneath
- * them. Something has to be the floor or nothing above it is raised.
+ * It rests rather than standing off, deliberately: `apparatus` and `report`
+ * either side of it are arguments and they lift, and this is the provenance
+ * underneath them. Something has to be the floor or nothing above it is raised.
  *
- * The hairline moved from the foot of each row to the head of every row after the
- * first, which is the same rule the row before it draws and one rule fewer at the
- * bottom. On the field a trailing rule under the last row closed the band; inside
- * a card it would be a rule with nothing under it but padding.
+ * ---
+ *
+ * **Why the wide layout turns ninety degrees.** Five stacked rows of label,
+ * path and figure is a ledger, and a ledger is the same object as the four-row
+ * card in `report` and the reason-code list in `decides`. Above `three:` there
+ * is room to set the five side by side instead: the figure leads, the label sits
+ * under it, the path under that, and a drawn hairline separates each column from
+ * the one before. The band then reads across rather than down, which is a
+ * different room from anything either side of it, and the figures stop being the
+ * third thing in every line.
+ *
+ * Below `three:` it stays a ledger, because five columns on a phone is five
+ * columns of two characters each.
+ *
+ * ---
+ *
+ * **Motion: the figures' digits roll into place rather than the figure counting
+ * up to itself.** The distinction is the one this product is built on. A counter
+ * tweening 0 → 7,014 displays 3,182 on the way, and 3,182 is a number this
+ * corpus never produced; a reader who stops scrolling mid-tween is looking at a
+ * figure we invented. A digit roll shows no total at all until it settles — each
+ * slot starts blank and travels to the digit it actually holds, and the slot is a
+ * fixed `1ch` in a monospaced tabular face, so nothing reflows while it moves.
+ *
+ * **Every window here is measured against the element that carries it**, at both
+ * layouts and at every viewport. That is not a preference. Screenshotted at
+ * 390 x 844 this band once read `7,0₁3 cells`, `⁵₃₀ entries` and `₀ of ²`:
+ * wheels stopped between two digits, holding still, because their windows were a
+ * fraction of a section three times taller than the one the fraction was
+ * measured against, so the roll had used a third of its travel by the time the
+ * row was on screen and never finished. A figure this page never produced,
+ * sitting legibly in a band whose whole argument is provenance, is a worse
+ * outcome than any amount of missing animation.
+ *
+ * Measured against the element itself it cannot happen: progress 0 is that
+ * element's own top edge at the fold at every viewport, so the wheels start when
+ * it arrives and finish, by the fractions below, with it about two thirds of the
+ * way up the screen. The section's own travel is not read at all any more, and
+ * there is no constant left in this file that a change of layout could make
+ * stale.
  *
  * Not pinned. Pinning needs the section's height to change on mount, once
  * `matchMedia` says the viewport is large enough to hold the contents — and this
  * band sits in the middle of the page, so a section that grows from 350px to
  * three screens after hydration drags everything under it out from beneath the
- * reader. The rows scrub against the section's own travel instead, which costs
- * nothing and cannot jump.
+ * reader.
  */
 
 const ROWS: { label: string; source: string; value: string }[] = [
@@ -68,7 +94,7 @@ const ROWS: { label: string; source: string; value: string }[] = [
   { label: "Tables parsed", source: "fixtures/papers", value: `${TABLES} tables` },
   { label: "Cells read", source: "fixtures/papers", value: `${CELLS.toLocaleString("en-GB")} cells` },
   {
-    label: "Declined, with a reason attached",
+    label: "Declined, with a reason",
     source: "fixtures/papers",
     value: `${NOT_CHECKED_ENTRIES} entries`,
   },
@@ -80,35 +106,52 @@ const ROWS: { label: string; source: string; value: string }[] = [
 ];
 
 /**
- * Where each row starts, and the gap between them.
+ * Where a wheel starts inside its own element's window, and how long it runs.
  *
- * The section is 550px tall, so travel at a 720px viewport is 1270px and the
- * five rows are 52px apart, which is the 0.041 step. 0.315 is 400px of
- * scrolling per row, against 279px before.
+ * Both are fractions of that window rather than of a section, so they mean the
+ * same thing at 390 and at 1920.
  *
- * This band was already the best-placed motion on the page — driving a browser
- * through it put every row between 51% and 63% of the screen on the frame it
- * resolved, which is where an animation can actually be seen. It is the reason
- * the rest of this directory is now derived the same way rather than tuned by
- * eye: the numbers that happened to be right and the numbers that were pointing
- * below the fold looked identical in the source.
+ * **They are set by one requirement: the last digit has to stop before the
+ * figure is read.** `useSectionProgress` fixes progress 0.5 as the frame an
+ * element's centre reaches the centre of the screen, at every viewport and
+ * every height, and that is the frame a reader is looking at the number. A wheel
+ * still turning then is showing a figure this corpus never produced, which is
+ * the failure this whole file is built around and which it shipped once.
+ *
+ * The arithmetic, at the worst case in the band — the last column, whose lead is
+ * `4 × COLUMN_LEAD`, and the widest figure, whose fourth digit starts three
+ * `ROLL_STEP`s behind the first:
+ *
+ *     0.08 lead + 0.455 span × 0.18 + 3 × 0.022 + 0.455 span × 0.48 = 0.446
+ *
+ * against the 0.5 it has to beat. The arrival it sits inside closes at 0.535, so
+ * the figure now settles a little before the block carrying it finishes fading,
+ * rather than a little after. That is the right way round: a number has to be
+ * true before it is legible, and it was the other way round when this was
+ * measured — the last three columns were still turning with the band sitting
+ * two hundred pixels from the top of the screen.
+ *
+ * A wheel still gets 0.48 of its element's window, which is about 180px of
+ * scrolling. Short enough to be a stop and long enough to be a roll.
  */
-const ROW_START = 0.129;
-const ROW_SPAN = 0.315;
-const ROW_STEP = 0.041;
+const ROLL_START = 0.18;
+const ROLL_LENGTH = 0.48;
 
 /**
- * The digits start rolling once the row carrying them is most of the way in.
+ * How far along its own travel each column is held back from the one before it.
  *
- * 0.24 is 305px of scrolling for a wheel to travel its ten slots, against 229px,
- * and the offset is bigger so the roll starts against a row that has already
- * established itself rather than against one still arriving. The roll is the one
- * mechanic on this page that is genuinely ours rather than the reference's, and
- * it was resolving fast enough to read as the number simply being there.
+ * The five sit at the same height in the wide band, so geometry alone would
+ * deliver them on the same frame. Stacked, they are already at five different
+ * heights and the lead is not used at all.
+ *
+ * 0.02 rather than 0.03, and the reason is the wheels rather than the fade. A
+ * lead is spent twice: once by the column arriving and again by the last digit
+ * of its figure, which starts behind everything ahead of it. At 0.03 the fifth
+ * column's last digit landed at 0.48, close enough to the reading position that
+ * a slow reader met it still turning. At 0.02 it lands at 0.446, and the four
+ * columns still arrive in order across about 65px of scrolling.
  */
-const ROLL_OFFSET = 0.1;
-const ROLL_SPAN = 0.24;
-const ROLL_STEP = 0.022;
+const COLUMN_LEAD = 0.02;
 
 /**
  * The slots a digit wheel passes through: one blank, then the ten digits.
@@ -120,6 +163,9 @@ const SLOTS = ["", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
 /** The height of one slot, and so of the window onto the wheel. */
 const SLOT_HEIGHT = "1.5em";
+
+/** The gap between one digit's window and the next, inside a figure. */
+const ROLL_STEP = 0.022;
 
 /** One digit of a figure, on a wheel that stops on the digit the corpus produced. */
 function Digit({
@@ -165,28 +211,24 @@ function Digit({
  * The literal text is kept in the accessibility tree as one string — a screen
  * reader should hear "7,014 cells", not eleven separate wheels — and the wheels
  * themselves are `aria-hidden`.
+ *
+ * There is no reduced-motion branch here and there does not need to be: every
+ * caller takes its window from `useOwnTrack`, which returns a progress fixed at
+ * 1 for a reader who asked for less motion, so each wheel renders already
+ * stopped on its own digit.
  */
 function Rolling({
   value,
   progress,
   start,
-  span = ROLL_SPAN,
+  span,
 }: {
   value: string;
   progress: MotionValue<number>;
   start: number;
-  /** How much travel one wheel gets. The narrow branch measures its own. */
-  span?: number;
+  /** How much travel one wheel gets. Measured by the caller. */
+  span: number;
 }) {
-  // `useReducedMotionGate`, not `useReducedMotion`. This branch returns two
-  // structurally different trees — a bare text node against an `sr-only` span
-  // plus a wheel per digit — and `motion`'s own hook reads `false` on the server
-  // and the real value on the client's first render, so the two disagree and
-  // React throws the server's markup away. The gate agrees with the server on
-  // the first render and swaps in a layout effect before paint.
-  const reduced = useReducedMotionGate();
-  if (reduced) return <>{value}</>;
-
   let digit = 0;
   return (
     <>
@@ -207,8 +249,14 @@ function Rolling({
   );
 }
 
+/** Where a figure's wheels run, given the window its element arrives on. */
+function rollWindow(from: number, to: number): { start: number; span: number } {
+  const span = to - from;
+  return { start: from + span * ROLL_START, span: span * ROLL_LENGTH };
+}
+
 /**
- * One row's contents, in whichever of the two arrangements the width calls for.
+ * One row's contents, stacked. What every viewport under `three:` gets.
  *
  * Three equal columns above `two:`, which is what a band of provenance wants
  * when there is room for it. Below, the figure moves up beside the label and the
@@ -259,55 +307,11 @@ function RowBody({
   );
 }
 
-/** Above the breakpoint: the section's travel, and the constants measured against it. */
-function SectionRows({ progress }: { progress: MotionValue<number> }) {
-  return (
-    <>
-      {ROWS.map((row, i) => {
-        const from = ROW_START + i * ROW_STEP;
-        return (
-          <Scrub key={row.label} progress={progress} from={from} to={from + ROW_SPAN} y={14}>
-            <RowBody
-              row={row}
-              first={i === 0}
-              figure={
-                <Rolling value={row.value} progress={progress} start={from + ROLL_OFFSET} />
-              }
-            />
-          </Scrub>
-        );
-      })}
-    </>
-  );
-}
-
-/**
- * Below it: each row against its own travel, and the roll placed inside that.
- *
- * This is the section that made the case for the whole of `motion/mobile.tsx`,
- * because here the failure was not a fade landing in the wrong place — it was a
- * **wrong number on screen at rest**. Screenshotted at 390 x 844 the band read
- * `7,0₁3 cells`, `⁵₃₀ entries` and `₀ of ²`: wheels stopped between two digits,
- * holding still, because their windows were a fraction of a section three times
- * taller than the one the fraction was measured against, so the roll had used a
- * third of its travel by the time the row was on screen and never finished.
- *
- * A figure this page never produced, sitting legibly in a band whose whole
- * argument is provenance, is a worse outcome than any amount of missing
- * animation. The doc comment above already states the principle — a counter
- * tweening to 7,014 displays 3,182 on the way and 3,182 is a number this corpus
- * never produced — and the digit roll was built to avoid exactly that. It then
- * did it anyway, on the viewport nobody measured.
- *
- * Measured against the row itself it cannot: progress 0 is the row's own top
- * edge at the fold at every viewport, so the wheels start when the row arrives
- * and finish, by the numbers below, with the row about two thirds of the way up
- * the screen.
- */
+/** One row of the ledger, on its own track. */
 function SelfRow({ row, first }: { row: (typeof ROWS)[number]; first: boolean }) {
   const box = useRef<HTMLDivElement>(null);
   const { progress, from, to } = useOwnTrack(box, "row");
-  const span = to - from;
+  const roll = rollWindow(from, to);
 
   return (
     <div ref={box}>
@@ -315,43 +319,118 @@ function SelfRow({ row, first }: { row: (typeof ROWS)[number]; first: boolean })
         <RowBody
           row={row}
           first={first}
-          figure={
-            // The wheels start a third of the way into the row's own arrival and
-            // run for a fifth longer than it, so the figure settles against a row
-            // that is already established rather than against one still coming in.
-            <Rolling
-              value={row.value}
-              progress={progress}
-              start={from + span * 0.35}
-              span={span * 0.85}
-            />
-          }
+          figure={<Rolling value={row.value} progress={progress} start={roll.start} span={roll.span} />}
         />
       </Scrub>
     </div>
   );
 }
 
+/**
+ * The hairline between two columns, drawn downward as the column arrives.
+ *
+ * The same two-unit viewBox the phone's spine uses, for the same reason: with
+ * `preserveAspectRatio="none"` the segment stretches to whatever height the band
+ * turns out to be, and the stroke does not stretch with it.
+ */
+function ColumnRule({
+  progress,
+  from,
+  to,
+}: {
+  progress: MotionValue<number>;
+  from: number;
+  to: number;
+}) {
+  return (
+    <span aria-hidden="true" className="absolute inset-y-0 left-0 w-0.5">
+      <svg className="h-full w-0.5" viewBox="0 0 2 100" preserveAspectRatio="none">
+        <g stroke="var(--site-line-strong)">
+          <DrawLine progress={progress} from={from} to={to} d="M1 0 V100" strokeWidth={1} />
+        </g>
+      </svg>
+    </span>
+  );
+}
+
+/**
+ * One column of the wide band: the figure, then what it counts, then the path.
+ *
+ * The figure is larger here than in the ledger and that is the only type size in
+ * this file that changes with the layout. Five figures across a 1,100px card are
+ * the thing the band is for; five figures at 14px in the same arrangement would
+ * be a row of captions. It is capped at 24px because the widest of them,
+ * `7,014 cells`, sets at 0.6em per character in Fragment Mono and has to clear
+ * the narrowest column the band ever has — 160px at the 1100 breakpoint, against
+ * 119px of glyphs. The space inside a figure is non-breaking, so a figure that
+ * did not fit would overflow rather than wrap.
+ */
+function SelfColumn({ row, index }: { row: (typeof ROWS)[number]; index: number }) {
+  const box = useRef<HTMLDivElement>(null);
+  const { progress, from, to } = useOwnTrack(box, "row", index * COLUMN_LEAD);
+  const roll = rollWindow(from, to);
+
+  return (
+    <div
+      ref={box}
+      className={`relative min-w-0 flex-1 ${index === 0 ? "" : "pl-6 three:pl-8"}`}
+    >
+      {index > 0 && <ColumnRule progress={progress} from={from} to={to} />}
+      <Scrub progress={progress} from={from} to={to} y={14} className="grid gap-1.5">
+        <dt
+          className="row-start-2"
+          style={{ fontSize: "14px", lineHeight: 1.5, color: "var(--site-ink)" }}
+        >
+          {row.label}
+        </dt>
+        <dd
+          className="row-start-3"
+          style={{ fontSize: "13px", lineHeight: 1.5, color: "var(--site-muted)" }}
+        >
+          <Mono>{row.source}</Mono>
+        </dd>
+        <dd
+          className="row-start-1"
+          style={{
+            fontSize: "clamp(18px, 1.6vw, 24px)",
+            lineHeight: 1.5,
+            letterSpacing: "-0.02em",
+            color: "var(--site-ink)",
+          }}
+        >
+          <Mono>
+            <Rolling value={row.value} progress={progress} start={roll.start} span={roll.span} />
+          </Mono>
+        </dd>
+      </Scrub>
+    </div>
+  );
+}
+
 export function Measured() {
-  const section = useRef<HTMLElement>(null);
-  const progress = useSectionProgress(section);
   const wide = useWideLayout(WIDE);
 
   return (
-    <section ref={section} id="measured" className="site-section scroll-mt-20">
+    <section id="measured" className="site-section scroll-mt-20">
       <Container>
         <h2 className="sr-only">Measured</h2>
         <Card
           elevation="resting"
-          className="mx-auto w-full max-w-[1200px] px-5 py-2 two:px-6 two:py-4 three:px-12 three:py-6"
+          className="mx-auto w-full max-w-[1200px] px-5 py-2 two:px-6 two:py-4 three:px-10 three:py-10"
         >
-          <dl className="flex w-full flex-col">
-            {wide ? (
-              <SectionRows progress={progress} />
-            ) : (
-              ROWS.map((row, i) => <SelfRow key={row.label} row={row} first={i === 0} />)
-            )}
-          </dl>
+          {wide ? (
+            <dl className="flex w-full items-stretch">
+              {ROWS.map((row, i) => (
+                <SelfColumn key={row.label} row={row} index={i} />
+              ))}
+            </dl>
+          ) : (
+            <dl className="flex w-full flex-col">
+              {ROWS.map((row, i) => (
+                <SelfRow key={row.label} row={row} first={i === 0} />
+              ))}
+            </dl>
+          )}
         </Card>
       </Container>
     </section>

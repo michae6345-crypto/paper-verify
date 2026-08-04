@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRef } from "react";
 
-import { Scrub, useReducedMotionGate, useSectionProgress } from "@/components/site/motion/scrub";
+import { DrawLine, useReducedMotionGate } from "@/components/site/motion/scrub";
+import { Rise, useOwnTrack } from "@/components/site/motion/mobile";
 import { Card } from "@/components/site/ui";
 import { VerdictGlyph } from "@/components/verdict/verdict-glyph";
 import { VERDICT_LABEL } from "@/lib/verdict";
@@ -35,18 +36,25 @@ import type { Verdict } from "@/types/run-report";
  *
  * ---
  *
- * **The motion.** One progress track spans the whole row and each card maps its
- * own window of it, which is the page's vocabulary everywhere: windows rather
- * than delays, so a reader who flicks past gets the sequence compressed instead
- * of four animations queued behind a scroll that has already finished.
+ * **The motion.** Each card measures its own track and takes the surface budget
+ * out of it, which is `Rise`'s whole job: progress 0 is the frame that card's
+ * own top edge reaches the fold, at every viewport and every card height, and
+ * the window is `0.55 H` of scrolling from there. Nothing here is a fraction of
+ * a section, so nothing here can be right at 1536 and wrong at 390 — which is
+ * the failure `motion/mobile.tsx` was written after, and this row's four windows
+ * used to be four such fractions.
  *
- * The windows are derived rather than tuned, by the arithmetic in `scrub.tsx`:
- * a surface arriving as an object gets `W = 0.60 H` of travel, which at the
- * 720px viewport most readers have is about 430px of scrolling. The section is
- * roughly one viewport tall at desktop, so its travel is about `2 H` and 0.60 H
- * is 0.30 of it. The four windows start at 0.12 and step by 0.05, so the last
- * one closes at 0.57 — inside `S/(H+S)`, which `scrub.tsx` warns is where a
- * window has to close if it is not to resolve somewhere the reader cannot see.
+ * The stagger survives it. `lead` shifts a card's window along its *own* travel,
+ * so the four still arrive left to right by a fixed distance of scrolling rather
+ * than by four delays in milliseconds. Above `two:` the second row of the grid
+ * also sits lower on the page, so it arrives later for free, and the lead only
+ * separates the pair beside each other.
+ *
+ * The hairline above them draws left to right on the same principle, and it is
+ * the section's own idea rather than an import: a dark field with a header
+ * ranged left wants a rule across it, and a rule on this page is drawn rather
+ * than placed (`DrawLine`, the hero's spine, the process connector, the
+ * apparatus rule).
  *
  * Each card carries `lift`, so its shadow arrives with it and slightly behind
  * it: the surface reaches full opacity while its elevation is still coming in,
@@ -78,10 +86,16 @@ export type ShowcaseItem = {
   verdicts: Verdict[];
 };
 
-/** Where the first card's window opens, how long each lasts, and the stagger. */
-const CARD_FROM = 0.12;
-const CARD_SPAN = 0.3;
-const CARD_STEP = 0.05;
+/**
+ * How far along its own travel each card is held back from the one before it.
+ *
+ * 0.04 of a card's track is about 46px of scrolling at a 720px viewport, which
+ * is enough to read the four as a sequence and short enough that a flick
+ * delivers them as one gesture. The ceiling matters more than the value: the
+ * last card opens at 0.12 and its budget closes at 0.47, well before the 0.5
+ * where its centre reaches the middle of the screen and a reader starts on it.
+ */
+const CARD_LEAD = 0.04;
 
 /**
  * The run's verdicts, as marks.
@@ -194,8 +208,8 @@ function ShowcaseCard({ item }: { item: ShowcaseItem }) {
  * wanted here and is the reason nothing on this page pins inside it.
  */
 const ROW =
-  "mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 " +
-  "two:mt-12 two:grid two:grid-cols-2 two:gap-6 two:overflow-visible two:pb-0 three:grid-cols-4";
+  "mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 " +
+  "two:mt-10 two:grid two:grid-cols-2 two:gap-6 two:overflow-visible two:pb-0 three:grid-cols-4";
 
 /** One card's slot in the row, at both layouts. */
 const SLOT = "w-[78vw] shrink-0 snap-start two:w-auto two:shrink";
@@ -235,32 +249,70 @@ function RestingRow({ items }: { items: ShowcaseItem[] }) {
   );
 }
 
-/** The row doing its job: one track, four windows onto it. */
+/**
+ * The row doing its job: four cards, each on its own measured track.
+ *
+ * `boxClassName` carries the slot and `className` carries `h-full`, and the
+ * split is not cosmetic. `Rise` renders a measured box with the animated box
+ * inside it, so the grid cell is the outer one and the height has to be handed
+ * down explicitly or a card in a two-up row stops matching its neighbour.
+ */
 function ScrubbedRow({ items }: { items: ShowcaseItem[] }) {
-  const row = useRef<HTMLDivElement>(null);
-  const progress = useSectionProgress(row);
+  return (
+    <div className={ROW} tabIndex={0} role="group" aria-label={ROW_LABEL}>
+      {items.map((item, i) => (
+        <Rise
+          key={item.arxivId}
+          kind="surface"
+          lead={i * CARD_LEAD}
+          y={24}
+          scale={[0.96, 1]}
+          lift="card"
+          liftRadius="card"
+          boxClassName={SLOT}
+          className="h-full"
+        >
+          <ShowcaseCard item={item} />
+        </Rise>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The hairline under the header, drawn as the section arrives.
+ *
+ * A 1px box is a legitimate thing to measure: its own travel is `H + 1`, so the
+ * window opens as it crosses the fold and closes with it a little above the
+ * middle of the screen, which is where a divider wants to have finished. The
+ * faint static rule underneath is the line's own resting state, so the stroke
+ * reads as ink going down over a ruled edge rather than as a line appearing out
+ * of nothing.
+ */
+function DrawnRule() {
+  const box = useRef<HTMLDivElement>(null);
+  const { progress, from, to } = useOwnTrack(box, "row");
 
   return (
-    <div ref={row} className={ROW} tabIndex={0} role="group" aria-label={ROW_LABEL}>
-      {items.map((item, i) => {
-        const from = CARD_FROM + i * CARD_STEP;
-        return (
-          <Scrub
-            key={item.arxivId}
-            progress={progress}
-            from={from}
-            to={from + CARD_SPAN}
-            y={24}
-            scale={[0.96, 1]}
-            lift="card"
-            liftRadius="card"
-            className={SLOT}
-          >
-            <ShowcaseCard item={item} />
-          </Scrub>
-        );
-      })}
+    <div ref={box} className="site-stack relative h-px w-full" aria-hidden="true">
+      <div className="absolute inset-0" style={{ background: "var(--site-line-invert)" }} />
+      <svg className="absolute inset-0 h-px w-full" viewBox="0 0 1000 1" preserveAspectRatio="none">
+        <g stroke="var(--site-muted-invert)">
+          <DrawLine progress={progress} from={from} to={to} d="M0 0.5 H1000" strokeWidth={1} />
+        </g>
+      </svg>
     </div>
+  );
+}
+
+/** The same rule, already drawn. Its resolved state is a line. */
+function RestingRule() {
+  return (
+    <div
+      aria-hidden="true"
+      className="site-stack h-px w-full"
+      style={{ background: "var(--site-muted-invert)" }}
+    />
   );
 }
 
@@ -269,6 +321,19 @@ const ROW_LABEL = "Four tables from the validation corpus";
 export function ShowcaseCards({ items }: { items: ShowcaseItem[] }) {
   const reduced = useReducedMotionGate();
 
-  if (reduced) return <RestingRow items={items} />;
-  return <ScrubbedRow items={items} />;
+  if (reduced) {
+    return (
+      <>
+        <RestingRule />
+        <RestingRow items={items} />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <DrawnRule />
+      <ScrubbedRow items={items} />
+    </>
+  );
 }

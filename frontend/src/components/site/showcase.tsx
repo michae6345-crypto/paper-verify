@@ -65,6 +65,27 @@ import type { Table } from "@/types/run-report";
  *   table:retrieval   CLIP's, thirteen bold cells across fourteen columns. The
  *                     widest table in the corpus that still reads at card size.
  *
+ * ---
+ *
+ * **Why this section is the dark one.** The page runs light for four sections
+ * and then light for four more, and a reader scrolling through them stops seeing
+ * the section boundary at all. This is the one section whose content asks for
+ * the inversion rather than merely tolerating it: four white plates on a near
+ * black field are a gallery wall, and the plates are the only images the site
+ * has. On the page field they were four white cards on grey, which is the same
+ * object every other section already puts there.
+ *
+ * `--site-deep` rather than `--field-deep`, because #0d0d0d is the apparatus's
+ * instrument panel and that colour is doing a specific job two sections later.
+ * A second near-black would make the two read as the same surface.
+ *
+ * The header is ranged left with the corpus line beside it, which is
+ * `MOTION_TEARDOWN.md` §5's density pattern and the arrangement `apparatus.tsx`
+ * uses inside its pin. `process.tsx` immediately above keeps the centred header,
+ * so the two sections differ in field, in alignment and in what they hold.
+ *
+ * ---
+ *
  * `tab:glue_official` is deliberately not among them. It is BERT's GLUE table,
  * it carries the corpus's one real finding, and `apparatus.tsx` already builds
  * the page's signature scroll moment out of it. A third appearance would read as
@@ -117,25 +138,25 @@ const CHOSEN = [
     arxivId: "1512.03385",
     label: "tab:arch",
     plate: "/assets/plate-resnet-arch.svg",
-    note: "Eight blocks, and two rows narrower than the spec declares.",
+    note: "Eight blocks. Two rows are a column short of the spec.",
   },
   {
     arxivId: "1706.03762",
     label: "tab:wmt-results",
     plate: "/assets/plate-transformer-wmt.svg",
-    note: "Bold in two blocks, and a spacer column that shifts every index after it.",
+    note: "An empty spacer column, so column index and cell index part company.",
   },
   {
     arxivId: "1810.04805",
     label: "tab:squad_results",
     plate: "/assets/plate-bert-squad.svg",
-    note: "Four blocks, with every bold value in the last one.",
+    note: "Every bold value sits in the last of four blocks.",
   },
   {
     arxivId: "2103.00020",
     label: "table:retrieval",
     plate: "/assets/plate-clip-retrieval.svg",
-    note: "Fourteen columns, and thirteen bold values across two of its three blocks.",
+    note: "Thirteen bold values across fourteen columns.",
   },
 ] as const;
 
@@ -193,19 +214,29 @@ export function Showcase() {
   });
 
   return (
-    <section id="showcase" className="scroll-mt-20 py-14 three:py-[120px]">
+    <section
+      id="showcase"
+      className="scroll-mt-20 py-14 three:py-[120px]"
+      style={{ background: "var(--site-deep)" }}
+    >
       <Container>
-        <SectionTag tag="What it reads" heading="Four tables, as the parser sees them" />
-
-        <p className="site-body mx-auto mt-6 max-w-[62ch] text-center">
-          {/* The explicit `{" "}` after the count is load-bearing. A text chunk
-              that spans lines has the leading whitespace of each line trimmed,
-              so ` cells.` written across the line break renders as `7,014cells`.
-              Keeping the unit on one line between two expressions preserves it. */}
-          Every mark is one real cell, out of {PAPERS} papers, {TABLES} tables and{" "}
-          {CELLS.toLocaleString("en-GB")} cells.{" "}
-          A gap is a cell the paper left empty.
-        </p>
+        <SectionTag
+          tag="What it reads"
+          heading="Four tables, as the parser sees them"
+          align="start"
+          tone="dark"
+          aside={
+            <p className="site-body" style={{ color: "var(--site-muted-invert)" }}>
+              {/* The explicit `{" "}` after a count is load-bearing. A text chunk
+                  that spans lines has the leading whitespace of each line
+                  trimmed, so ` cells.` written across the line break renders as
+                  `7,014cells`. Keeping the unit on one line beside its
+                  expression preserves it. */}
+              Every mark is one real cell: {PAPERS} papers, {TABLES} tables,{" "}
+              {CELLS.toLocaleString("en-GB")} cells. A gap is a cell the paper left empty.
+            </p>
+          }
+        />
 
         <ShowcaseCards items={items} />
       </Container>
