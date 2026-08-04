@@ -38,7 +38,12 @@ const shotsAt = process.argv.indexOf("--shots");
 const SHOTS = shotsAt === -1 ? null : process.argv[shotsAt + 1];
 
 const GATE_KEY = "residual.gate.v1";
-const GATED = ["/check", "/submit", "/account"];
+/**
+ * `/dashboard` is another workstream's route and wraps the same guard in its own
+ * layout. It is checked here rather than taken on trust, because "the four
+ * routes are behind the curtain" is the deliverable and three of four is not it.
+ */
+const GATED = ["/check", "/submit", "/account", "/dashboard"];
 
 /**
  * Installed before anything on the page exists, so the first frame is recorded
@@ -369,8 +374,9 @@ console.log("\nwhat still gives it away (reported, not asserted)");
   for (const route of GATED) console.log(`  locked ${route.padEnd(19)} ${await look(route)}`);
   console.log(
     "  A locked route answers 200 where a missing one answers 404: the server cannot\n" +
-      "  see a secret that lives in localStorage. /submit and /account also keep their\n" +
-      "  own page titles. Both are written up in components/gate/gate.tsx.",
+      "  see a secret that lives in localStorage. Every route that exports its own\n" +
+      "  metadata also keeps its tab title over the 404 body. Both are written up in\n" +
+      "  components/gate/gate.tsx.",
   );
   await context.close();
 }

@@ -62,11 +62,12 @@ export function Gate({ children }: { children: ReactNode }) {
  *   sets is no more of a secret than this is. It would buy an accurate status
  *   code, not any actual withholding.
  *
- *   The tab title on `/submit` and `/account`. Those two pages export their own
- *   `metadata`, which wins over anything a layout says, so the tab reads "Submit
- *   a paper" over a 404 body. `/check` happens to match because its title falls
- *   back to the root's, which is also what a genuinely missing route shows. The
- *   fix belongs in those two pages, which this workstream does not own.
+ *   The tab title on `/submit`, `/account` and `/dashboard`. Those routes export
+ *   their own `metadata`, which wins over anything a layout says, so the tab
+ *   reads "Submit a paper" over a 404 body. `/check` happens to match because
+ *   its title falls back to the root's, which is also what a genuinely missing
+ *   route shows. The fix belongs in those pages, which this workstream does not
+ *   own.
  *
  * There is deliberately no `<title>` rendered here. One was tried: it is dead
  * weight, because Next's metadata emits its own earlier in the document and the
