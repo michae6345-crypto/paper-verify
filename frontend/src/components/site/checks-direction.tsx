@@ -45,29 +45,21 @@ const DIRECTIONS: Direction[] = [
     title: "Statistical validity",
     body: (
       <>
-        statcheck recomputes a p-value from the test statistic and degrees of freedom already
-        printed, so <Mono>t(38) = 2.1, p &lt; .01</Mono> can be checked against{" "}
-        <Mono>p = .042</Mono>. GRIM proves a reported mean impossible: a mean of whole numbers over
-        n items is a multiple of 1/n.
+        Recompute a p-value from the statistic already printed. <Mono>t(38) = 2.1, p &lt; .01</Mono>{" "}
+        against <Mono>p = .042</Mono>.
       </>
     ),
   },
   {
     title: "Submission integrity",
-    body: (
-      <>
-        The questions a programme chair asks by hand. Is this anonymous for a double-blind venue, is
-        it inside the page limit, is there text hidden at 0pt to steer a model reading it. All
-        properties of the compiled PDF, which nothing here ingests yet.
-      </>
-    ),
+    body: <>Anonymity, page limits, text hidden at 0pt to steer a model. All in the PDF.</>,
   },
   {
     title: "Bibliography integrity",
     body: (
       <>
-        A reference no <Mono>\cite</Mono> in the body points at, and a citation with no reference
-        behind it. Set arithmetic over two lists that are already in the source.
+        A reference nothing cites, a citation with no reference. Set arithmetic over two lists
+        already in the source.
       </>
     ),
   },
@@ -75,10 +67,8 @@ const DIRECTIONS: Direction[] = [
     title: "The repository, beside the arithmetic",
     body: (
       <>
-        Does the repository a paper points at resolve, is a commit pinned instead of a moving
-        branch, do its declared versions match the ones the paper names.{" "}
-        <Mono>backend/pv/checks/repos.py</Mono> ranks candidates today and stops there, waiting for
-        a person to confirm one.
+        Does it resolve, is the commit pinned. <Mono>repos.py</Mono> ranks candidates and waits for
+        a person.
       </>
     ),
   },
@@ -86,9 +76,8 @@ const DIRECTIONS: Direction[] = [
     title: "A rerun on compute we rent",
     body: (
       <>
-        The paper&rsquo;s own code in a container, on rented compute, against the numbers it prints.
-        The least settled of the five: a training run is not deterministic, the same code can print
-        two different numbers, and a seed&rsquo;s worth of variance has no threshold yet.
+        The paper&rsquo;s code in a container, against the numbers it prints. A training run is not
+        repeatable, so variance has no threshold yet.
       </>
     ),
   },
