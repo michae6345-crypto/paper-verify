@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" width="320" height="240" role="img">
+  <rect width="320" height="240" fill="#ffffff"/>
+  <text x="16" y="29.5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" fill="#111111" xml:space="preserve">\hline</text>
+  <text x="16" y="51.7" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" fill="#9a9a9a" xml:space="preserve">\rule{0pt}{2.0ex}Deep-Att + PosUnk Ensemble \c</text>
+  <text x="16" y="73.9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" fill="#9a9a9a" xml:space="preserve"> $8.0\cdot10^{20}$ \\</text>
+  <text x="16" y="96.2" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" fill="#9a9a9a" xml:space="preserve">GNMT + RL Ensemble \citep{wu2016google} &amp; 26.3</text>
+  <text x="16" y="118.4" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" fill="#111111" xml:space="preserve">ConvS2S Ensemble \citep{JonasFaceNet2017} &amp; 26</text>
+  <text x="16" y="140.6" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" fill="#111111" xml:space="preserve">\specialrule{1pt}{-1pt}{0pt}</text>
+  <text x="16" y="162.8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" fill="#111111" xml:space="preserve">\rule{0pt}{2.2ex}Transformer (base model) &amp; 27</text>
+  <text x="16" y="185.1" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" fill="#111111" xml:space="preserve">Transformer (big) &amp; \textbf{28.4} &amp; \textbf{41</text>
+  <text x="16" y="207.3" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="9.5" fill="#111111" xml:space="preserve">%\hline</text>
+</svg>
