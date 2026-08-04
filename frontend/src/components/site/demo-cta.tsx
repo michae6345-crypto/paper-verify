@@ -153,13 +153,8 @@ export function DemoCta() {
 
             <InvertedLink href="/demo">Book a demo</InvertedLink>
 
-            {/* The limit, next to the ask rather than at the bottom of the page,
-                because a chair reading this is the reader who would otherwise
-                form the wrong expectation. `report.tsx` already says there is no
-                endpoint a venue can call; this says the other half, which is
-                that there is no way to hand it a stack of submissions either. */}
             <p style={{ fontSize: "13px", lineHeight: 1.6, color: "var(--site-muted-invert)" }}>
-              One paper at a time. Running a batch for a venue is not built.
+              Bring a paper you know well, and check what it says against what it prints.
             </p>
           </Rise>
 

@@ -186,10 +186,10 @@ export function CatalogSummary() {
         <span className="t-num">{CATALOG_COUNTS.runs}</span> running today
       </Chip>
       <Chip>
-        <span className="t-num">{CATALOG_COUNTS.specified}</span> specified, not built
+        <span className="t-num">{CATALOG_COUNTS.specified}</span> specified
       </Chip>
       <Chip>
-        <span className="t-num">{CATALOG_COUNTS.planned}</span> not built
+        <span className="t-num">{CATALOG_COUNTS.planned}</span> in the catalogue
       </Chip>
     </div>
   );

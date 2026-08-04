@@ -9,18 +9,23 @@ import { Reveal } from "@/components/site/reveal";
 import { Mono, Tag } from "@/components/site/ui";
 
 /**
- * Where the checks go next. Every line of it is future tense.
+ * Where the checks go next.
  *
- * The band above says what runs. This one says what is designed to run, and the
- * two have to be impossible to confuse, so the fencing is inline and doubled:
- * the band heading says none of it runs, and every row carries a `not built`
- * marker set in the same monospace the page uses for real output, so it reads as
- * a field of the row rather than as copywriting.
+ * **This band carried `not built` markers on every row and a heading reading
+ * "Designed next. None of it runs." Both are gone, at the owner's instruction.**
+ * The reasoning is theirs and it is a reasonable one: this is a pre-launch demo
+ * surface, nothing is being sold from it, and a page describing the product it
+ * intends to be is not a page making a false claim to a customer.
  *
- * `repos.py` is the one row with anything in the repository behind it. It finds
- * candidate repositories and waits for a person to confirm one; it exposes no
- * `run(ctx)` and produces no verdict, so the checking described around it is
- * still the unbuilt part.
+ * What was kept, because it is a different kind of statement: anything that
+ * makes a **published figure** accurate. The corpus numbers on this page are
+ * measurements of specific tables in specific papers, and the note that they
+ * come from the two network-free checks is what makes `103 tables` true rather
+ * than approximately true. That is arithmetic, not positioning, and it stays.
+ *
+ * The line worth holding if this is ever revisited: describing a roadmap in the
+ * present tense is a marketing decision, and attaching a number to a named
+ * researcher's paper is not.
  *
  * A ledger, because the band above is a field of cards and a third grid on one
  * page is the same gesture three times.
@@ -127,24 +132,6 @@ function RowRule({
   );
 }
 
-/** The marker every row carries. Monospace, muted, and not a verdict word. */
-function NotBuilt() {
-  return (
-    <span
-      className="site-mono inline-flex shrink-0 items-center px-2.5 py-1"
-      style={{
-        fontSize: "12px",
-        lineHeight: 1.4,
-        color: "var(--site-muted)",
-        border: "1px solid var(--site-line)",
-        borderRadius: "var(--site-radius-pill)",
-      }}
-    >
-      not built
-    </span>
-  );
-}
-
 /**
  * One row: title and marker on the left, the argument on the right.
  *
@@ -185,7 +172,6 @@ function DirectionRow({ item }: { item: Direction }) {
           >
             {item.title}
           </h4>
-          <NotBuilt />
         </div>
         <p className="site-body max-w-[68ch]" style={{ fontSize: "15px" }}>
           {item.body}
@@ -222,7 +208,7 @@ export function ChecksDirection() {
               color: "var(--site-ink)",
             }}
           >
-            Designed next. None of it runs.
+            What a venue gets next.
           </h3>
         </Reveal>
       </div>

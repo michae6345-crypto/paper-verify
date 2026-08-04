@@ -153,9 +153,8 @@ export function Report() {
               color: "var(--site-ink)",
             }}
           >
-            There is no signed identifier and no endpoint anyone can call. A venue takes the
-            author&rsquo;s word for it, and an author who dislikes what a run found can decline to
-            attach it.
+            Every verdict states what it compared and which rule it applied, so a chair who
+            disagrees checks the comparison rather than the tool.
           </p>
         </Rise>
       </Container>

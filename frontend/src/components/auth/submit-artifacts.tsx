@@ -375,8 +375,8 @@ export function SubmitArtifacts({ knownIds }: { knownIds: string[] }) {
       <Panel as="section">
         <h2 className="site-h3">How it runs</h2>
         <p className="site-body mt-2 max-w-[62ch]">
-          Rerunning experiments is not built. This is collected so the record carries it and a
-          reviewer can run it themselves. residual will not pull the image or execute the command.
+          This is collected so the record carries it and a reviewer can run it themselves. residual
+          does not pull the image or execute the command.
         </p>
 
         <div className="mt-6">

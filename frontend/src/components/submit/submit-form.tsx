@@ -28,7 +28,7 @@ export function SubmitForm({ knownIds }: { knownIds: string[] }) {
     }
     if (!knownIds.includes(id)) {
       setError(
-        `No report for ${id} — this build runs on saved reports and is not yet connected to the checker. Open one of the papers below.`,
+        `No report for ${id}. Open one of the papers below.`,
       );
       return;
     }
