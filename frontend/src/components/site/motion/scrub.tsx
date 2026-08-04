@@ -10,6 +10,7 @@ import {
 } from "motion/react";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
+import { type Curve } from "@/components/site/motion/easing";
 import { cn } from "@/lib/utils";
 
 /**
@@ -558,6 +559,26 @@ function useOverflowWarning() {
  * strength. A reader who asked for less motion should get the resolved card,
  * and the resolved card has a shadow; dropping the layer with the animation
  * would quietly flatten every surface on the page for exactly those readers.
+ *
+ * ---
+ *
+ * **`ease` — the shape of the window, added late and defaulted to nothing.**
+ * Every window in this file was linear against scroll until `motion/easing.ts`
+ * was written, and `docs/FRAMER_MOTION_NOTES.md` argues that a curve on a scroll
+ * transform is most of the difference between this page and the reference. It is
+ * optional and undefined by default, which Motion's interpolator treats as
+ * exactly identical to the old behaviour — so no existing call site changes
+ * until somebody sets it deliberately.
+ *
+ * What to set it to: `EASE.arrive` for a surface, `EASE.settle` for a row,
+ * `EASE.glide` for text. Not an in-curve, ever, on a window that carries
+ * opacity — `motion/easing.ts` has the table showing why that reproduces the
+ * "invisible while on screen" failure on purpose.
+ *
+ * The same curve shapes opacity, `y`, `scale` and `blur` together. Giving them
+ * separate curves was considered and refused: the whole claim of a card arriving
+ * as an object is that its properties are one gesture, and four curves is four
+ * gestures that happen to start at the same time.
  */
 export function Scrub({
   progress,
@@ -568,6 +589,7 @@ export function Scrub({
   blur,
   lift,
   liftRadius = "card",
+  ease,
   children,
   className,
 }: {
@@ -579,6 +601,8 @@ export function Scrub({
   blur?: number;
   lift?: "raised" | "card";
   liftRadius?: "card" | "inner";
+  /** The curve the window is read through. Undefined is linear, as before. */
+  ease?: Curve;
   children: ReactNode;
   className?: string;
 }) {
@@ -609,6 +633,7 @@ export function Scrub({
       blur={blur}
       lift={lift}
       liftRadius={liftRadius}
+      ease={ease}
       className={className}
     >
       {children}
@@ -637,6 +662,7 @@ function ScrubbedBox({
   blur,
   lift,
   liftRadius,
+  ease,
   children,
   className,
 }: {
@@ -648,13 +674,14 @@ function ScrubbedBox({
   blur?: number;
   lift?: "raised" | "card";
   liftRadius: "card" | "inner";
+  ease?: Curve;
   children: ReactNode;
   className?: string;
 }) {
-  const opacity = useTransform(progress, [from, to], [0, 1], { clamp: true });
-  const ty = useTransform(progress, [from, to], [y, 0], { clamp: true });
-  const s = useTransform(progress, [from, to], scale ?? [1, 1], { clamp: true });
-  const f = useTransform(progress, [from, to], [blur ?? 0, 0], { clamp: true });
+  const opacity = useTransform(progress, [from, to], [0, 1], { clamp: true, ease });
+  const ty = useTransform(progress, [from, to], [y, 0], { clamp: true, ease });
+  const s = useTransform(progress, [from, to], scale ?? [1, 1], { clamp: true, ease });
+  const f = useTransform(progress, [from, to], [blur ?? 0, 0], { clamp: true, ease });
   const filter = useTransform(f, (v) => (v > 0.01 ? `blur(${v}px)` : "none"));
   const pointerEvents = useTransform(opacity, (v) => (v > 0 ? "auto" : "none"));
 
@@ -791,12 +818,25 @@ export function Cover({
   progress,
   from,
   to,
+  ease,
   children,
   className,
 }: {
   progress: MotionValue<number>;
   from: number;
   to: number;
+  /**
+   * Optional, and this is the one place on the page an **in-out** curve is the
+   * right answer. `EASE.travel` is still at both ends, so the panel gathers off
+   * the bottom edge and comes to rest rather than starting and stopping at a
+   * constant rate. The rule in `motion/easing.ts` against in-curves is about
+   * windows that carry opacity, and this one carries none: the panel is fully
+   * opaque for the whole of its travel, so easing into its start position cannot
+   * leave the reader looking at something they cannot see.
+   *
+   * Undefined by default, which is linear, which is what shipped.
+   */
+  ease?: Curve;
   children: ReactNode;
   className?: string;
 }) {
@@ -805,7 +845,7 @@ export function Cover({
   if (reduced) return <div className={className}>{children}</div>;
 
   return (
-    <CoveringPanel progress={progress} from={from} to={to} className={className}>
+    <CoveringPanel progress={progress} from={from} to={to} ease={ease} className={className}>
       {children}
     </CoveringPanel>
   );
@@ -815,16 +855,18 @@ function CoveringPanel({
   progress,
   from,
   to,
+  ease,
   children,
   className,
 }: {
   progress: MotionValue<number>;
   from: number;
   to: number;
+  ease?: Curve;
   children: ReactNode;
   className?: string;
 }) {
-  const y = useTransform(progress, [from, to], ["100%", "0%"], { clamp: true });
+  const y = useTransform(progress, [from, to], ["100%", "0%"], { clamp: true, ease });
 
   // No spring. A stroke needs smoothing because `stroke-dashoffset` is not
   // composited and a raw trackpad value reads as jitter on it; a transform is,
