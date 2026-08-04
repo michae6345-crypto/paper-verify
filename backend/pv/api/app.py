@@ -15,17 +15,43 @@ the source of truth. One transport, one contract.
 Jobs are `QUEUE_BACKEND=inline` via FastAPI `BackgroundTasks` (§13): no Redis, no
 arq. The CPU-bound stages inside the job run in a threadpool (see `jobs.py`), so
 a paper that takes eight seconds to parse does not starve the streams.
+
+**Storage comes from the factories in `pv.store`, never constructed here.** §13
+says the local/hosted branch happens in one place; before this it happened
+nowhere, because this module built the in-memory `RunStore`, `AmendmentStore` and
+`ReviewQueue` directly and nothing in `backend/` called a factory at all. Setting
+`DATABASE_URL` therefore changed nothing, which made the process-local dict the
+only store there was: every run id 404'd after a restart, every permalink with
+it, and the review queue emptied on each deploy.
+
+**What is gated, and why the line is where it is.** Everything that mutates, and
+every read that is *not* redacted, needs the operator key
+(`pv.api.security`). The second half is the part that is easy to get wrong:
+`GET /runs/{id}/report`, `GET /runs/{id}`, the SSE stream and the review queue
+all carry findings the §14.8 gate is holding, so leaving any of them open routes
+around the gate as completely as an open release endpoint would. One route
+serves an unauthenticated reader — `GET /runs/{id}/report/public` — and it is
+the one that runs `redact()`.
 """
 
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Path, Query, Request
+from fastapi import (
+    BackgroundTasks,
+    Depends,
+    FastAPI,
+    HTTPException,
+    Path,
+    Query,
+    Request,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette.sse import EventSourceResponse
 
-from ..amendments import AmendmentStore, recheck_finding
+from ..amendments import recheck_finding
 from ..amendments.identity import fingerprints_in
 from ..amendments.recheck import FindingNotInRun
 from ..amendments.submitter import submitter_of
@@ -36,13 +62,14 @@ from ..review import (
     ReleaseRequiresReview,
     ReviewEntry,
     ReviewKind,
-    ReviewQueue,
     ReviewState,
     held_notice,
     redact,
 )
+from ..store import get_amendment_store, get_event_bus, get_review_queue, get_run_store
 from . import jobs
 from .config import Settings
+from .security import Principal, require_operator
 from .schemas import (
     AmendmentList,
     ConfirmArtifactRequest,
@@ -59,11 +86,12 @@ from .schemas import (
     Run,
     RunList,
     RunManifest,
+    RunSummary,
     StreamEvent,
     StreamPayload,
     SuppressRequest,
 )
-from .store import Event, RunStore
+from .store import Event
 
 DESCRIPTION = """
 Checks whether a paper's own numbers agree with each other.
@@ -73,25 +101,53 @@ that cannot be made deterministic returns `unverifiable` with a reason code — 
 run where half the checks are unverifiable is a normal result, not a failure.
 """.strip()
 
-app = FastAPI(
-    title="paper-verify",
-    version="0.1.0",
-    description=DESCRIPTION,
-)
-
 settings = Settings.from_env()
-store = RunStore(max_runs=settings.max_runs)
+
+# All four from `pv.store`, which is the one place that reads `DATABASE_URL` and
+# the one place that branches on it (§13). With it unset every factory hands back
+# the in-memory implementation this module used to build by hand, so nothing
+# about a local run changes; with it set, the same call sites talk to Postgres.
+store = get_run_store(max_runs=settings.max_runs)
 # One orchestrator for the process, so a `POST /runs/{id}/artifact` addresses the
 # same run the background job is driving. The state store behind it is what makes
 # a run survive a restart (`PV_STATE_DIR`).
 orchestrator = get_orchestrator()
-# Append-only, and process-local like the run store: both hold the shape their
-# Postgres table will hold. An amendment is never edited, including by us.
-amendments = AmendmentStore()
+# Append-only. An amendment is never edited, including by us — in Postgres that
+# is a trigger that raises on UPDATE and DELETE, not an agreement.
+amendments = get_amendment_store()
 # §14.8. Holds only decisions; what is *waiting* is derived from the report each
 # time it is asked for, so a finding cannot be held in a list that has fallen out
 # of step with what the run produced. Absence of a decision means held.
-review = ReviewQueue()
+review = get_review_queue()
+# §15.1. `None` in memory mode, where one process and one in-process store means
+# `RunRecord._publish` already reaches every subscriber there is. The bus exists
+# to cross a process boundary that memory mode does not have.
+bus = get_event_bus(store)
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    """Start and stop the LISTEN/NOTIFY fan-out.
+
+    Read off the module global rather than closed over, so a test that swaps
+    `bus` before entering the client gets its own. In memory mode both halves are
+    no-ops and the app starts exactly as it did.
+    """
+    if bus is not None:
+        bus.start()
+    try:
+        yield
+    finally:
+        if bus is not None:
+            await bus.stop()
+
+
+app = FastAPI(
+    title="paper-verify",
+    version="0.1.0",
+    description=DESCRIPTION,
+    lifespan=lifespan,
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -116,9 +172,19 @@ def _record_or_404(run_id: str):
 # --------------------------------------------------------------------------
 
 
-@app.post("/runs", response_model=Run, status_code=202, tags=["runs"])
+@app.post(
+    "/runs",
+    response_model=Run,
+    status_code=202,
+    tags=["runs"],
+    dependencies=[Depends(require_operator)],
+)
 async def create_run(body: CreateRunRequest, background: BackgroundTasks) -> Run:
     """Start a run and return its id immediately.
+
+    Gated. A run fetches from arXiv, which allows us one request every three
+    seconds and bans for abuse, so an open create endpoint is an open tap on a
+    quota we cannot replace.
 
     `arxiv_id` may be a bare id, a versioned id, or an arXiv URL. A string that is
     not an arXiv id still produces a run — one that finishes at once with a report
@@ -146,16 +212,64 @@ async def create_run(body: CreateRunRequest, background: BackgroundTasks) -> Run
     return record.envelope()
 
 
-@app.get("/runs", response_model=RunList, tags=["runs"])
+@app.get(
+    "/runs",
+    response_model=RunList,
+    tags=["runs"],
+    dependencies=[Depends(require_operator)],
+)
 async def list_runs(limit: int = Query(20, ge=1, le=100)) -> RunList:
-    """Recently checked papers (§5.1), most recent first."""
-    return RunList(runs=[record.summary() for record in store.recent(limit)])
+    """Recently checked papers (§5.1), most recent first.
+
+    Every column `DASHBOARD.md`'s `/runs` and `/reports` tables render is on the
+    row: stage, elapsed, the verdict strip, the verdict counts, and whether the
+    §14.8 gate is holding anything. The alternative it exists to prevent is a
+    list screen fetching N reports to draw N rows.
+
+    Gated: `verdicts` and `counts` say that a run produced a high-severity
+    divergence, which is a thing the gate is holding back from being said. The
+    counts are a smaller leak than the finding, not a different one.
+    """
+    rows: list[RunSummary] = []
+    for record in store.recent(limit):
+        summary = record.summary()
+        # The gate's answer, joined on here rather than in the record: `held` is
+        # a fact about review decisions, and a record that computed it would be a
+        # second place the §14.8 rule is implemented. `pending()` derives the
+        # queue from the report each time, so this cannot fall out of step with
+        # what the run actually found.
+        report = record.report()
+        report.amendments = amendments.history(record.run_id)
+        outstanding = [
+            entry
+            for entry in review.pending(record.run_id, report)
+            if entry.state is not ReviewState.RELEASED
+        ]
+        summary.held_findings = sum(
+            1 for e in outstanding if e.kind is ReviewKind.FINDING
+        )
+        summary.held_amendments = sum(
+            1 for e in outstanding if e.kind is ReviewKind.AMENDMENT
+        )
+        summary.held = len(outstanding)
+        rows.append(summary)
+    return RunList(runs=rows)
 
 
-@app.get("/runs/{run_id}", response_model=Run, tags=["runs"])
+@app.get(
+    "/runs/{run_id}",
+    response_model=Run,
+    tags=["runs"],
+    dependencies=[Depends(require_operator)],
+)
 async def get_run(run_id: str = Path(...)) -> Run:
     """The run as it stands. Mid-run this is a partial report: the checks that
-    have finished, and nothing invented for the ones that have not."""
+    have finished, and nothing invented for the ones that have not.
+
+    Gated, and for the same reason `GET /runs/{id}/report` is: `Run.report` is
+    the unredacted report. Gating the report endpoint alone would have left the
+    identical bytes one path segment away.
+    """
     return _record_or_404(run_id).envelope()
 
 
@@ -172,13 +286,27 @@ def _report_with_amendments(run_id: str) -> RunReport:
     return report
 
 
-@app.get("/runs/{run_id}/report", response_model=RunReport, tags=["runs"])
+@app.get(
+    "/runs/{run_id}/report",
+    response_model=RunReport,
+    tags=["runs"],
+    dependencies=[Depends(require_operator)],
+)
 async def get_report(run_id: str = Path(...)) -> RunReport:
     """The bare `RunReport` — the same object the CLI prints and §5.5 renders.
 
-    This is the full report, including findings the §14.8 gate is still holding.
-    It is the working surface, not the permalink: `GET /runs/{id}/report/public`
-    is what a shared URL serves.
+    The full report, including every finding the §14.8 gate is holding. It is the
+    working surface, not the permalink: `GET /runs/{id}/report/public` is what a
+    shared URL serves.
+
+    **Gated, and this is the route that made the gate a suggestion.** It was
+    unauthenticated and unredacted while `/report/public` next to it was
+    redacted, so anyone who changed one path segment read every held finding
+    about every named researcher in the store. The docstring that used to sit
+    here called it "the working surface, not the permalink", which is a statement
+    of intent and not a control — exactly the shape CLAUDE.md names as this
+    codebase's recurring defect. `tests/test_review.py` now asserts that an
+    unauthenticated caller gets nothing from it.
     """
     return _report_with_amendments(run_id)
 
@@ -194,6 +322,11 @@ async def get_public_report(run_id: str = Path(...)) -> PublicReport:
     Redaction is the default and requires no configuration: a finding with no
     review decision recorded against it is held. There is no setting under which
     an unread high-severity divergence appears here.
+
+    **The one route in this file that serves an unauthenticated reader**, which
+    is the whole design: a permalink has to open for someone with no credential,
+    so the only version of a report that opens for them is the redacted one.
+    Every other read here needs the operator key.
     """
     report = _report_with_amendments(run_id)
     public, withheld = redact(report, review, run_id)
@@ -207,7 +340,12 @@ async def get_public_report(run_id: str = Path(...)) -> PublicReport:
     )
 
 
-@app.post("/runs/{run_id}/artifact", response_model=Run, tags=["runs"])
+@app.post(
+    "/runs/{run_id}/artifact",
+    response_model=Run,
+    tags=["runs"],
+    dependencies=[Depends(require_operator)],
+)
 async def confirm_artifact(
     body: ConfirmArtifactRequest, run_id: str = Path(...)
 ) -> Run:
@@ -236,6 +374,7 @@ async def confirm_artifact(
     "/runs/{run_id}/stream",
     tags=["runs"],
     response_class=EventSourceResponse,
+    dependencies=[Depends(require_operator)],
     responses={
         200: {
             "model": StreamPayload,
@@ -260,9 +399,19 @@ async def stream_run(request: Request, run_id: str = Path(...)) -> EventSourceRe
       `check`    -> CheckEvent    one terminal CheckResult, with its manifest index
       `state`    -> StateEvent    the run is paused on the §5.2 confirmation screen
       `done`     -> DoneEvent     the complete run; the stream closes after it
+
+    Gated: a `check` event carries the whole `CheckResult`, held findings and
+    all, so an open stream is the report endpoint with a delay on it. A browser
+    cannot put a header on an `EventSource`, so this is the route the `pv_key`
+    cookie in `pv.api.security` exists for.
     """
     record = _record_or_404(run_id)
     queue, replay = record.subscribe()
+    # §15.1: tell the listener this process is now reading this run, so events
+    # another worker writes reach the subscriber attached here. No-op in memory
+    # mode, where there is no other process to hear from.
+    if bus is not None:
+        bus.watch(run_id)
 
     def encode(event: Event) -> dict:
         name, payload = event
@@ -281,6 +430,11 @@ async def stream_run(request: Request, run_id: str = Path(...)) -> EventSourceRe
                 yield encode(event)
         finally:
             record.unsubscribe(queue)
+            # Only when this was the last reader. Unwatching while another stream
+            # in this process is still attached would leave that one deaf to
+            # every event from any other worker.
+            if bus is not None and not record._subscribers:
+                bus.unwatch(run_id)
 
     return EventSourceResponse(publisher())
 
@@ -301,6 +455,7 @@ async def stream_run(request: Request, run_id: str = Path(...)) -> EventSourceRe
     response_model=Amendment,
     status_code=201,
     tags=["amendments"],
+    dependencies=[Depends(require_operator)],
 )
 async def create_amendment(
     body: CreateAmendmentRequest, request: Request, run_id: str = Path(...)
@@ -315,25 +470,30 @@ async def create_amendment(
     improve a check without silently carrying an author's objection onto a reading
     of their paper they have never seen.
 
-    **This endpoint is unauthenticated, and what that means is deliberate.**
-    There is no auth layer in this system, so anyone who can reach this can file a
-    statement against any finding on any paper. Two consequences are designed for
-    rather than hoped away:
+    **This endpoint needs the operator key, and it still records nobody.** Those
+    are two separate facts and collapsing them is a mistake:
 
-    - Nothing recorded here claims to know who sent it. The request carries no
-      name field; identity is derived from the request by
-      `pv.amendments.submitter`, which today returns "not identified" for
-      everyone. A self-declared name printed beside a statement on a named
-      researcher's page would be an attribution nobody could defend.
-    - **Filing this changes nothing a reader sees.** The statement lands in the
-      §14.8 review queue alongside high-severity divergences and stays off the
-      public permalink until a person reads it, and holding it back leaves the
-      contested finding exactly where it was. If a contest could suppress a
-      finding, anyone could bury a true one by objecting to it.
+    - The key is a *rate and abuse* control. Without it, anyone on the internet
+      could file unlimited statements against any finding on any paper, which is
+      a queue-flooding attack on the one human reading §14.8's list.
+    - The key is **not** an identity. It authenticates the holder of a shared
+      secret, and a shared secret held by an author, a chair and us alike says
+      nothing about who wrote a given statement. So identity is still derived
+      from the request by `pv.amendments.submitter`, which still returns "not
+      identified" for everyone, and there is still no name field on the request.
+      A self-declared name printed beside a statement on a named researcher's
+      page would be an attribution nobody could defend, and adding a credential
+      that several people share does not make one defensible.
 
-    An amendment from an unknown party is a signal for a human to look at, never
-    an automatic correction. Attaching an auth layer later changes `submitter_of`
-    and the release policy; it does not change this endpoint's shape.
+    **Filing this changes nothing a reader sees.** The statement lands in the
+    §14.8 review queue alongside high-severity divergences and stays off the
+    public permalink until a person reads it, and holding it back leaves the
+    contested finding exactly where it was. If a contest could suppress a
+    finding, anyone could bury a true one by objecting to it.
+
+    An amendment is a signal for a human to look at, never an automatic
+    correction. Real per-user auth changes `submitter_of` and the release policy;
+    it does not change this endpoint's shape.
 
     404 when no finding in this run carries that fingerprint. That is usually not
     a client error: it is what a stale permalink looks like after the check that
@@ -371,7 +531,12 @@ async def create_amendment(
     )
 
 
-@app.get("/runs/{run_id}/findings", response_model=FindingIndex, tags=["amendments"])
+@app.get(
+    "/runs/{run_id}/findings",
+    response_model=FindingIndex,
+    tags=["amendments"],
+    dependencies=[Depends(require_operator)],
+)
 async def get_finding_index(run_id: str = Path(...)) -> FindingIndex:
     """The fingerprint of every finding in this run, so a rendered row can say
     which judgement it is offering to contest.
@@ -386,6 +551,10 @@ async def get_finding_index(run_id: str = Path(...)) -> FindingIndex:
     builds each row on. A key two findings would share is omitted rather than
     resolved to either of them; attaching an author's statement to the wrong
     finding is not a trade-off worth making, and the fingerprint is still listed.
+
+    Gated: the index covers every finding in the run, held ones included, so an
+    open index tells an anonymous caller that a high-severity divergence exists
+    and hands them the fingerprint to address it by.
     """
     report = _record_or_404(run_id).report()
     index = fingerprints_in(report)
@@ -401,7 +570,12 @@ async def get_finding_index(run_id: str = Path(...)) -> FindingIndex:
     return FindingIndex(run_id=run_id, fingerprints=list(index), by_row=by_row)
 
 
-@app.get("/runs/{run_id}/amendments", response_model=AmendmentList, tags=["amendments"])
+@app.get(
+    "/runs/{run_id}/amendments",
+    response_model=AmendmentList,
+    tags=["amendments"],
+    dependencies=[Depends(require_operator)],
+)
 async def list_amendments(run_id: str = Path(...)) -> AmendmentList:
     """The amendment history for a report, oldest first.
 
@@ -422,6 +596,7 @@ async def list_amendments(run_id: str = Path(...)) -> AmendmentList:
     "/runs/{run_id}/amendments/{fingerprint}/recheck",
     response_model=RecheckResponse,
     tags=["amendments"],
+    dependencies=[Depends(require_operator)],
 )
 async def recheck_amendment(
     run_id: str = Path(...), fingerprint: str = Path(...)
@@ -486,6 +661,14 @@ async def recheck_amendment(
 # One person reading a short list, at current scale. Built now because
 # retrofitting a review gate after something has been published is impossible,
 # and because `docs/DEPLOY.md` flags public-by-default permalinks as unresolved.
+#
+# Every route here is gated, reads included. The queue itself is a list of the
+# findings the gate is holding, rendered with the claimed value, the computed
+# value and the delta — reading it is reading exactly what release withholds.
+#
+# `decided_by` on each of these comes from the authenticated principal and is
+# never read from the request body. A gate decision attributed to a name the
+# caller typed is not a record of who decided anything.
 # --------------------------------------------------------------------------
 
 
@@ -514,7 +697,12 @@ def _review_item(entry: ReviewEntry) -> ReviewItem:
     )
 
 
-@app.get("/runs/{run_id}/review", response_model=ReviewQueueResponse, tags=["review"])
+@app.get(
+    "/runs/{run_id}/review",
+    response_model=ReviewQueueResponse,
+    tags=["review"],
+    dependencies=[Depends(require_operator)],
+)
 async def get_review_queue(run_id: str = Path(...)) -> ReviewQueueResponse:
     """Everything in this run the gate holds, in report order.
 
@@ -548,7 +736,10 @@ async def get_review_queue(run_id: str = Path(...)) -> ReviewQueueResponse:
     tags=["review"],
 )
 async def release_amendment(
-    body: ReleaseRequest, run_id: str = Path(...), fingerprint: str = Path(...)
+    body: ReleaseRequest,
+    run_id: str = Path(...),
+    fingerprint: str = Path(...),
+    principal: Principal = Depends(require_operator),
 ) -> ReviewItem:
     """A person has read this statement and it may appear on the permalink.
 
@@ -567,7 +758,7 @@ async def release_amendment(
             report,
             fingerprint,
             kind=ReviewKind.AMENDMENT,
-            by=body.decided_by,
+            by=principal.label,
             note=body.note,
         )
     except ReleaseRequiresReview as exc:
@@ -581,7 +772,10 @@ async def release_amendment(
     tags=["review"],
 )
 async def decline_amendment(
-    body: DeclineAmendmentRequest, run_id: str = Path(...), fingerprint: str = Path(...)
+    body: DeclineAmendmentRequest,
+    run_id: str = Path(...),
+    fingerprint: str = Path(...),
+    principal: Principal = Depends(require_operator),
 ) -> ReviewItem:
     """This statement is not published on the paper's page.
 
@@ -607,7 +801,7 @@ async def decline_amendment(
             fingerprint,
             reason=body.reason,
             note=body.note,
-            by=body.decided_by,
+            by=principal.label,
         )
     except ReleaseRequiresReview as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from None
@@ -620,13 +814,22 @@ async def decline_amendment(
     tags=["review"],
 )
 async def release_finding(
-    body: ReleaseRequest, run_id: str = Path(...), fingerprint: str = Path(...)
+    body: ReleaseRequest,
+    run_id: str = Path(...),
+    fingerprint: str = Path(...),
+    principal: Principal = Depends(require_operator),
 ) -> ReviewItem:
-    """A person has read this finding and it may appear on the permalink."""
+    """A person has read this finding and it may appear on the permalink.
+
+    The single most consequential call in this API: it is what puts a claim about
+    a named researcher's paper on a public URL. One finding per call, deliberately
+    — `DASHBOARD.md` refuses a bulk release, because a queue of twelve released in
+    one click is twelve unread accusations.
+    """
     report = _record_or_404(run_id).report()
     try:
         entry = review.release(
-            run_id, report, fingerprint, by=body.decided_by, note=body.note
+            run_id, report, fingerprint, by=principal.label, note=body.note
         )
     except ReleaseRequiresReview as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from None
@@ -639,7 +842,10 @@ async def release_finding(
     tags=["review"],
 )
 async def suppress_finding(
-    body: SuppressRequest, run_id: str = Path(...), fingerprint: str = Path(...)
+    body: SuppressRequest,
+    run_id: str = Path(...),
+    fingerprint: str = Path(...),
+    principal: Principal = Depends(require_operator),
 ) -> ReviewItem:
     """This finding is wrong. Never publish it, and never produce it again.
 
@@ -652,6 +858,11 @@ async def suppress_finding(
     Suppressing does not delete the finding. The run's record of what it found is
     unchanged and remains readable at `GET /runs/{id}/report`; what changes is
     that it is never published.
+
+    Gated, and of everything here this is the call with the longest reach: the
+    negative fixture it writes is read by `tests/test_review.py`, so an
+    unauthenticated suppression was a way to write into the regression suite from
+    the open internet.
     """
     report = _record_or_404(run_id).report()
     try:
@@ -661,7 +872,7 @@ async def suppress_finding(
             fingerprint,
             reason=body.reason,
             note=body.note,
-            by=body.decided_by,
+            by=principal.label,
         )
     except ReleaseRequiresReview as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from None
@@ -677,6 +888,7 @@ async def suppress_finding(
     "/papers/{arxiv_id:path}/repositories",
     response_model=list[Artifact],
     tags=["papers"],
+    dependencies=[Depends(require_operator)],
 )
 async def paper_repositories(arxiv_id: str) -> list[Artifact]:
     """§5.2 candidates, best first, with `confidence` for preselection.
@@ -685,6 +897,12 @@ async def paper_repositories(arxiv_id: str) -> list[Artifact]:
     a legitimate answer — a paper with no repository is a normal paper, and
     "continue without code" is a normal path, not a failure. A paper with no
     LaTeX source likewise comes back empty rather than as an error.
+
+    Gated despite carrying no findings, because of what it *spends*: this
+    ingests the paper, which can fetch from arXiv, and then looks the candidates
+    up on GitHub, which allows 60 requests an hour unauthenticated. An open
+    endpoint that consumes two external quotas on demand is a denial of service
+    against our own pipeline.
     """
     normalized, _version, id_error = jobs.normalize_id(arxiv_id)
     if id_error is not None:
@@ -708,7 +926,16 @@ async def paper_repositories(arxiv_id: str) -> list[Artifact]:
 @app.get("/health", response_model=RunManifest, tags=["meta"], include_in_schema=False)
 async def health() -> RunManifest:
     """The check manifest a new run would get. Doubles as a liveness probe: it
-    exercises check discovery, which is the part most likely to be misconfigured."""
+    exercises check discovery, which is the part most likely to be misconfigured.
+
+    **Ungated, and the only route besides the public permalink that is.** It
+    carries no paper, no run and no finding — only the names and versions of the
+    checks this build ships, which are in the repository anyway.
+
+    This is what a platform health check must point at. `render.yaml` currently
+    points `healthCheckPath` at `/runs`, which is now gated and will answer 401
+    to an unauthenticated prober — see the report.
+    """
     return RunManifest(run_id="", arxiv_id="", checks=jobs.manifest_checks())
 
 

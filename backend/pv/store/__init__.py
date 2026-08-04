@@ -15,13 +15,23 @@ methods.
 
     store = get_run_store()
 
-**There is no live database yet.** With `DATABASE_URL` unset every factory
-returns the in-memory implementation, which is exactly what the process does
-today. Setting `DATABASE_URL` is the entire switch.
+With `DATABASE_URL` unset every factory returns the in-memory implementation,
+which is exactly what the process did before any of this existed. Setting
+`DATABASE_URL` is the entire switch.
 
-Wiring the API to these factories, starting the event bus in the lifespan, and
-dropping `--workers 1` are three changes in files this module does not own. See
-the report for what they are.
+**That sentence used to be false, and it is worth recording why.** These
+factories were written and tested, and then nothing called them: `pv.api.app`
+constructed `RunStore`, `AmendmentStore` and `ReviewQueue` directly, so the only
+caller in the repository was `tests/test_store_pg.py`. Setting `DATABASE_URL`
+changed nothing at all, while this docstring said it changed everything — and
+because the tests exercised the factories, the tests passed. A whole-repo view
+("who calls this") is what surfaces that; no single file read does, which is the
+same lesson CLAUDE.md draws from the two `latexutil.py` modules.
+
+The API now calls all four, and `pv.api.app.lifespan` starts and stops the bus.
+`--workers 1` stays pinned in `render.yaml` until the Postgres path has actually
+run against a live database: a shared store that has never been exercised is not
+evidence that a second worker is safe.
 """
 
 from __future__ import annotations

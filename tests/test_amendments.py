@@ -32,6 +32,7 @@ from pv.amendments.submitter import UNKNOWN, Submitter, requires_review, submitt
 from pv.api import app as app_module
 from pv.api.config import Settings
 from pv.api.schemas import CreateAmendmentRequest
+from pv.api.security import HEADER, SECRET_ENV
 from pv.api.store import RunStore
 from pv.models import (
     Amendment,
@@ -45,6 +46,9 @@ from pv.models import (
 from pv.orchestrator import MemoryStateStore, Orchestrator, RunOptions
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "papers"
+# The operator key. It gates the amendment routes against queue flooding; it is
+# emphatically not an identity, and nothing below reads it as one.
+SECRET = "test-operator-key"
 # The BERT paper is the one real fixture that produces a finding at all — the
 # GLUE average row, within tolerance. Every other corpus paper yields none, and a
 # recheck test needs something real to recheck.
@@ -302,7 +306,12 @@ def client(tmp_path):
         mp.setattr(app_module, "orchestrator", Orchestrator(MemoryStateStore()))
         mp.setattr(app_module.review, "suppressions_dir", tmp_path / "suppressions")
         mp.setattr(app_module.review, "_decisions", {})
-        with TestClient(app_module.app) as c:
+        # The amendment routes are now gated (`pv.api.security`): the key is a
+        # rate-and-abuse control, not an identity, and `submitter_of` still
+        # returns "not identified" for every statement filed through them. See
+        # `test_the_key_is_not_treated_as_an_identity` at the foot of this file.
+        mp.setenv(SECRET_ENV, SECRET)
+        with TestClient(app_module.app, headers={HEADER: SECRET}) as c:
             yield c
 
 
@@ -521,3 +530,34 @@ def test_rechecking_a_fingerprint_this_run_never_produced_raises(driven_run):
     orchestrator, run_id, _fp = driven_run
     with pytest.raises(FindingNotInRun):
         recheck_finding(orchestrator, run_id, "0" * 64)
+
+
+def test_the_key_is_not_treated_as_an_identity(client):
+    """Gating these routes must not quietly turn the credential into a name.
+
+    The key is a rate-and-abuse control: without it, anyone on the internet could
+    flood the one human reading §14.8's queue. It authenticates the *holder of a
+    shared secret*, and a secret an author, a chair and we all hold says nothing
+    about who wrote a given statement — so the submitter stays "not identified",
+    the statement still lands in the review queue, and the finding it contests is
+    still untouched. A credential several people share does not make an
+    attribution defensible.
+    """
+    run_id, fp = seed_run()
+    created = client.post(
+        f"/runs/{run_id}/amendments",
+        json={"finding_fingerprint": fp, "author_statement": "The table is right."},
+    )
+    assert created.status_code == 201
+
+    # Nothing on the stored amendment claims to know who sent it.
+    assert "submitter" not in created.json()
+
+    # The queue still reports the sender as unidentified.
+    item = next(
+        i
+        for i in client.get(f"/runs/{run_id}/review").json()["items"]
+        if i["kind"] == "amendment"
+    )
+    assert item["submitter"] == UNKNOWN.label
+    assert item["state"] == "held"

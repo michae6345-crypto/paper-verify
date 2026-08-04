@@ -21,6 +21,7 @@ from fastapi.testclient import TestClient
 from pv.api import app as app_module
 from pv.api import jobs
 from pv.api.config import Settings
+from pv.api.security import COOKIE, HEADER, SECRET_ENV
 from pv.api.store import RunStore
 from pv.models import ReasonCode, RunReport, Verdict
 from pv.orchestrator import MemoryStateStore, Orchestrator, RunStage
@@ -29,6 +30,11 @@ from pv.run import run_paper
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "papers"
 PAPER = "1706.03762"  # the Transformer paper — the canonical end-to-end case
 EXPECTED_CHECKS = ["bold_extreme", "row_arithmetic", "dead_links", "citation_existence"]
+
+# The operator key the suite authenticates with. Every route except `/health` and
+# the redacted permalink needs it, so the shared `client` fixture presents it on
+# every request and the tests that care about *absence* use `anonymous` below.
+SECRET = "test-operator-key"
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -62,6 +68,9 @@ def offline_app():
         mp.setattr("pv.ingest.fetch._download", forbidden)
         mp.setattr("pv.adapters.http.HttpxClient", forbidden)
         mp.setenv("HTTP_BACKEND", "offline")
+        # Without this the gated routes answer 503 rather than 401: an unset
+        # secret is closed, not open. See `pv.api.security`.
+        mp.setenv(SECRET_ENV, SECRET)
         mp.setattr(
             app_module,
             "settings",
@@ -76,6 +85,19 @@ def offline_app():
 
 @pytest.fixture(scope="module")
 def client(offline_app):
+    """Authenticated. Presents the operator key on every request."""
+    with TestClient(offline_app.app, headers={HEADER: SECRET}) as c:
+        yield c
+
+
+@pytest.fixture(scope="module")
+def anonymous(offline_app):
+    """A caller with no credential — the one on the open internet.
+
+    A separate client rather than a header stripped per request, because a test
+    proving a route is closed must not be one `headers=` argument away from
+    silently testing the authenticated path instead.
+    """
     with TestClient(offline_app.app) as c:
         yield c
 
@@ -341,7 +363,12 @@ async def test_stream_delivers_each_check_while_the_run_is_in_flight(offline_app
         "raw_path": path.encode(),
         "query_string": b"",
         "root_path": "",
-        "headers": [(b"host", b"testserver"), (b"accept", b"text/event-stream")],
+        "headers": [
+            (b"host", b"testserver"),
+            (b"accept", b"text/event-stream"),
+            # A hand-built scope, so the credential is hand-built too.
+            (HEADER.lower().encode(), SECRET.encode()),
+        ],
         "client": ("testclient", 50000),
         "server": ("testserver", 80),
     }
@@ -595,3 +622,211 @@ def test_no_check_result_is_stored_with_a_non_terminal_status(client, run_id):
     so they must not appear anywhere in a stored result."""
     body = client.get(f"/runs/{run_id}").json()
     assert "status" not in json.dumps(body["report"])
+
+
+# --------------------------------------------------------------------------
+# The credential
+#
+# The API had no auth of any kind: no `Depends`, no security scheme, nothing.
+# An anonymous caller could release a held high-severity finding onto a public
+# permalink, suppress a true one (which writes a negative fixture that
+# tests/test_review.py reads), and spend our arXiv rate limit.
+#
+# What is asserted here is the *boundary*, not one route at a time. A test that
+# listed the closed routes would pass forever while a new route was added open
+# beside them, which is exactly how this happened.
+# --------------------------------------------------------------------------
+
+
+# The complete set of routes an unauthenticated caller may reach, and the reason
+# each one is on it. Adding to this list is the deliberate act; the test below
+# fails on anything else that is left open.
+PUBLIC_ROUTES = {
+    # The permalink. Redacted — it is the only route that runs `redact()`, and a
+    # URL somebody shares has to open for a reader with no credential.
+    "/runs/{run_id}/report/public",
+    # Liveness. Carries no paper, no run and no finding: only the check names and
+    # versions this build ships, which are in the repository anyway.
+    "/health",
+}
+
+
+def _gated(route) -> bool:
+    """Whether `require_operator` is reachable from this route's dependant."""
+    from pv.api.security import require_operator
+
+    seen, stack = set(), [route.dependant]
+    while stack:
+        dependant = stack.pop()
+        if id(dependant) in seen:
+            continue
+        seen.add(id(dependant))
+        if dependant.call is require_operator:
+            return True
+        stack.extend(dependant.dependencies)
+    return False
+
+
+def test_every_route_is_gated_unless_it_is_deliberately_public(offline_app):
+    """The boundary itself, so a new route cannot be added open by accident.
+
+    This is the assertion the codebase most needed and did not have. Every
+    failure mode CLAUDE.md records is a lossy step that silently produces a
+    confident accusation; an ungated route is the same shape with the loss at the
+    edge — the gate still holds the finding, and the finding is still readable.
+    """
+    open_routes = {
+        route.path
+        for route in offline_app.app.routes
+        if hasattr(route, "dependant") and not _gated(route)
+    }
+    assert open_routes == PUBLIC_ROUTES
+
+
+@pytest.mark.parametrize(
+    "method, path",
+    [
+        ("get", "/runs"),
+        ("post", "/runs"),
+        ("get", "/runs/abc"),
+        ("get", "/runs/abc/report"),
+        ("get", "/runs/abc/stream"),
+        ("get", "/runs/abc/findings"),
+        ("get", "/runs/abc/amendments"),
+        ("post", "/runs/abc/amendments"),
+        ("post", "/runs/abc/artifact"),
+        ("get", "/runs/abc/review"),
+        ("post", "/runs/abc/review/f/release"),
+        ("post", "/runs/abc/review/f/suppress"),
+        ("get", "/papers/1706.03762/repositories"),
+    ],
+)
+def test_an_anonymous_caller_is_refused(anonymous, method, path):
+    """401 before anything else — before the 404 for an unknown run, and before
+    the 422 for a missing body. A route that validated first would tell an
+    anonymous caller which run ids exist."""
+    response = getattr(anonymous, method)(path) if method == "get" else (
+        getattr(anonymous, method)(path, json={})
+    )
+    assert response.status_code == 401
+
+
+def test_an_unset_secret_closes_the_door_rather_than_opening_it(
+    offline_app, monkeypatch
+):
+    """The failure mode this whole module is shaped around.
+
+    A deployment that forgot to set the variable must not serve held findings to
+    the world. 503 rather than 401 because there is no credential the caller
+    could send that would work — it is an operator's problem, and saying so is
+    what gets it fixed.
+    """
+    monkeypatch.delenv(SECRET_ENV, raising=False)
+    with TestClient(offline_app.app, headers={HEADER: SECRET}) as c:
+        assert c.get("/runs").status_code == 503
+        assert c.post("/runs", json={"arxiv_id": PAPER}).status_code == 503
+        # Still open, still redacted. A permalink does not stop working because
+        # the operator key is missing.
+        assert c.get("/health").status_code == 200
+
+
+def test_a_wrong_key_is_refused(anonymous):
+    assert anonymous.get("/runs", headers={HEADER: "not-the-key"}).status_code == 401
+
+
+def test_the_key_is_accepted_as_a_bearer_token(anonymous):
+    resp = anonymous.get("/runs", headers={"Authorization": f"Bearer {SECRET}"})
+    assert resp.status_code == 200
+
+
+def test_the_key_is_accepted_as_a_cookie_because_eventsource_cannot_set_headers(
+    anonymous, run_id
+):
+    """`EventSource` cannot put a header on its request, and the stream carries
+    whole `CheckResult` payloads. Without this the dashboard's live rows could not
+    be gated at all."""
+    anonymous.cookies.set(COOKIE, SECRET)
+    try:
+        with anonymous.stream("GET", f"/runs/{run_id}/stream") as resp:
+            assert resp.status_code == 200
+            resp.read()
+    finally:
+        anonymous.cookies.clear()
+
+
+def test_the_public_permalink_stays_open(anonymous, run_id):
+    """The whole point of the boundary: the redacted view needs no credential."""
+    assert anonymous.get(f"/runs/{run_id}/report/public").status_code == 200
+
+
+def test_openapi_declares_no_security_scheme_it_does_not_implement(client):
+    """A stopgap that advertised OAuth2 would be a lie in the generated client.
+
+    The credential is a plain header checked by a dependency, and the schema says
+    so by saying nothing. When real auth lands, this test is the reminder that the
+    schema has to start describing it.
+    """
+    schema = client.get("/openapi.json").json()
+    assert "securitySchemes" not in schema.get("components", {})
+
+
+# --------------------------------------------------------------------------
+# The dashboard list envelope (docs/DASHBOARD.md)
+# --------------------------------------------------------------------------
+
+
+def test_a_run_row_carries_everything_the_dashboard_renders(client, run_id):
+    """`/runs` and `/reports` draw their rows from this and nothing else.
+
+    The requirement is not convenience. A list screen that fetched a report per
+    row to find its stage or its counts would issue N requests to draw N rows,
+    and it would repeat them every time a run in flight moved.
+    """
+    row = next(r for r in client.get("/runs").json()["runs"] if r["run_id"] == run_id)
+
+    # Stage, for the stage column and the stage filter. `status` is the coarse
+    # three-value form and cannot express "waiting on me".
+    #
+    # Compared against the run's own envelope rather than hardcoded: which
+    # terminal stage this paper reaches is the checkers' business, and a list row
+    # asserting it would fail for a reason that has nothing to do with the list.
+    # What matters here is that the row and the run agree.
+    assert row["state"] == client.get(f"/runs/{run_id}").json()["state"]
+    assert row["state"] in {"complete", "partial", "failed"}
+    # Elapsed, computed against the server's clock rather than the browser's.
+    assert row["elapsed_seconds"] is not None and row["elapsed_seconds"] >= 0
+    # The verdict summary as counts, in the fixed §7 vocabulary.
+    counts = row["counts"]
+    assert set(counts) == {
+        "matches",
+        "within_tolerance",
+        "diverges",
+        "unverifiable",
+        "not_checked",
+    }
+    # Every check that ran is counted exactly once, in exactly one column.
+    assert sum(counts[k] for k in ("matches", "within_tolerance", "diverges", "unverifiable")) + \
+        counts["not_checked"] == len(row["verdicts"]) + row["not_checked"]
+    # §14.8, for the `/reports` row: whether the version a chair opens differs
+    # from the version the author is looking at.
+    assert row["held"] == row["held_findings"] + row["held_amendments"]
+
+
+def test_a_run_that_has_not_started_reports_no_elapsed_time(client, own_store):
+    """Null, never zero. Zero is a claim that it started and took no time."""
+    record = app_module.store.create("0000.00000", [])
+    row = next(
+        r for r in client.get("/runs").json()["runs"] if r["run_id"] == record.run_id
+    )
+    assert row["elapsed_seconds"] is None
+    assert row["state"] == "queued"
+
+
+def test_not_attempted_is_counted_as_not_checked_not_as_a_fifth_verdict(client, own_store):
+    """§7 fixes four verdict labels. `not_attempted` has none, and §5.5 calls it
+    "not checked" — a row presenting it as a fifth verdict would render a normal
+    outcome as a failure."""
+    client.post("/runs", json={"arxiv_id": "2401.00001"})
+    row = client.get("/runs").json()["runs"][0]
+    assert row["counts"]["not_checked"] == 1
+    assert row["counts"]["diverges"] == 0

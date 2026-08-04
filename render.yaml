@@ -11,7 +11,12 @@ services:
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
     plan: free
-    healthCheckPath: /runs
+    # `/health`, not `/runs`. `/runs` is now behind the shared-secret dependency,
+    # and Render's prober is anonymous, so it would get 401 forever and the
+    # service would never go live. `/health` is deliberately ungated and carries
+    # no paper, no run and no finding — it returns the checker manifest, which is
+    # the same thing the CLI prints about itself.
+    healthCheckPath: /health
     envVars:
       # The deployed frontend origin. Comma-separated for several.
       - key: PV_CORS_ORIGINS

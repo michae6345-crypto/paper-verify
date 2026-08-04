@@ -30,6 +30,7 @@ from .schemas import (
     RunSummary,
     StateEvent,
     StreamEvent,
+    VerdictCounts,
 )
 
 Event = tuple[StreamEvent, CheckEvent | DoneEvent | RunManifest | StateEvent]
@@ -101,16 +102,40 @@ class RunRecord:
             artifact=self.artifact,
         )
 
+    def elapsed_seconds(self) -> float | None:
+        """Wall clock, against this process's clock rather than a browser's.
+
+        Runs to `finished_at` once there is one, so a finished run reports a
+        fixed duration rather than a number that keeps climbing. Null before the
+        run starts: zero would be a claim that it started and took no time.
+        """
+        if self.started_at is None:
+            return None
+        end = self.finished_at or _now()
+        return max((end - self.started_at).total_seconds(), 0.0)
+
     def summary(self) -> RunSummary:
+        """The list row. Everything `DASHBOARD.md` renders, from this record only.
+
+        `held_findings` and `held_amendments` are **not** filled here. They are
+        the review gate's answer, not the run's, and this record has no business
+        knowing about the gate — the same separation `_report_with_amendments`
+        keeps for the amendment log. `pv.api.app.list_runs` joins them on.
+        """
         return RunSummary(
             run_id=self.run_id,
             arxiv_id=self.arxiv_id,
             title=self.title,
             status=self.status,
+            state=self.stage,
             started_at=self.started_at,
             finished_at=self.finished_at,
+            elapsed_seconds=self.elapsed_seconds(),
             tables_parsed=self.tables_parsed,
             verdicts=[c.verdict for c in self.checks],
+            counts=VerdictCounts.of(
+                (c.verdict for c in self.checks), not_checked=len(self.not_checked)
+            ),
             findings=sum(len(c.findings) for c in self.checks),
             not_checked=len(self.not_checked),
         )

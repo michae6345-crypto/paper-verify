@@ -24,6 +24,7 @@ from pv.amendments.identity import amendment_fingerprint, finding_fingerprint
 from pv.amendments.store import AmendmentStore
 from pv.api import app as app_module
 from pv.api.config import Settings
+from pv.api.security import HEADER, SECRET_ENV
 from pv.api.store import RunStore
 from pv.models import (
     Amendment,
@@ -558,8 +559,14 @@ def test_every_committed_suppression_is_a_usable_regression_record():
 # --------------------------------------------------------------------------
 
 
+# The operator key these tests authenticate with. Everything on the gate needs
+# it — the reads as much as the decisions, because reading the queue is reading
+# exactly what release withholds.
+SECRET = "test-operator-key"
+
+
 @pytest.fixture
-def client(tmp_path):
+def app_under_test(tmp_path):
     def forbidden(*args, **kwargs):
         raise AssertionError("this test tried to reach the network; runs here must be offline")
 
@@ -567,6 +574,7 @@ def client(tmp_path):
         mp.setattr("pv.ingest.fetch._download", forbidden)
         mp.setattr("pv.adapters.http.HttpxClient", forbidden)
         mp.setenv("HTTP_BACKEND", "offline")
+        mp.setenv(SECRET_ENV, SECRET)
         mp.setattr(
             app_module,
             "settings",
@@ -577,8 +585,26 @@ def client(tmp_path):
         mp.setattr(
             app_module, "review", ReviewQueue(suppressions_dir=tmp_path / "suppressions")
         )
-        with TestClient(app_module.app) as c:
-            yield c
+        yield app_module
+
+
+@pytest.fixture
+def client(app_under_test):
+    """The operator. Presents the key on every request."""
+    with TestClient(app_under_test.app, headers={HEADER: SECRET}) as c:
+        yield c
+
+
+@pytest.fixture
+def anonymous(app_under_test):
+    """A caller with no credential, sharing the store with `client`.
+
+    Both fixtures resolve the same `app_under_test`, so a finding seeded through
+    one is visible to the other — which is the only way to ask whether the gate
+    actually holds it back from a stranger.
+    """
+    with TestClient(app_under_test.app) as c:
+        yield c
 
 
 def seed_run(check: CheckResult | None = None) -> tuple[str, str]:
@@ -605,6 +631,156 @@ def test_the_working_report_shows_what_the_permalink_withholds(client):
     full = client.get(f"/runs/{run_id}/report").json()
     assert len(full["checks"]) == 1
     assert full["checks"][0]["findings"][0]["claimed"] == "87.4"
+
+
+# --------------------------------------------------------------------------
+# The gate bypass
+#
+# `GET /runs/{id}/report` was unauthenticated *and* unredacted while
+# `/report/public` beside it was redacted. Anyone who changed one path segment
+# read every finding the gate was holding, about every named researcher in the
+# store. The docstring on the route called it "the working surface, not the
+# permalink" — a statement of intent standing in for a control, which CLAUDE.md
+# names as this codebase's recurring defect.
+#
+# These tests are the control. Each one seeds a *held* finding and then asks an
+# unauthenticated caller for it by every route that carries one.
+# --------------------------------------------------------------------------
+
+
+def test_the_working_report_does_not_open_for_a_stranger(client, anonymous):
+    """The bypass, closed. The value `87.4` is the held finding's claimed value:
+    if it appears anywhere in an anonymous response body, the gate is decorative."""
+    run_id, _fp = seed_run()
+
+    # The operator sees it — the gate withholds publication, not the record.
+    assert client.get(f"/runs/{run_id}/report").json()["checks"][0]["findings"][0][
+        "claimed"
+    ] == "87.4"
+
+    response = anonymous.get(f"/runs/{run_id}/report")
+    assert response.status_code == 401
+    assert "87.4" not in response.text
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        # Every route that carries an unredacted finding. The report endpoint was
+        # the one the audit found; the rest are the same bytes one segment away,
+        # and closing only the first would have moved the bypass rather than
+        # ending it.
+        "/runs/{run_id}/report",
+        "/runs/{run_id}",
+        "/runs/{run_id}/stream",
+        "/runs/{run_id}/review",
+        "/runs/{run_id}/findings",
+    ],
+)
+def test_no_route_hands_a_held_finding_to_an_anonymous_caller(
+    client, anonymous, path
+):
+    run_id, _fp = seed_run()
+    response = anonymous.get(path.format(run_id=run_id))
+    assert response.status_code == 401
+    assert "87.4" not in response.text
+
+
+def test_the_run_list_does_not_tell_a_stranger_a_divergence_exists(client, anonymous):
+    """The counts are a smaller leak than the finding, not a different one: a row
+    reading `1 diverges` says we have an unpublished accusation about this paper."""
+    seed_run()
+    assert anonymous.get("/runs").status_code == 401
+
+
+def test_a_stranger_cannot_release_a_held_finding(client, anonymous):
+    """The worst of the four. Releasing is what puts a claim about a named
+    researcher on a public URL, and it was one unauthenticated POST."""
+    run_id, fp = seed_run()
+
+    assert anonymous.post(f"/runs/{run_id}/review/{fp}/release", json={}).status_code == 401
+    # Still held, and still off the permalink.
+    assert client.get(f"/runs/{run_id}/report/public").json()["held"] == 1
+    assert client.get(f"/runs/{run_id}/report/public").json()["report"]["checks"] == []
+
+
+def test_a_stranger_cannot_suppress_a_finding_or_write_a_negative_fixture(
+    client, anonymous, tmp_path
+):
+    """Suppression has the longest reach of anything in this API: the negative
+    fixture it writes is read back by `read_negative_fixtures`, so an open
+    suppress endpoint was a way to write into the regression suite from the open
+    internet."""
+    run_id, fp = seed_run()
+
+    response = anonymous.post(
+        f"/runs/{run_id}/review/{fp}/suppress",
+        json={"reason": "metric_direction_wrong", "note": "not from us"},
+    )
+    assert response.status_code == 401
+    assert not list((tmp_path / "suppressions").glob("*.json"))
+    # And the finding is untouched: still held, not suppressed.
+    assert client.get(f"/runs/{run_id}/review").json()["items"][0]["state"] == "held"
+
+
+def test_the_permalink_is_the_one_route_a_stranger_may_read(client, anonymous):
+    """Redacted, and open. That pairing is the whole design — the version that
+    needs no credential is the version with the held findings taken out."""
+    run_id, _fp = seed_run()
+    response = anonymous.get(f"/runs/{run_id}/report/public")
+    assert response.status_code == 200
+    assert response.json()["report"]["checks"] == []
+    assert "87.4" not in response.text
+
+
+def test_a_released_finding_reaches_a_stranger_through_the_permalink(
+    client, anonymous
+):
+    """The gate is a gate, not a wall. Once a person has read a finding and
+    released it, the permalink carries it to a reader with no credential — which
+    is the point of publishing at all."""
+    run_id, fp = seed_run()
+    assert client.post(f"/runs/{run_id}/review/{fp}/release", json={}).status_code == 200
+
+    body = anonymous.get(f"/runs/{run_id}/report/public").json()
+    assert body["held"] == 0
+    assert body["report"]["checks"][0]["findings"][0]["claimed"] == "87.4"
+
+
+# --------------------------------------------------------------------------
+# The audit trail
+# --------------------------------------------------------------------------
+
+
+def test_the_decision_records_the_principal_not_a_name_the_caller_typed(client):
+    """`decided_by` used to be read from the request body, so the record of who
+    released a finding said whatever the releaser felt like typing.
+
+    With a shared key the only true statement available is "somebody holding the
+    operator key", and that is what is recorded. A body that still tries to
+    declare a name is ignored rather than honoured.
+    """
+    from pv.api.security import DEFAULT_OPERATOR_LABEL
+
+    run_id, fp = seed_run()
+    body = client.post(
+        f"/runs/{run_id}/review/{fp}/release", json={"decided_by": "someone else"}
+    ).json()
+
+    assert body["decided_by"] == DEFAULT_OPERATOR_LABEL
+    assert body["decided_by"] != "someone else"
+
+
+def test_the_operator_label_is_configurable_for_a_named_deployment(
+    app_under_test, monkeypatch
+):
+    """A single-operator deployment may name itself. A *request* may not name
+    itself, which is the distinction that matters."""
+    monkeypatch.setenv("PV_OPERATOR_LABEL", "Michael")
+    with TestClient(app_under_test.app, headers={HEADER: SECRET}) as c:
+        run_id, fp = seed_run()
+        body = c.post(f"/runs/{run_id}/review/{fp}/release", json={}).json()
+        assert body["decided_by"] == "Michael"
 
 
 def test_releasing_a_finding_publishes_it(client):

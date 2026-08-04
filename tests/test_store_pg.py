@@ -615,6 +615,79 @@ def test_the_factories_return_the_in_memory_stores_today(monkeypatch):
         store_pkg.reset()
 
 
+# --------------------------------------------------------------------------
+# The wiring
+#
+# These factories existed, were correct, and were called by nothing. `pv.api.app`
+# built `RunStore(max_runs=...)`, `AmendmentStore()` and `ReviewQueue()` by hand,
+# so the only caller in the repository was this file — and because this file
+# exercised them, the suite passed while `DATABASE_URL` did nothing at all.
+#
+# That is why the tests below assert on the *application module* rather than on
+# the factories. A test that only calls `get_run_store()` proves the factory
+# works, which was never in doubt; what needed proving is that something ships it.
+# --------------------------------------------------------------------------
+
+
+def _reloaded_app():
+    """Re-import `pv.api.app` under the current environment.
+
+    The stores are module-level singletons chosen at import, which is correct —
+    re-reading the environment per request could hand two callers different
+    backends, and half a run in each is worse than either. So exercising the
+    choice means re-importing.
+    """
+    import importlib
+
+    import pv.api.app as app_module
+    import pv.store as store_pkg
+
+    store_pkg.reset()
+    return importlib.reload(app_module)
+
+
+def test_the_api_takes_its_stores_from_the_factories(monkeypatch):
+    """The bug this whole seam exists to close.
+
+    `pv/store/__init__.py` said "Setting `DATABASE_URL` is the entire switch" while
+    nothing in `backend/` called a factory, so the switch was connected to
+    nothing: every run lived in a process-local dict, and on Render's free tier
+    that dict is emptied by every deploy and every wake from sleep. A restart
+    404'd every run id and every permalink, and emptied the review queue.
+    """
+    from pv.store.gate import PgReviewQueue
+    from pv.store.pg import PgAmendmentStore, PgRunStore
+
+    monkeypatch.setenv("DATABASE_URL", "postgresql://user:pw@localhost:5432/pv")
+    monkeypatch.delenv("PV_STORE_BACKEND", raising=False)
+    try:
+        app_module = _reloaded_app()
+        # No connection is opened by any of this: `Database` is lazy, and none of
+        # these constructors query. The switch is provably wired without a server.
+        assert isinstance(app_module.store, PgRunStore)
+        assert isinstance(app_module.amendments, PgAmendmentStore)
+        assert isinstance(app_module.review, PgReviewQueue)
+        # §15.1: the bus exists only where there is a process boundary to cross.
+        assert app_module.bus is not None
+    finally:
+        monkeypatch.delenv("DATABASE_URL", raising=False)
+        _reloaded_app()
+
+
+def test_the_api_stays_in_memory_without_a_database_url(monkeypatch):
+    """The default path, unchanged. A local run needs no database and no driver."""
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.delenv("PV_STORE_BACKEND", raising=False)
+    app_module = _reloaded_app()
+
+    assert isinstance(app_module.store, RunStore)
+    assert isinstance(app_module.amendments, AmendmentStore)
+    assert isinstance(app_module.review, ReviewQueue)
+    # None, and that is not a missing feature: with one process and one
+    # in-process store, `RunRecord._publish` already reaches every subscriber.
+    assert app_module.bus is None
+
+
 def test_importing_the_store_needs_no_driver():
     """The suite runs with no `psycopg` installed and must keep doing so: the
     driver is imported inside functions, never at module scope."""

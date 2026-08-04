@@ -87,20 +87,86 @@ class Run(BaseModel):
     artifact: Artifact | None = None
 
 
+class VerdictCounts(BaseModel):
+    """The verdict summary a dashboard row renders, as counts.
+
+    One field per §7 verdict, spelled the way §7 spells it, plus `not_checked`
+    for the §5.5 section that has no `Verdict` value at all. A row that read
+    `not_attempted` off this model and rendered it as a fifth verdict would be
+    presenting a normal outcome as a failure, which is what §5.5 exists to stop.
+
+    Deliberately not a percentage, a score, or a ratio. `DASHBOARD.md` forbids
+    all three on this row, and the reason is that a single number about a paper
+    is a judgement about the paper — which is the one thing this product does not
+    produce.
+    """
+
+    matches: int = 0
+    within_tolerance: int = 0
+    diverges: int = 0
+    unverifiable: int = 0
+    # Checks the run intended but did not attempt. `not_attempted` has no §7
+    # label; §5.5 calls this section "not checked" and so does this field.
+    not_checked: int = 0
+
+    @classmethod
+    def of(cls, verdicts, not_checked: int = 0) -> "VerdictCounts":
+        counts = {v: 0 for v in Verdict}
+        for verdict in verdicts:
+            counts[verdict] = counts.get(verdict, 0) + 1
+        return cls(
+            matches=counts[Verdict.MATCHES],
+            within_tolerance=counts[Verdict.WITHIN_TOLERANCE],
+            diverges=counts[Verdict.DIVERGES],
+            unverifiable=counts[Verdict.UNVERIFIABLE],
+            # A check that resolved `not_attempted` belongs in the same column as
+            # a `NotChecked` entry: both are "we did not look", and a reader has
+            # no use for the distinction between the two ways of not looking.
+            not_checked=counts[Verdict.NOT_ATTEMPTED] + not_checked,
+        )
+
+
 class RunSummary(BaseModel):
-    """One row of §5.1's recently checked papers."""
+    """One row of §5.1's recently checked papers, and of `DASHBOARD.md`'s `/runs`
+    and `/reports` tables.
+
+    Everything those tables render is here. That is the requirement, not a
+    convenience: a list screen that fetched a report per row to find its stage or
+    its counts would issue N requests to draw N rows, and on a run list that
+    refreshes while runs are in flight it would do it repeatedly.
+    """
 
     run_id: str
     arxiv_id: str
     title: str = ""
     status: RunStatus
+    # The live §14.2 stage — `DASHBOARD.md`'s stage column, and what its stage
+    # filter filters on. `status` is the coarse three-value form and cannot
+    # answer "is this one waiting on me", which `awaiting_artifact` is.
+    state: RunStage = RunStage.QUEUED
     started_at: datetime | None = None
     finished_at: datetime | None = None
+    # Wall clock, seconds. Computed server-side and against the server's clock:
+    # a browser subtracting `started_at` from its own `Date.now()` renders a
+    # skewed machine's clock drift as elapsed time, and for a run that has
+    # finished the answer is a fixed number that no client should be recomputing
+    # every frame. Null before the run starts.
+    elapsed_seconds: float | None = None
     tables_parsed: int = 0
     # The verdict strip — §5.5's visual fingerprint, in check order.
     verdicts: list[Verdict] = Field(default_factory=list)
+    # The same information as counts, which is what a table cell renders.
+    counts: VerdictCounts = Field(default_factory=VerdictCounts)
     findings: int = 0
     not_checked: int = 0
+    # §14.8, for `DASHBOARD.md`'s `/reports` row: "an author who copies a
+    # permalink needs to know the version a chair will open is not the version
+    # they are looking at". Counted separately because they mean opposite things
+    # — a held finding is something we might yet say about this paper, a held
+    # amendment is something someone else has said about us.
+    held_findings: int = 0
+    held_amendments: int = 0
+    held: int = 0
 
 
 class RunList(BaseModel):
@@ -332,6 +398,19 @@ class ReviewQueueResponse(BaseModel):
     held_amendments: int = 0
 
 
+# There is deliberately **no `decided_by` field** on any of the three request
+# models below, and it was removed rather than never added: it used to be read
+# from the request body, which meant the audit trail on a gate decision said
+# whatever the caller typed. A release of a high-severity finding about a named
+# researcher, attributed to a name the releaser chose, is not an audit trail.
+#
+# `decided_by` is now derived from the authenticated principal
+# (`pv.api.security`). With a shared key the only true statement available is
+# "somebody holding the operator key", and that is what gets recorded. When real
+# per-user auth lands, the same field starts carrying a real identity and none of
+# these shapes change.
+
+
 class DeclineAmendmentRequest(BaseModel):
     """Why a statement is not published on the paper's page.
 
@@ -344,7 +423,6 @@ class DeclineAmendmentRequest(BaseModel):
 
     reason: AmendmentDeclineReason
     note: str = ""
-    decided_by: str = ""
 
 
 class SuppressRequest(BaseModel):
@@ -354,12 +432,10 @@ class SuppressRequest(BaseModel):
 
     reason: SuppressionReason
     note: str = ""
-    decided_by: str = ""
 
 
 class ReleaseRequest(BaseModel):
     note: str = ""
-    decided_by: str = ""
 
 
 class PublicReport(BaseModel):
@@ -418,4 +494,5 @@ __all__ = [
     "RunSummary",
     "StreamEvent",
     "StreamPayload",
+    "VerdictCounts",
 ]
