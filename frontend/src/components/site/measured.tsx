@@ -13,10 +13,10 @@ import {
 } from "@/components/site/corpus";
 import { DrawLine, Scrub } from "@/components/site/motion/scrub";
 import { WIDE, useOwnTrack, useWideLayout } from "@/components/site/motion/mobile";
-import { Card, Container, Mono } from "@/components/site/ui";
+import { Card, Mono } from "@/components/site/ui";
 
 /**
- * The measured band: five figures, each with the file it came from.
+ * The measured ledger: five figures, each with the file it came from.
  *
  * Four of them count work done and one counts work refused, and the refused one
  * is there on purpose. A band that reports only volume argues that the tool got
@@ -25,21 +25,21 @@ import { Card, Container, Mono } from "@/components/site/ui";
  * read. Every one of the 32 carries a reason code.
  *
  * Every number is bound from `corpus.ts` rather than typed here, which is the
- * whole point of that file existing — if the checker changes and the corpus
+ * whole point of that file existing. If the checker changes and the corpus
  * figures move, the CI corpus gate catches it and this page moves with them. A
  * `7,014` written into JSX would not.
  *
- * The reference gives this band no heading at all, and that is kept: a figure
- * over its provenance says what it is. It does get a heading for anything that
- * cannot see the layout, since the section is a nav target and a run of
- * unlabelled figures is not one to arrive at.
+ * **This is no longer a section.** It was one, between `apparatus` and `report`,
+ * with a screen-reader-only heading standing in for the one the layout does not
+ * want. It renders inside `decides` now, under the four reason codes, because
+ * two of these five figures are that section's evidence: `0 of 4` checks call a
+ * model, and 32 things were declined with a reason. The heading it needed as a
+ * nav target went with the move, and the page lost a section break.
  *
- * The rows are on a surface, and it is the quietest one on the page. They sat
- * directly on the field, which made this the one section with no plane of its own
- * at all — five hairlines on grey, between two sections that each carry a card.
- * It rests rather than standing off, deliberately: `apparatus` and `report`
- * either side of it are arguments and they lift, and this is the provenance
- * underneath them. Something has to be the floor or nothing above it is raised.
+ * The rows sit on the quietest surface on the page. The dark panel above states
+ * the claim and this rests under it, which is the same relationship it had to
+ * `apparatus` and `report` when it stood between them: something has to be the
+ * floor or nothing above it is raised.
  *
  * ---
  *
@@ -61,7 +61,7 @@ import { Card, Container, Mono } from "@/components/site/ui";
  * up to itself.** The distinction is the one this product is built on. A counter
  * tweening 0 → 7,014 displays 3,182 on the way, and 3,182 is a number this
  * corpus never produced; a reader who stops scrolling mid-tween is looking at a
- * figure we invented. A digit roll shows no total at all until it settles — each
+ * figure we invented. A digit roll shows no total at all until it settles: each
  * slot starts blank and travels to the digit it actually holds, and the slot is a
  * fixed `1ch` in a monospaced tabular face, so nothing reflows while it moves.
  *
@@ -83,7 +83,7 @@ import { Card, Container, Mono } from "@/components/site/ui";
  * stale.
  *
  * Not pinned. Pinning needs the section's height to change on mount, once
- * `matchMedia` says the viewport is large enough to hold the contents — and this
+ * `matchMedia` says the viewport is large enough to hold the contents, and this
  * band sits in the middle of the page, so a section that grows from 350px to
  * three screens after hydration drags everything under it out from beneath the
  * reader.
@@ -118,7 +118,7 @@ const ROWS: { label: string; source: string; value: string }[] = [
  * still turning then is showing a figure this corpus never produced, which is
  * the failure this whole file is built around and which it shipped once.
  *
- * The arithmetic, at the worst case in the band — the last column, whose lead is
+ * The arithmetic, at the worst case in the band, which is the last column whose lead is
  * `4 × COLUMN_LEAD`, and the widest figure, whose fourth digit starts three
  * `ROLL_STEP`s behind the first:
  *
@@ -128,7 +128,7 @@ const ROWS: { label: string; source: string; value: string }[] = [
  * the figure now settles a little before the block carrying it finishes fading,
  * rather than a little after. That is the right way round: a number has to be
  * true before it is legible, and it was the other way round when this was
- * measured — the last three columns were still turning with the band sitting
+ * measured: the last three columns were still turning with the band sitting
  * two hundred pixels from the top of the screen.
  *
  * A wheel still gets 0.48 of its element's window, which is about 180px of
@@ -208,8 +208,8 @@ function Digit({
 /**
  * A figure whose digits roll in and whose words do not.
  *
- * The literal text is kept in the accessibility tree as one string — a screen
- * reader should hear "7,014 cells", not eleven separate wheels — and the wheels
+ * The literal text is kept in the accessibility tree as one string (a screen
+ * reader should hear "7,014 cells", not eleven separate wheels) and the wheels
  * themselves are `aria-hidden`.
  *
  * There is no reduced-motion branch here and there does not need to be: every
@@ -261,8 +261,8 @@ function rollWindow(from: number, to: number): { start: number; span: number } {
  * Three equal columns above `two:`, which is what a band of provenance wants
  * when there is room for it. Below, the figure moves up beside the label and the
  * path goes underneath: three stacked lines per row was 15 lines of left-aligned
- * text down a phone, with the figure — the only thing in the row a reader is
- * looking for — third in every one of them. Two lines, and the figure sits on the
+ * text down a phone, with the figure, the only thing in the row a reader is
+ * looking for, third in every one of them. Two lines, and the figure sits on the
  * right where the eye already goes for a number.
  *
  * A grid rather than nested flex boxes because `dl` is strict about what may sit
@@ -361,7 +361,7 @@ function ColumnRule({
  * the thing the band is for; five figures at 14px in the same arrangement would
  * be a row of captions. It is capped at 24px because the widest of them,
  * `7,014 cells`, sets at 0.6em per character in Fragment Mono and has to clear
- * the narrowest column the band ever has — 160px at the 1100 breakpoint, against
+ * the narrowest column the band ever has, 160px at the 1100 breakpoint, against
  * 119px of glyphs. The space inside a figure is non-breaking, so a figure that
  * did not fit would overflow rather than wrap.
  */
@@ -407,32 +407,31 @@ function SelfColumn({ row, index }: { row: (typeof ROWS)[number]; index: number 
   );
 }
 
-export function Measured() {
+export function MeasuredLedger() {
   const wide = useWideLayout(WIDE);
 
   return (
-    <section id="measured" className="site-section scroll-mt-20">
-      <Container>
-        <h2 className="sr-only">Measured</h2>
-        <Card
-          elevation="resting"
-          className="mx-auto w-full max-w-[1200px] px-5 py-2 two:px-6 two:py-4 three:px-10 three:py-10"
-        >
-          {wide ? (
-            <dl className="flex w-full items-stretch">
-              {ROWS.map((row, i) => (
-                <SelfColumn key={row.label} row={row} index={i} />
-              ))}
-            </dl>
-          ) : (
-            <dl className="flex w-full flex-col">
-              {ROWS.map((row, i) => (
-                <SelfRow key={row.label} row={row} first={i === 0} />
-              ))}
-            </dl>
-          )}
-        </Card>
-      </Container>
-    </section>
+    // The id outlives the section it used to name, so any link anyone still
+    // holds lands on the figures rather than at the top of the page.
+    <div id="measured" className="site-stack scroll-mt-20">
+      <Card
+        elevation="resting"
+        className="mx-auto w-full max-w-[1200px] px-5 py-2 two:px-6 two:py-4 three:px-10 three:py-10"
+      >
+        {wide ? (
+          <dl className="flex w-full items-stretch">
+            {ROWS.map((row, i) => (
+              <SelfColumn key={row.label} row={row} index={i} />
+            ))}
+          </dl>
+        ) : (
+          <dl className="flex w-full flex-col">
+            {ROWS.map((row, i) => (
+              <SelfRow key={row.label} row={row} first={i === 0} />
+            ))}
+          </dl>
+        )}
+      </Card>
+    </div>
   );
 }

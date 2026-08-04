@@ -1,55 +1,47 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { CHECK_RUNS, PAPERS, UNVERIFIABLE_RUNS } from "@/components/site/corpus";
 import { Container, Tag } from "@/components/site/ui";
-import { useSectionProgress } from "@/components/site/motion/scrub";
-import { Arrive } from "@/components/site/motion/mobile";
+import { Rise } from "@/components/site/motion/mobile";
 
 /**
  * The close: book a demo.
  *
- * ---
+ * **Why it is dark.** Every section between the hero and here is a light field,
+ * and the sections that carry dark cards put the dark *inside* a light page
+ * rather than under it. So the page has one tonal event left to spend and this
+ * is the place worth spending it: three light sections run in front of it, which
+ * is the flattest stretch of the page, and inverting straight out of them is
+ * what stops the last screen reading as more of the same.
  *
- * **Why it is dark, and why that is not arbitrary.** Every section between the
- * hero and here is a light field, and the three that carry dark cards
- * (`decides`, `report`, and the one that used to be `roadmap`) put the dark
- * *inside* a light page rather than under it. So the page has one tonal event
- * left to spend, and this is the only place worth spending it: the first time
- * the field itself goes dark is the moment the page stops explaining and starts
- * asking. Three light sections run in front of it (`measured`, `report`, `faq`),
- * which is the flattest stretch of the page, and inverting straight out of them
- * is what stops the last screen reading as more of the same.
- *
- * It is `--site-deep` and not `--site-ink`, which matters because of what sits
- * underneath. The footer's field is pure black carrying one white notched panel.
- * At `--site-ink` this section and the footer would be one continuous black
- * region and the footer's panel would read as this section's card. At
- * `--site-deep` the page closes on three legible planes: dark grey, then black,
- * then the white panel. The step down is the point.
+ * It is `--site-deep` and not `--site-ink`, because of what sits underneath. The
+ * footer's field is pure black carrying one white notched panel. At
+ * `--site-ink` this section and the footer would be one continuous black region
+ * and the footer's panel would read as this section's card. At `--site-deep` the
+ * page closes on three legible planes: dark grey, then black, then the white
+ * panel.
  *
  * **Why it does not look like the footer.** The footer is a centred column: tag,
- * one very large heading, one sentence, one pill. If this were the same
- * composition in a different colour the last two screens would be the same
- * screen twice. So the axis is turned. The ask is left-aligned in the wider
- * column, the right column carries what a demo actually consists of, and the
- * heading is `site-h2` rather than `site-h1` so the footer keeps the largest
- * type on the page and stays the last word.
+ * one very large heading, one sentence, one pill. Same composition in a
+ * different colour would make the last two screens the same screen twice, so the
+ * axis is turned. The ask is left-aligned in the wider column, the right column
+ * carries what a demo consists of, and the heading is `site-h2` so the footer
+ * keeps the largest type on the page and stays the last word.
  *
- * The division of labour between the two is substance and sign-off. The footer
- * has moved to a demo ask of its own (`Open to venues`, `Book a demo`), and the
- * header carries one too, so this section deliberately does not repeat the
- * button's words in its heading: it says what a demo *is* and lets the control
- * carry the ask. Three surfaces now point at `/demo` and only one of them is
- * mine, which is noted in the report rather than fixed here, because the footer
- * and the header belong to other workstreams.
+ * The footer has a demo ask of its own and the header carries one too, so this
+ * section does not repeat the button's words in its heading. Three surfaces
+ * point at `/demo` and only one of them is mine, which is noted in the report
+ * rather than fixed here.
  *
- * The consequence for the copy is that the closing note earns its place. The
- * footer now says `check your intake`, which a chair can easily read as "hand us
- * the submission pile". Nothing does that, so the line under the control says so
- * plainly and sits next to the ask rather than in a footnote at the end.
+ * **The ask is four objects and no paragraph.** It used to open with one:
+ * "One real run, on a paper of your choosing. Nothing is staged, so you will see
+ * the checks that decline as plainly as the ones that resolve." Both of its
+ * sentences are rows in the list beside it, and a screen that says the same
+ * thing in prose on the left and in a ledger on the right is asking to be read
+ * twice. The rows are the ones that survived, because they name the terms.
  *
  * **What it is allowed to claim.** The three rows are the demo, stated as facts
  * that already hold. There is deliberately no promise of a live stream of check
@@ -59,6 +51,15 @@ import { Arrive } from "@/components/site/motion/mobile";
  * argues against. The third row is the section's real argument and it is the
  * least flattering thing on the screen, which is why it is a row rather than a
  * footnote.
+ *
+ * **Motion.** Every window is measured from the element that carries it. The ask
+ * and the rows used to map slices of the section's own travel, 0.105 for both
+ * and 0.087 between rows, measured against a section 725px tall; taking the
+ * paragraph out takes about 78px off that and leaves every one of those numbers
+ * describing a distance the section no longer has. `Rise` measures each element
+ * instead, and the ask and the first row still open together for free, because
+ * both columns are `three:items-start` and their top edges reach the fold on the
+ * same frame.
  */
 
 /** Rows: what a demo consists of. Every one of them is true today. */
@@ -81,35 +82,8 @@ const CONSISTS_OF: { term: string; detail: string }[] = [
   },
 ];
 
-/**
- * The ask, then the three rows.
- *
- * Measured in a browser at 1536x720 the section is 725px tall, so travel is
- * 1445px. The ask is one window rather than four, for the reason
- * `site-footer.tsx` records about its own CTA: a tag, a heading, a sentence and
- * a control on four staggered windows read as a card assembling itself out of
- * parts, and this is one object arriving.
- *
- * The ask and the first row open at the same 0.105, which is not a coincidence
- * to be tuned out. Both columns are `three:items-start`, so both top edges sit
- * 152px down the section and reach the fold on the same frame; opening them
- * apart would be animating a difference that is not on the screen. The ask then
- * runs the surface budget of 0.60H (432px, 0.299 of this travel) and the rows
- * run the row budget of 0.52H + h/2 (about 425px, 0.294), so the ask settles
- * while the list is still counting in under it.
- *
- * The rows are 125px apart, which is the 0.087 step.
- *
- * Below 1100px none of these are used: `Arrive` swaps to `Rise`, every element
- * is measured against its own travel, and the two columns have become two rows,
- * so a fraction of this section would have been the wrong distance anyway.
- */
-const ASK_FROM = 0.105;
-const ASK_TO = 0.404;
-
-const ROW_FIRST = 0.105;
-const ROW_STEP = 0.087;
-const ROW_WINDOW = 0.294;
+/** Reading order down three rows that each measure their own arrival. */
+const ROW_LEAD = 0.02;
 
 /**
  * The primary control, inverted.
@@ -150,25 +124,18 @@ function InvertedLink({ href, children }: { href: string; children: ReactNode })
 }
 
 export function DemoCta() {
-  const section = useRef<HTMLElement>(null);
-  const progress = useSectionProgress(section);
-
   return (
     // The background is on the section rather than inside `Container`, so the
     // field runs to both edges of the screen while the content stays on the same
     // 1440px measure and the same gutter as every section above it.
     <section
       id="demo"
-      ref={section}
       className="site-section scroll-mt-20 three:py-[152px]"
       style={{ background: "var(--site-deep)" }}
     >
       <Container>
         <div className="flex flex-col gap-12 three:flex-row three:items-start three:gap-20">
-          <Arrive
-            progress={progress}
-            from={ASK_FROM}
-            to={ASK_TO}
+          <Rise
             kind="surface"
             y={20}
             className="flex flex-col items-start gap-6 two:gap-7"
@@ -184,14 +151,6 @@ export function DemoCta() {
               on a paper you pick.
             </h2>
 
-            <p
-              className="max-w-[46ch]"
-              style={{ fontSize: "16px", lineHeight: 1.7, color: "var(--site-muted-invert)" }}
-            >
-              One real run, on a paper of your choosing. Nothing is staged, so you will see the
-              checks that decline as plainly as the ones that resolve.
-            </p>
-
             <InvertedLink href="/demo">Book a demo</InvertedLink>
 
             {/* The limit, next to the ask rather than at the bottom of the page,
@@ -202,44 +161,38 @@ export function DemoCta() {
             <p style={{ fontSize: "13px", lineHeight: 1.6, color: "var(--site-muted-invert)" }}>
               One paper at a time. Running a batch for a venue is not built.
             </p>
-          </Arrive>
+          </Rise>
 
           <dl className="flex min-w-0 flex-col three:w-[420px] three:shrink-0">
-            {CONSISTS_OF.map((item, i) => {
-              const from = ROW_FIRST + i * ROW_STEP;
-              return (
-                <Arrive
-                  key={item.term}
-                  progress={progress}
-                  from={from}
-                  to={from + ROW_WINDOW}
-                  lead={i * 0.02}
-                  y={14}
-                  className={
-                    i === 0
-                      ? "flex flex-col gap-1.5 pb-6"
-                      : "flex flex-col gap-1.5 border-t border-t-[var(--site-line-invert)] pt-6 pb-6"
-                  }
+            {CONSISTS_OF.map((item, i) => (
+              <Rise
+                key={item.term}
+                lead={i * ROW_LEAD}
+                y={14}
+                className={
+                  i === 0
+                    ? "flex flex-col gap-1.5 pb-6"
+                    : "flex flex-col gap-1.5 border-t border-t-[var(--site-line-invert)] pt-6 pb-6"
+                }
+              >
+                <dt
+                  style={{
+                    fontSize: "16px",
+                    lineHeight: 1.6,
+                    letterSpacing: "-0.01em",
+                    color: "#ffffff",
+                  }}
                 >
-                  <dt
-                    style={{
-                      fontSize: "16px",
-                      lineHeight: 1.6,
-                      letterSpacing: "-0.01em",
-                      color: "#ffffff",
-                    }}
-                  >
-                    {item.term}
-                  </dt>
-                  <dd
-                    className="max-w-[52ch]"
-                    style={{ fontSize: "14px", lineHeight: 1.6, color: "var(--site-muted-invert)" }}
-                  >
-                    {item.detail}
-                  </dd>
-                </Arrive>
-              );
-            })}
+                  {item.term}
+                </dt>
+                <dd
+                  className="max-w-[52ch]"
+                  style={{ fontSize: "14px", lineHeight: 1.6, color: "var(--site-muted-invert)" }}
+                >
+                  {item.detail}
+                </dd>
+              </Rise>
+            ))}
           </dl>
         </div>
       </Container>

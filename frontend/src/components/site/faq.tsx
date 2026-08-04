@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { Card, Container, Mono, PrimaryLink } from "@/components/site/ui";
-import { useSectionProgress } from "@/components/site/motion/scrub";
-import { Arrive } from "@/components/site/motion/mobile";
+import { Rise } from "@/components/site/motion/mobile";
 import { SectionTag } from "@/components/site/section-tag";
 
 /**
@@ -16,49 +15,59 @@ import { SectionTag } from "@/components/site/section-tag";
  * its accordion out of a Framer component with a height tween.
  *
  * Two pieces of motion here, and keeping them apart is the point. The *arrival*
- * is scrubbed: the questions hold overlapping slices of the section's own
- * travel, so they come up in order as the section crosses the screen and go back
- * down if the reader scrolls back up through it. The *disclosure* is CSS on the
- * open state, because a question opening has nothing to do with where the page
- * is scrolled to, and driving it from scroll would be a lie about what caused
- * it. That also keeps `<details>` native: no height measurement, no JS
- * accordion, still works with the scripts off.
+ * is scrubbed, so the questions come up in order as the section crosses the
+ * screen and go back down if the reader scrolls up through it. The *disclosure*
+ * is CSS on the open state, because a question opening has nothing to do with
+ * where the page is scrolled to, and driving it from scroll would be a lie about
+ * what caused it. That also keeps `<details>` native: no height measurement, no
+ * JS accordion, still works with the scripts off.
  *
  * ---
  *
- * **Five, and each one is a question somebody would be uncomfortable asking out
- * loud.** The six that preceded them were the questions a product page wishes it
- * were asked. "Who is this for", "is this AI detection", "where do the numbers
- * come from" all have one-sentence answers, and three of the six were already
- * answered at more length by a section higher up the page. An accordion that
- * restates the page above it is padding with a chevron on it.
+ * **Four questions, one paragraph each.** There were five, each answered in two
+ * paragraphs, and the second paragraph was where the uncomfortable half lived.
+ * That structure is what made the foot of this page read as an essay: 662 words
+ * behind four chevrons. Every answer is one paragraph now and the uncomfortable
+ * half is a clause inside it, which is a harder place to skip than a paragraph a
+ * reader can stop before.
  *
- * What replaced them is the set an author with a draft and a chair with a stack
- * of submissions genuinely want to know, chosen so that no two of them can be
- * answered by the same paragraph:
+ * The four that remain, chosen so no two can be answered by the same paragraph:
  *
  *   1. who reads a finding about me, and when      the review gate
- *   2. who receives the report                     distribution, and gaming
- *   3. what happens to rounding                    the tolerance policy
- *   4. what it cannot read                         LaTeX only, no PDF path
- *   5. who answers when it is wrong                the determinism rule
+ *   2. what happens to rounding                    the tolerance policy
+ *   3. what it cannot read                         LaTeX only, no PDF path
+ *   4. who answers when it is wrong                the determinism rule
  *
- * Every answer had to be defensible from a file in this repository, and the
- * uncomfortable half of each one is stated rather than managed. Question 1 ends
- * with "the seventh will not be caught by reading the code", question 2 says an
- * author can decline to attach the report and nothing stops them, question 4
- * says the gap is larger than the papers it names. A page whose argument is that
- * it publishes what it cannot support does not get to answer its hardest
- * question softly.
+ * "Does the venue see my report, or do I" is gone as a question. Its first half
+ * was `report.tsx`'s closing line already, and its second half, that an author
+ * can decline to attach a report they dislike and nothing stops them, is now a
+ * clause on that same line. One sentence, in the section that raised the
+ * expectation, instead of 110 words four screens later.
  *
- * Two of the illustrative questions are folded in rather than given a row of
- * their own. Gaming lives in question 2, because gaming only means anything if
- * somebody downstream is relying on the report, and the honest answer to both is
- * the same fact: nothing is sent anywhere. The model rule lives in question 5,
- * because liability is its actual justification (`CLAUDE.md`: a probabilistic
- * verdict published about a named researcher is a liability) and stating the
- * rule without the reason turns the strongest thing this product does into a
- * feature bullet.
+ * Every answer is defensible from a file in this repository, and the awkward
+ * part of each is stated rather than managed. Question 1 ends on "the seventh
+ * will not be caught by reading the code", question 3 says the gap is larger
+ * than the papers it names, question 4 gives liability as the reason a model
+ * never produces a verdict (`CLAUDE.md`: a probabilistic verdict published about
+ * a named researcher is a liability). A page whose argument is that it publishes
+ * what it cannot support does not get to answer its hardest question softly.
+ *
+ * ---
+ *
+ * **The heading no longer restates the tag.** "FAQ" over "The questions worth
+ * asking" was the tag twice, the second time with a claim about itself attached.
+ * The heading names who is asking, which is the thing the reader is checking for
+ * when they decide whether the list is about them.
+ *
+ * **Every window is measured from the element that carries it.** The five
+ * questions used to hold overlapping slices of the section's own travel, 0.192
+ * stepping by 0.049, derived from a section measured at 771px tall. Removing one
+ * question takes 73px out of that section and every one of those constants
+ * becomes a slightly wrong distance. `Rise` gives each element its own track, so
+ * the stagger is the list's own line spacing read as scroll distance and there
+ * is nothing left to go stale. The card and the first question still open
+ * together for free: both columns are `three:items-start`, so their top edges
+ * reach the fold on the same frame.
  */
 
 const FAQS: { q: string; a: ReactNode }[] = [
@@ -67,79 +76,35 @@ const FAQS: { q: string; a: ReactNode }[] = [
     // a person here rather than a system, because that is what is true.
     q: "It flags something in my paper. Who reads it before I do?",
     a: (
-      <>
-        <p>
-          Someone here does, if the verdict is <Mono>diverges</Mono> at high severity. Those stay
-          off the public report until a person has read them, and held is the default rather than a
-          setting: a finding nobody has looked at is held, including one whose review record was
-          lost. Nothing turns that off.
-        </p>
-        <p>
-          The reason is unflattering. Six findings that should never have been made were caught
-          during development, and every one was the same shape, a lossy reading of a table that
-          produced a confident accusation. The seventh will not be caught by reading the code,
-          because by definition we did not think of it.
-        </p>
-      </>
-    ),
-  },
-  {
-    q: "Does the venue see my report, or do I?",
-    a: (
-      <>
-        <p>
-          You do, and nothing is sent anywhere. There is no signed identifier and no endpoint a
-          chair can call, so a report is a document an author attaches to a submission rather than
-          something a venue confirms for itself.
-        </p>
-        <p>
-          Which answers the question underneath it. An author who dislikes what a run found can
-          decline to attach it, and today nothing stops that. What a report can carry is its own
-          provenance: each verdict records the checker version and the tolerance version that
-          produced it, so an old report cannot pass as a current one. A report a venue can verify
-          without the author is work nobody has done yet.
-        </p>
-      </>
+      <p>
+        Someone here does, if the verdict is <Mono>diverges</Mono> at high severity. Those stay off
+        the public report until a person has read them, and held is the default: a finding nobody
+        has looked at is held. Six findings that should never have been made were caught during
+        development, each one a lossy reading of a table that produced a confident accusation. The
+        seventh will not be caught by reading the code.
+      </p>
     ),
   },
   {
     q: "Is it going to fire on every rounding difference?",
     a: (
-      <>
-        <p>
-          No, and the band comes off the page rather than from us. A value printed as{" "}
-          <Mono>87.4</Mono> asserts one decimal place of precision, so it carries an implicit
-          tolerance of <Mono>0.05</Mono>. Accuracy and BLEU keep that floor even where a paper
-          quotes them to three places, because those scores are not stable to the digit they are
-          printed at.
-        </p>
-        <p>
-          A gap inside the band is reported as <Mono>within tolerance</Mono>, a verdict of its own
-          with its own word and its own glyph, and the comparison is attached either way so you see
-          both numbers. The bands live in one versioned file, and every verdict records which
-          version judged it, so revising a band replays over comparisons already stored instead of
-          re-reading the papers.
-        </p>
-      </>
+      <p>
+        No. A value printed as <Mono>87.4</Mono> asserts one decimal place, so it carries an
+        implicit tolerance of <Mono>0.05</Mono>, and that band comes off the paper&rsquo;s own
+        precision. A gap inside it is reported as <Mono>within tolerance</Mono>, with its own glyph,
+        and the comparison is attached either way so you see both numbers.
+      </p>
     ),
   },
   {
     q: "You read the LaTeX. What about numbers that only exist in the PDF?",
     a: (
-      <>
-        <p>
-          They are not checked. Some arXiv papers carry a PDF and no source at all, and a run on one
-          of those comes back not checked against the whole paper, with{" "}
-          <Mono>no latex source</Mono> as the reason.
-        </p>
-        <p>
-          The gap is wider than those papers. Anonymity, page limits and style compliance are
-          properties of the compiled document rather than of the source, so none of them can be
-          checked either until a PDF path exists, and none of that is built. What reading the source
-          buys is exactness: a table arrives as cells with their rule-delimited blocks intact and
-          their macros expanded, which a rendered page does not give back.
-        </p>
-      </>
+      <p>
+        They are not checked. Some arXiv papers carry a PDF and no source at all, and a run on one
+        of those comes back not checked against the whole paper, with <Mono>no latex source</Mono>{" "}
+        as the reason. The gap is wider than those papers: anonymity, page limits and style
+        compliance are properties of the compiled document, and no PDF path is built.
+      </p>
     ),
   },
   {
@@ -149,78 +114,29 @@ const FAQS: { q: string; a: ReactNode }[] = [
     // characters. The escape is the same glyph every `&rsquo;` on this page is.
     q: "If it is wrong about someone’s work, who answers for it?",
     a: (
-      <>
-        <p>
-          We do, which is why a language model never produces a verdict here. A model may propose
-          which cell a sentence refers to. Deterministic Python computes the verdict from that
-          structure, and a claim that cannot be bound to a cell comes back{" "}
-          <Mono>unverifiable</Mono> instead of guessed. None of the four checks running today calls
-          a model at all.
-        </p>
-        <p>
-          The rest is process rather than a guarantee. A verdict is a function of the claim, the
-          checker version, the tolerance version and the commit it ran against, so any finding can
-          be rebuilt a year later from the inputs that produced it. Contesting a finding never
-          suppresses it, because a contest that could remove one would be a way to bury a true
-          finding as easily as a wrong one. When we accept that a finding was wrong, withdrawing it
-          writes a fixture that fails if the same reading ever returns.
-        </p>
-      </>
+      <p>
+        We do, which is why a language model never produces a verdict here. A model may propose
+        which cell a sentence refers to. Deterministic Python computes the verdict from that
+        structure, and a claim that cannot be bound to a cell comes back <Mono>unverifiable</Mono>{" "}
+        instead of guessed. None of the four checks running today calls a model at all. When we
+        accept that a finding was wrong, withdrawing it writes a fixture that fails if the same
+        reading ever returns.
+      </p>
     ),
   },
 ];
 
-/**
- * The slice of the section's travel one question holds. `SPACING` is smaller
- * than `WINDOW`, so the third is still arriving while the fourth has started: a
- * stagger expressed as overlap rather than as a queue of delays, which is what
- * lets a fast scroll compress the sequence instead of playing it back.
- *
- * The five are not measured individually. Measured in a browser at 1536x720 the
- * section is 771px tall, so travel is 1491px, and the questions sit a uniform
- * 73px apart, which is the 0.049 spacing. One constant and an index does the
- * whole list, and the stagger is the list's own line spacing read as scroll
- * distance.
- *
- * The 73px survived losing a row because every summary is still one line: the
- * questions got longer in characters, not in height. What did change is the
- * section, from 832px to 771px, and that is the whole argument for stating a
- * window in pixels. `WINDOW` is the row budget `motion/scrub.tsx` records,
- * 0.52H + h/2, which at this viewport is 411px and at this travel is 0.276.
- * Carrying the old 0.265 across would have quietly shortened every arrival by
- * 16px of scrolling for no reason anyone chose.
- *
- * The direction that matters is unchanged. A window that resolves early costs a
- * little movement; one that resolves late leaves a question sitting invisible
- * while it is being read.
- */
-const FIRST = 0.192;
-const SPACING = 0.049;
-const WINDOW = 0.276;
-
-/**
- * The card beside them. It is a surface, so it arrives as one, on the surface
- * budget of 0.60H (432px, or 0.29 of this travel). It opens at the same 0.192 as
- * the first question because it is the same top edge: the two columns are
- * `three:items-start`, so they reach the fold together.
- */
-const CARD_FROM = 0.192;
-const CARD_TO = 0.482;
+/** Reading order down a list whose items each measure their own arrival. */
+const QUESTION_LEAD = 0.03;
 
 export function Faq() {
-  const section = useRef<HTMLElement>(null);
-  const progress = useSectionProgress(section);
-
   return (
-    <section id="faq" ref={section} className="site-section scroll-mt-20">
+    <section id="faq" className="site-section scroll-mt-20">
       <Container>
-        <SectionTag tag="FAQ" heading="The questions worth asking" />
+        <SectionTag tag="FAQ" heading="What an author asks first" />
 
         <div className="site-stack flex flex-col gap-6 three:flex-row three:items-start three:gap-10">
-          <Arrive
-            progress={progress}
-            from={CARD_FROM}
-            to={CARD_TO}
+          <Rise
             kind="surface"
             y={12}
             scale={[0.96, 1]}
@@ -234,11 +150,9 @@ export function Faq() {
                 right form for a list that resizes itself.
 
                 Its control points at a finished report rather than at `/check`.
-                Three sections of this page now end in a call to action and they
-                have to be three different asks: read the evidence here, book a
-                demo in the section below, run one yourself in the footer. A third
-                `Check a paper` button would have made the last screen of the page
-                repeat itself twice.
+                Three sections of this page end in a call to action and they have
+                to be three different asks: read the evidence here, book a demo in
+                the section below, run one yourself in the footer.
 
                 `elevation="none"`: the shadow is scrubbed on the layer above so
                 it arrives with the card, and the prop would write a second one. */}
@@ -258,28 +172,23 @@ export function Faq() {
                 Read a finished report
               </PrimaryLink>
               <p className="site-body" style={{ fontSize: "14px" }}>
-                The recheck is deterministic: the same claim at the same checker version produces
-                the same answer. That is what makes a finding defensible a year after it was made.{" "}
+                Or{" "}
                 <Link href="/check" style={{ color: "var(--site-ink)" }}>
-                  Check a paper
+                  check a paper
                 </Link>{" "}
-                to see one from the start.
+                and watch one from the start.
               </p>
             </Card>
-          </Arrive>
+          </Rise>
 
           <div className="min-w-0 three:flex-1">
             {FAQS.map((item, i) => (
-              <Arrive
-                key={item.q}
-                progress={progress}
-                from={FIRST + i * SPACING}
-                to={FIRST + i * SPACING + WINDOW}
-                y={14}
-              >
+              <Rise key={item.q} lead={i * QUESTION_LEAD} y={14}>
                 <details className="group border-b" style={{ borderColor: "var(--site-line)" }}>
+                  {/* `gap-4` at the narrow end: 24px between a three-line question
+                      and the toggle is width a phone does not have to spare. */}
                   <summary
-                    className="flex cursor-pointer list-none items-baseline justify-between gap-6 py-5 transition-colors marker:content-none"
+                    className="flex cursor-pointer list-none items-baseline justify-between gap-4 py-5 transition-colors marker:content-none two:gap-6"
                     style={{
                       fontSize: "clamp(17px, 1.5vw, 20px)",
                       fontWeight: 400,
@@ -302,20 +211,15 @@ export function Faq() {
                   {/* The disclosure, and the whole of it. The answer is in the
                       document only while the details is open, so the enter
                       animation runs on the frame the browser reveals it. The
-                      reduced-motion block in globals.css already flattens it.
-
-                      `gap-4` because every answer is two paragraphs now. The
-                      first says what happens, the second says the part that is
-                      awkward, and running them together would let a reader stop
-                      at the reassuring half. */}
+                      reduced-motion block in globals.css already flattens it. */}
                   <div
-                    className="site-body flex max-w-[70ch] flex-col gap-4 pb-6 group-open:animate-in group-open:fade-in group-open:slide-in-from-top-1 group-open:ease-out group-open:animation-duration-200"
+                    className="site-body max-w-[70ch] pb-6 group-open:animate-in group-open:fade-in group-open:slide-in-from-top-1 group-open:ease-out group-open:animation-duration-200"
                     style={{ fontSize: "15px" }}
                   >
                     {item.a}
                   </div>
                 </details>
-              </Arrive>
+              </Rise>
             ))}
           </div>
         </div>
