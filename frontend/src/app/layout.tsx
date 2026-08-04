@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Instrument_Sans, Source_Serif_4 } from "next/font/google";
 
+import { GateEntry } from "@/components/gate";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 import "./globals.css";
@@ -43,6 +44,12 @@ export default function RootLayout({
     >
       <body className="min-h-full antialiased">
         <TooltipProvider delay={300}>{children}</TooltipProvider>
+        {/* The keystroke that reveals the unfinished surface, listening on every
+            page because the sequence has to work on the landing page and on the
+            quiet 404 alike. It renders nothing until it is used.
+            `components/gate/gate-store.ts` says plainly what it is: a curtain,
+            not a lock, and not authentication. */}
+        <GateEntry />
       </body>
     </html>
   );
