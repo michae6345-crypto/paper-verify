@@ -5,22 +5,29 @@ import { DemoCta } from "@/components/site/demo-cta";
 import { Faq } from "@/components/site/faq";
 import { Hero } from "@/components/site/hero";
 import { Intro } from "@/components/site/intro";
-import { Process } from "@/components/site/process";
 import { Report } from "@/components/site/report";
 import { Showcase } from "@/components/site/showcase";
 
 /**
  * The landing page.
  *
- * The order is an argument: what this is, what it does, how a run proceeds, what
- * extraction yields, what it checks, how it decides, what a reviewer ends up
- * holding, the questions worth asking, then the ask.
+ * The order is an argument: what this is, what it does, what extraction yields,
+ * what it checks, how it decides, what a reviewer ends up holding, the questions
+ * worth asking, then the ask.
  *
  * Four positions are pinned by that argument and the rest follow from them.
  *
- * `Showcase` follows `Process`. The reader has just been told the five stages a
- * run moves through, so four real tables from four real papers are what
- * extraction actually yields, and seeing that earns the checks after it.
+ * **`Process` is unmounted.** It named the five `RunStage` values a run moves
+ * through, one line each, and the hero spine already draws those five names and
+ * lights them in order as the pipeline runs. So it restated in a screen of
+ * height what the reader had just watched happen. The file stays on disk: the
+ * stages are real and a future run view may well want them, but the landing page
+ * cannot spend a viewport on a caption for its own hero.
+ *
+ * `Showcase` therefore opens the middle of the page. It still earns the checks
+ * after it, for the reason it always did: four real tables from four real papers
+ * are what extraction actually yields, and the argument only needed the stages
+ * named, which the hero does.
  *
  * `Apparatus` follows `Decides`, and this is the load-bearing one. Most of what
  * the panel shows is **not checked**: thirty-six of the forty-five body cells in
@@ -74,7 +81,6 @@ export default function SitePage() {
     <>
       <Hero />
       <Intro />
-      <Process />
       <Showcase />
       <Checks />
       <Decides />

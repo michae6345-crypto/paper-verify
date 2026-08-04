@@ -1,7 +1,8 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
 
+import { useReducedMotionGate } from "@/components/site/motion/scrub";
 import type { Verdict } from "@/types/run-report";
 import { VERDICT_COLOR, VERDICT_LABEL } from "@/lib/verdict";
 import { cn } from "@/lib/utils";
@@ -18,8 +19,15 @@ import { VerdictGlyph } from "./verdict-glyph";
  * `--chrome-text` at 13:1, and the colour moves to the glyph and to a 2px rule
  * down the leading edge — both graphics, both over the 3:1 floor they answer to.
  *
- * §12 is better served, not worse. Shape, word, and colour all carry the verdict
- * now, and none of the three is doing it alone.
+ * §12 is better served. Shape, word, and colour all carry the verdict now, and
+ * none of the three is doing it alone.
+ *
+ * The gate, not `motion`'s `useReducedMotion`. This was the last file in the
+ * codebase still reading the latter. It feeds `initial`, which React writes as
+ * an inline style during hydration and will not patch afterwards, so a
+ * reduced-motion reader could be left with a chip held at `opacity: 0` — a
+ * verdict that never appears, on the component whose whole job is to state one.
+ * `scrub.tsx` documents the mechanism.
  */
 export function VerdictChip({
   verdict,
@@ -30,7 +38,7 @@ export function VerdictChip({
   className?: string;
   animate?: boolean;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = useReducedMotionGate();
 
   return (
     <motion.span
