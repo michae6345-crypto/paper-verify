@@ -1,107 +1,98 @@
 # paper-verify
 
-Checks whether an ML paper's own numbers agree with each other, and reports
-discrepancies with evidence.
+Checks whether an ML paper's own numbers agree with each other, and reports any
+disagreement with the evidence attached. It does not judge whether a paper is good,
+novel, or correct.
 
-It does not judge whether a paper is good, novel, or true.
+Verdicts come only from deterministic Python. Planned checks may use a model to
+extract structure, but a model never decides a verdict. When a check cannot decide
+deterministically, it returns `unverifiable` with a reason code.
 
----
+## Checks
 
-## The rule that governs everything
+Specified in [docs/BRIEF.md](docs/BRIEF.md) §9. Four are implemented, and none of
+them calls a model.
 
-**A language model never produces a verdict.** Models extract structure only. Every
-verdict is computed by deterministic Python from that structure. A check that cannot be
-made deterministic returns `unverifiable` with a reason code. It never guesses.
+| # | Check | Module (`backend/pv/checks/`) | Status |
+| --- | --- | --- | --- |
+| 1 | Bolded value is the best in its block | `bold_extreme.py` | Implemented |
+| 2 | Dead links (one HTTP request per URL) | `links.py` | Implemented |
+| 3 | Average columns match their row | `row_arithmetic.py` | Implemented |
+| 4 | Abstract numbers match the tables | | Not started |
+| 5 | Missing variance on comparative claims | | Not started |
+| 6 | Citation existence (Crossref, OpenAlex) | `citations.py` | Implemented |
+| 7 | Cited baselines match their source paper | | Not started |
 
-Checks 1, 2, 3 and 6 are the entire first release, and none of them call a model.
+Each result is `matches`, `within tolerance`, `diverges`, `unverifiable`, or
+`not checked`.
 
-The corollary matters as much: **honest incompleteness is the product.** A run where half
-the checks are `unverifiable` with clear reasons is a success. The "not checked" section
-is a first-class part of the report, not an error state.
+## Run it
 
-## Try it
+Python 3.11 or newer.
 
 ```bash
-pip install pydantic httpx TexSoup fastapi uvicorn sse-starlette pytest
-
-# Headless, against a real paper. First run fetches from arXiv and caches.
-cd backend && python -m pv.cli 1706.03762
-
-# Or against the committed corpus, with no network at all:
-python -m pv.cli --corpus ../fixtures/papers
+pip install pydantic httpx TexSoup fastapi uvicorn sse-starlette pytest pytest-asyncio
+cd backend
+python -m pv.cli 1706.03762        # fetch from arXiv (cached), run all four checks
+python -m pv.cli --fixture ../fixtures/papers/1706.03762 --offline 1706.03762
+python -m pv.cli --corpus ../fixtures/papers --checks bold_extreme,row_arithmetic
 ```
+
+`--offline` only skips the arXiv fetch; the link and citation checks still make HTTP
+requests. The last command, limited to checks 1 and 3, uses no network. Output of the
+second command:
 
 ```
 Attention Is All You Need
 1706.03762   4 tables parsed
 
-  — Bolded value is the best in its block   matches
-  · Average columns match their row         not checked
-  — Dead links                              matches
-  ○ Citation existence                      unverifiable  (reference_not_indexed)
+  — Bolded value is the best in its block matches
+  · Average columns match their row    not checked
+  — Dead links                         matches
+  ○ Citation existence                 unverifiable       (reference_not_indexed)
 
 Not checked (2)
   Average columns match their row — no_applicable_claims
   Citation existence — reference_not_indexed
 ```
 
-### API and UI
+## Tests
+
+`pytest -q` from the repository root: 684 passed, 4 skipped, about 8 seconds on
+Python 3.12 with no network. The skipped tests need a live Postgres (`DATABASE_URL`).
+CI also runs `python fixtures/make_reports.py --verify`, which re-runs checks 1 and 3
+on the committed papers and fails if any report differs from `fixtures/reports/`.
+
+Checks 1 and 3 report no `diverges` on the ten papers in `fixtures/papers/`. Misreadings
+caught during development, each now covered by a test in `tests/`:
+
+- BERT's `86.7/85.9` read as one number.
+- A bolded Transformer value compared against its whole column instead of its ruled block.
+- ELMo's "All layers" column read as an average.
+- `\includegraphics[width=.83\linewidth]` read as a data value.
+- Citation titles matched by substring, so "Attention is all you need" matched another paper.
+
+## API and frontend
 
 ```bash
-cd backend && uvicorn pv.api.app:app --reload        # :8000
-cd frontend && npm install && npm run dev            # :3000
+cd backend && uvicorn pv.api.app:app --reload     # :8000
+cd frontend && npm install && npm run dev         # :3000
 ```
 
-`POST /runs` returns immediately; `GET /runs/{id}/stream` emits one SSE event per check
-as it completes. Deployment: `docs/DEPLOY.md`.
-
-## Status
-
-| | |
-| --- | --- |
-| Checks 1, 2, 3, 6 | Implemented, validated against 10 papers |
-| Tests | 391, network-free |
-| False findings on the corpus | 0 |
-| API | Complete: runs, SSE streaming, repository candidates |
-| Frontend | Design system, shell, submit and run views; gutter in progress |
-| Persistence | In memory. Restarts lose runs; permalinks 404 |
-| Checks 4, 5, 7 | Not started. These are the ones that need a model |
-
-## What the corpus taught us
-
-Every serious defect found in this codebase has the same shape: **a lossy reading of the
-source that silently produces a confident accusation.** Six instances so far, all caught
-before shipping:
-
-- Reading BERT's `86.7/85.9` as one number → five false divergences on the GLUE table.
-- Matching a citation by title containment → "Attention is all you need" matched "Is
-  Attention All You Need?", which would have attributed another paper's retraction.
-- Comparing a bolded value against its whole column instead of its rule-delimited block
-  → a false divergence on the Transformer paper.
-- Reading `all` in a header as "average" → six false divergences on ELMo, whose "All
-  layers" column is a grouping. This one came from a specification, not from code.
-- Letting `\includegraphics[width=.83\linewidth]` reach the number scanner → a figure
-  layout dimension reported as a data value.
-- A nested line-break tabular stealing its parent table's `\label` → findings that point
-  at the wrong table.
-
-When a step narrows or normalises data, ask what it discards and whether a verdict could
-rest on the discarded part. If it could, the answer is `unverifiable` with a reason code,
-plus the comparison attached as evidence, so the user still sees the numbers even when we
-decline to call the paper wrong.
+`POST /runs` starts a run; `GET /runs/{id}/stream` sends one server-sent event per
+finished check. Routes that change state or return unredacted findings need an operator
+key. Storage is in memory unless `DATABASE_URL` points at Postgres. Deployment:
+[docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Layout
 
 ```
-backend/pv/models.py     the contract; every workstream meets here
-backend/pv/ingest/       arXiv fetch, \input resolution, macro table
-backend/pv/parse/        LaTeX tabular -> Table, with bold and block detection
-backend/pv/checks/       the checks, plus the registry that runs them
-backend/pv/api/          FastAPI + SSE
-frontend/                Next.js, design system, app shell
-fixtures/GROUND_TRUTH.md hand-derived answers the checkers must reproduce
-docs/BRIEF.md            the full design and build brief
+backend/pv/ingest/   arXiv fetch, \input resolution, macro table
+backend/pv/parse/    LaTeX tabular parsing, bold and block detection
+backend/pv/checks/   the checks and the registry that runs them
+backend/pv/api/      FastAPI app and SSE stream
+frontend/            Next.js app
 ```
 
-`fixtures/papers/` holds ten papers' LaTeX as test fixtures. See
-[PROVENANCE.md](fixtures/papers/PROVENANCE.md) for attribution and licensing.
+`fixtures/papers/` holds the LaTeX source of ten papers used as fixtures; attribution
+and licensing are in [PROVENANCE.md](fixtures/papers/PROVENANCE.md).
